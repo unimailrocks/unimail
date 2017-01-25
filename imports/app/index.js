@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
+import Header from '/imports/header';
 
-export default function App() {
+export default function App({ children }) {
   return (
     <div>
-      Yup, this is metal.
+      <Header />
+      {children}
     </div>
   );
 }
+
+App.propTypes = {
+  children: PropTypes.element,
+};

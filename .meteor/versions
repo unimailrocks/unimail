@@ -48,7 +48,6 @@ mongo-id@1.0.6
 npm-mongo@2.2.16_1
 observe-sequence@1.0.14
 ordered-dict@1.0.9
-poetic:materialize-scss@1.97.6_1
 promise@0.8.8
 random@1.0.10
 reactive-var@1.0.11
