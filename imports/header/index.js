@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router';
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink } from 'reactstrap';
+import { Sidebar, Segment, Button, Menu, Image, Icon, Header } from 'semantic-ui-react';
 
-export default class Header extends Component {
+export default class Head extends Component {
   constructor(props) {
     super(props);
 
@@ -20,20 +20,14 @@ export default class Header extends Component {
   render() {
     return (
       <div>
-        <Navbar color="faded" light toggleable>
-          <NavbarToggler right onClick={this.toggle} />
-          <NavbarBrand href="/">reactstrap</NavbarBrand>
-          <Collapse isOpen={this.state.isOpen} navbar>
-            <Nav className="ml-auto" navbar>
-              <NavItem>
-                <NavLink tag={Link} to="/">Home</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink tag={Link} to="/login">Log in</NavLink>
-              </NavItem>
-            </Nav>
-          </Collapse>
-        </Navbar>
+        <Menu>
+          <Menu.Item>
+            <Link to="/">Home</Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to="/login">Log In</Link>
+          </Menu.Item>
+        </Menu>
       </div>
     );
   }

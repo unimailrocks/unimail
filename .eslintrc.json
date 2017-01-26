@@ -1,5 +1,8 @@
 {
   "parser": "babel-eslint",
   "plugins": ["meteor"],
-  "extends": ["airbnb", "plugin:meteor/recommended"]
+  "extends": ["airbnb", "plugin:meteor/recommended"],
+  "rules": {
+    "no-use-before-define": ["error", { "functions": false }]
+  }
 }
