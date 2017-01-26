@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
-import { Table } from 'semantic-ui-react';
+import { Table, Icon, Menu } from 'semantic-ui-react';
 
-export default function AdminUsersList({ users }) {
+export default function AdminUsersList({ users, currentPage }) {
   return (
     <Table celled>
       <Table.Header>
@@ -26,10 +26,10 @@ export default function AdminUsersList({ users }) {
 
 AdminUsersList.propTypes = {
   users: PropTypes.arrayOf(PropTypes.shape({
-    _id: PropTypes.string,
+    _id: PropTypes.string.isRequired,
     emails: PropTypes.arrayOf(PropTypes.shape({
-      address: PropTypes.string,
-      verified: PropTypes.bool,
-    })),
-  })),
+      address: PropTypes.string.isRequired,
+      verified: PropTypes.bool.isRequired,
+    })).isRequired,
+  })).isRequired,
 };
