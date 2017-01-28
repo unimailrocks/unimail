@@ -25,6 +25,13 @@ function AdminUserPage({ user }) {
         tags={rolesToTags(user.roles)}
         handleDelete={_removeRole}
         handleAddition={_addRole}
+        classNames={{
+          tags: 'ui blue labels',
+          tag: 'ui label',
+          tagInput: 'ui input',
+        }}
+        placeholder="Add new role"
+        removeComponent={RemoveX}
       />
     </Container>
   );
@@ -35,6 +42,10 @@ function rolesToTags(roles) {
     id: i,
     text: role,
   }));
+}
+
+function RemoveX(props) {
+  return <i {...props} className="delete icon"></i>;
 }
 
 AdminUserPage.propTypes = {
