@@ -5,8 +5,18 @@ import ReactDOM from 'react-dom';
 import { Router, IndexRoute, Route, browserHistory } from 'react-router';
 import App from '/imports/app';
 import Index from '/imports/index';
-import { LoginPage } from '/imports/accounts';
-import { AdminUsersPage } from '/imports/admin';
+import { LoginPage, isRole } from '/imports/accounts';
+import { AdminRoute } from '/imports/admin';
+
+function requireHyperadmin() {
+  if (!isRole('hyperadmin')) {
+    if (Meteor.user()) {
+      browserHistory.push('/');
+    } else {
+      browserHistory.push('/login');
+    }
+  }
+}
 
 Meteor.startup(() => {
   ReactDOM.render(
@@ -14,9 +24,7 @@ Meteor.startup(() => {
       <Route path="/" component={App}>
         <IndexRoute component={Index} />
         <Route path="login" component={LoginPage} />
-        <Route path="admin">
-          <Route path="users" component={AdminUsersPage} />
-        </Route>
+        {AdminRoute('admin')}
       </Route>
     </Router>
     , document.getElementById('render-target')

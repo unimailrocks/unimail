@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
-import { Table, Icon, Menu } from 'semantic-ui-react';
+import { Table } from 'semantic-ui-react';
 
-export default function AdminUsersList({ users, currentPage }) {
+export default function AdminUsersList({ users }) {
   return (
     <Table celled>
       <Table.Header>

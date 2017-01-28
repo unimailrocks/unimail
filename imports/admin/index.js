@@ -1,3 +1,3 @@
-import AdminUsersPage from './users/page';
+import AdminRoute from './route';
 
-export { AdminUsersPage };
+export { AdminRoute };
