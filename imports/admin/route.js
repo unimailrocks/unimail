@@ -1,5 +1,5 @@
-import React, { PropTypes } from 'react';
-import { IndexRoute, Route } from 'react-router';
+import React from 'react';
+import { Route } from 'react-router';
 import AdminPage from './page';
 import AdminUsersRoute from './users/route';
 

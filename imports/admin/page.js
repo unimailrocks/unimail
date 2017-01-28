@@ -10,6 +10,7 @@ export default class AdminPage extends Component {
   async componentDidMount() {
     const user = await resolveUser();
     if (!isRole(user, 'hyperadmin')) {
+      console.log('redirecting!!!', user);
       browserHistory.push('/');
     } else {
       this.setState({

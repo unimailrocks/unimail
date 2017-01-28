@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import { Link } from 'react-router';
 import { Table } from 'semantic-ui-react';
 
 export default function AdminUsersList({ users }) {
@@ -14,7 +15,7 @@ export default function AdminUsersList({ users }) {
         {
           users.map(user => (
             <Table.Row key={user._id}>
-              <Table.Cell>{user._id}</Table.Cell>
+              <Table.Cell><Link to={`/admin/users/${user._id}`}>{user._id}</Link></Table.Cell>
               <Table.Cell>{user.emails[0].address}</Table.Cell>
             </Table.Row>
           ))
