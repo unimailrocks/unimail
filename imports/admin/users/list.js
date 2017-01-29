@@ -2,26 +2,65 @@ import React, { PropTypes } from 'react';
 import { Link } from 'react-router';
 import { Table } from 'semantic-ui-react';
 
-// TODO: adjust for fields
-export default function AdminUsersList({ users }) {
+export default function AdminUsersList({ users, fields }) {
+  const headers = [
+    ['id', <Table.HeaderCell key="id">ID</Table.HeaderCell>],
+    ['email', <Table.HeaderCell key="email">(main) Email</Table.HeaderCell>],
+    ['organization', <Table.HeaderCell key="organization">Organization ID</Table.HeaderCell>],
+    ['roles', <Table.HeaderCell key="roles">Roles</Table.HeaderCell>],
+  ];
+
+  const cells = user => [
+    [
+      'id',
+      <Table.Cell key="id"><Link to={`/admin/users/${user._id}`}>{user._id}</Link></Table.Cell>,
+    ],
+    [
+      'email',
+      <Table.Cell key="email">{user.emails[0].address}</Table.Cell>,
+    ],
+    [
+      'organization',
+      <Table.Cell key="organization">
+        <Link to={`/admin/organizations/${user.organizationID}`}>{user.organizationID}</Link>
+      </Table.Cell>,
+    ],
+    [
+      'roles',
+      <Table.Cell key="roles">
+        {user.roles && user.roles.join(', ')}
+      </Table.Cell>,
+    ],
+  ];
+
+  // filters headers for fields
+  // and extracts element from associative array
+  function renderHeaders() {
+    return headers
+      .filter(([key]) => fields.includes(key))
+      .map(([, element]) => element);
+  }
+
+  // filters cells for fields
+  // and extracts element from associative array
+  function renderCells(user) {
+    return cells(user)
+      .filter(([key]) => fields.includes(key))
+      .map(([, element]) => element);
+  }
+
   return (
     <Table celled>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>ID</Table.HeaderCell>
-          <Table.HeaderCell>(main) Email</Table.HeaderCell>
-          <Table.HeaderCell>Organization ID</Table.HeaderCell>
+          {renderHeaders()}
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {
           users.map(user => (
             <Table.Row key={user._id}>
-              <Table.Cell><Link to={`/admin/users/${user._id}`}>{user._id}</Link></Table.Cell>
-              <Table.Cell>{user.emails[0].address}</Table.Cell>
-              <Table.Cell>
-                <Link to={`/admin/organizations/${user.organizationID}`}>{user.organizationID}</Link>
-              </Table.Cell>
+              {renderCells(user)}
             </Table.Row>
           ))
         }
@@ -42,5 +81,5 @@ AdminUsersList.propTypes = {
 };
 
 AdminUsersList.defaultProps = {
-  fields: ['id', 'email', 'organization'],
+  fields: ['id', 'email', 'organization', 'roles'],
 };

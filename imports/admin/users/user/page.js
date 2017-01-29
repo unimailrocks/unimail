@@ -5,11 +5,17 @@ import { Container, Header } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
 
 function AdminUserPage({ user }) {
+  if (!user) {
+    return (
+      <div />
+    );
+  }
+
   async function removeRole(index) {
     try {
       await Meteor.callPromise('roles.delete', user._id, user.roles[index]);
     } catch (e) {
-      console.log('error removing role', err.message);
+      console.error('error removing role', err.message);
     }
   }
 
@@ -17,7 +23,7 @@ function AdminUserPage({ user }) {
     try {
       await Meteor.callPromise('roles.create', user._id, role);
     } catch (e) {
-      console.log('error adding role', err.message);
+      console.error('error adding role', err.message);
     }
   }
 
@@ -26,7 +32,7 @@ function AdminUserPage({ user }) {
       <Header>{user.emails[0].address}</Header>
       <Header sub>Roles</Header>
       <ReactTags
-        tags={rolesToTags(user.roles)}
+        tags={rolesToTags(user.roles || [])}
         handleDelete={removeRole}
         handleAddition={addRole}
         classNames={{
@@ -65,10 +71,12 @@ AdminUserPage.propTypes = {
       })
     ).isRequired,
     roles: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }).isRequired,
+  }),
 };
 
 export default createContainer(({ routeParams }) => {
+  Meteor.subscribe('usersForAdmin');
+
   return {
     user: Meteor.users.findOne({ _id: routeParams.id }),
   };

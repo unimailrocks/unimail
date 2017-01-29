@@ -84,7 +84,10 @@ function AdminOrganizationPage({ users, organization }) {
           </Grid.Column>
         </Grid.Row>
       </Grid>
-      <AdminUsersList users={users} />
+      <AdminUsersList
+        fields={['id', 'email', 'roles']}
+        users={users}
+      />
     </Container>
   );
 }

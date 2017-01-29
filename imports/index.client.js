@@ -5,28 +5,20 @@ import ReactDOM from 'react-dom';
 import { Router, IndexRoute, Route, browserHistory } from 'react-router';
 import App from '/imports/app';
 import Index from '/imports/index';
-import { LoginPage, isRole } from '/imports/accounts';
+import { LoginPage, resolveUser } from '/imports/accounts';
 import { AdminRoute } from '/imports/admin';
 
-function requireHyperadmin() {
-  if (!isRole('hyperadmin')) {
-    if (Meteor.user()) {
-      browserHistory.push('/');
-    } else {
-      browserHistory.push('/login');
-    }
-  }
-}
-
-Meteor.startup(() => {
+Meteor.startup(async () => {
+  const user = await resolveUser();
+  console.log(user);
   ReactDOM.render(
-    <Router history={ browserHistory }>
+    <Router history={browserHistory}>
       <Route path="/" component={App}>
         <IndexRoute component={Index} />
         <Route path="login" component={LoginPage} />
         {AdminRoute('admin')}
       </Route>
     </Router>
-    , document.getElementById('render-target')
+    , document.getElementById('render-target'),
   );
 });
