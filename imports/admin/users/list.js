@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import { Link } from 'react-router';
 import { Table } from 'semantic-ui-react';
 
+// TODO: adjust for fields
 export default function AdminUsersList({ users }) {
   return (
     <Table celled>
@@ -9,6 +10,7 @@ export default function AdminUsersList({ users }) {
         <Table.Row>
           <Table.HeaderCell>ID</Table.HeaderCell>
           <Table.HeaderCell>(main) Email</Table.HeaderCell>
+          <Table.HeaderCell>Organization ID</Table.HeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -17,6 +19,9 @@ export default function AdminUsersList({ users }) {
             <Table.Row key={user._id}>
               <Table.Cell><Link to={`/admin/users/${user._id}`}>{user._id}</Link></Table.Cell>
               <Table.Cell>{user.emails[0].address}</Table.Cell>
+              <Table.Cell>
+                <Link to={`/admin/organizations/${user.organizationID}`}>{user.organizationID}</Link>
+              </Table.Cell>
             </Table.Row>
           ))
         }
@@ -33,4 +38,9 @@ AdminUsersList.propTypes = {
       verified: PropTypes.bool.isRequired,
     })).isRequired,
   })).isRequired,
+  fields: PropTypes.arrayOf(PropTypes.string),
+};
+
+AdminUsersList.defaultProps = {
+  fields: ['id', 'email', 'organization'],
 };

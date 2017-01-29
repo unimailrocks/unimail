@@ -1,5 +1,5 @@
-/* globals Roles */
 import { Meteor } from 'meteor/meteor';
+import { Roles } from 'meteor/alanning:roles';
 import { check } from 'meteor/zodiase:check';
 
 export { LoginPage } from './login';
@@ -18,22 +18,6 @@ export function resolveUser() {
       }
     }, 10);
   });
-}
-
-export async function addRole(userID, role) {
-  try {
-    await Meteor.callPromise('roles.create', userID, role);
-  } catch (e) {
-    return e;
-  }
-}
-
-export async function removeRole(userID, role) {
-  try {
-    await Meteor.callPromise('roles.delete', userID, role);
-  } catch (e) {
-    return e;
-  }
 }
 
 Meteor.methods({

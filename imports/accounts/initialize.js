@@ -1,12 +1,12 @@
-/* globals Accounts, Roles */
+/* globals Accounts */
 import { Meteor } from 'meteor/meteor';
+import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
 
 export default function initializeAccounts() {
   Accounts.ui.config({
     passwordSignupFields: 'EMAIL_ONLY',
   });
-
   if (Meteor.isServer) {
     serverSide();
   } else {
@@ -116,10 +116,16 @@ function attachSchema() {
 
 function serverSide() {
   attachSchema();
-  const user = Accounts.findUserByEmail('ben.m.berman@gmail.com');
-  if (user) {
-    Roles.addUsersToRoles(user._id, ['hyperadmin']);
+  const hyperadmin = Accounts.findUserByEmail('ben.m.berman@gmail.com');
+  if (hyperadmin) {
+    Roles.addUsersToRoles(hyperadmin._id, ['hyperadmin']);
   }
+
+  Accounts.onCreateUser((options, user) => {
+    user.organizationID = options.organizationID; // eslint-disable-line no-param-reassign
+    return user;
+  });
+
 
   Meteor.publish('usersForAdmin', function publishUsers() {
     if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {

@@ -3,18 +3,22 @@ import { createContainer } from 'meteor/react-meteor-data';
 import React, { PropTypes } from 'react';
 import { Container, Header } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
-import { addRole, removeRole } from '/imports/accounts';
 
 function AdminUserPage({ user }) {
-  async function _removeRole(index) {
-    const err = await removeRole(user._id, user.roles[index]);
-    if (err) {
-      console.log('error!!!', err.message);
+  async function removeRole(index) {
+    try {
+      await Meteor.callPromise('roles.delete', user._id, user.roles[index]);
+    } catch (e) {
+      console.log('error removing role', err.message);
     }
   }
 
-  function _addRole(role) {
-    addRole(user._id, role);
+  async function addRole(role) {
+    try {
+      await Meteor.callPromise('roles.create', user._id, role);
+    } catch (e) {
+      console.log('error adding role', err.message);
+    }
   }
 
   return (
@@ -23,8 +27,8 @@ function AdminUserPage({ user }) {
       <Header sub>Roles</Header>
       <ReactTags
         tags={rolesToTags(user.roles)}
-        handleDelete={_removeRole}
-        handleAddition={_addRole}
+        handleDelete={removeRole}
+        handleAddition={addRole}
         classNames={{
           tags: 'ui blue labels',
           tag: 'ui label',

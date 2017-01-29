@@ -3,7 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { ReactiveVar } from 'meteor/reactive-var';
 import React, { Component, PropTypes } from 'react';
 import { Grid, Container, Header, Input, Statistic, Segment } from 'semantic-ui-react';
-import { Organizations } from '/imports/organizations/collection';
+import { Organizations } from '/imports/organizations';
 import AdminOrganizationsList from './list';
 
 const searchValue = new ReactiveVar('');
@@ -13,17 +13,18 @@ class AdminOrganizationsPage extends Component {
     searchValue.set(event.target.value);
   };
 
-  addNewOrganization = () => {
+  addNewOrganization = async () => {
     const { value } = this.newOrgInput;
     if (value.length === 0) {
       return;
     }
 
-    Meteor.call('organizations.create', value, err => {
-      if (err) {
-        window.alert('Error: ', err.message);
-      }
-    });
+    try {
+      await Meteor.callPromise('organizations.create', value);
+    } catch (e) {
+      console.error('Error creating organization:', e.message);
+    }
+    this.newOrgInput.value = '';
   };
 
   newOrgInputKeyDown = e => {
@@ -85,7 +86,6 @@ AdminOrganizationsPage.propTypes = {
 
 export default createContainer(() => {
   Meteor.subscribe('organizations');
-  console.log(Organizations);
 
   return {
     numOrganizations: Organizations.find().count(),
