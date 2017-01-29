@@ -26,3 +26,4 @@ react-meteor-data
 audit-argument-checks
 deanius:promise
 zodiase:check
+aldeed:collection2-core

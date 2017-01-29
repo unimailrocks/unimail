@@ -11,7 +11,8 @@ export function isRole(user, role) {
 export function resolveUser() {
   return new Promise(res => {
     const interval = setInterval(() => {
-      if (!Meteor.loggingIn()) {
+      // roles load later but are important
+      if (!Meteor.loggingIn() && Meteor.user().roles) {
         clearInterval(interval);
         res(Meteor.user());
       }
