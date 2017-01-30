@@ -12,6 +12,9 @@ function AdminUserPage({ user }) {
   }
 
   async function removeRole(index) {
+    if (!confirm(`Are you sure you want to delete role ${user.roles[index]} from user ${user.emails[0].address}?`)) {
+      return;
+    }
     try {
       await Meteor.callPromise('roles.delete', user._id, user.roles[index]);
     } catch (e) {
@@ -32,6 +35,7 @@ function AdminUserPage({ user }) {
       <Header>{user.emails[0].address}</Header>
       <Header sub>Roles</Header>
       <ReactTags
+        allowDeleteFromEmptyInput={false}
         tags={rolesToTags(user.roles || [])}
         handleDelete={removeRole}
         handleAddition={addRole}

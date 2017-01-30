@@ -9,6 +9,9 @@ import AdminUsersList from '/imports/admin/users/list';
 function AdminOrganizationPage({ users, organization }) {
   let newUserInput;
   async function removePermission(index) {
+    if (!confirm(`Are you sure you want to delete permission ${organization.permissions[index]} from user ${organization.name}?`)) {
+      return;
+    }
     try {
       await Meteor.callPromise('organizations.permissions.remove', organization._id, organization.permissions[index]);
     } catch (err) {
@@ -49,6 +52,7 @@ function AdminOrganizationPage({ users, organization }) {
       <Header>{organization.name}</Header>
       <Header sub>Permissions</Header>
       <ReactTags
+        allowDeleteFromEmptyInput={false}
         tags={permissionsToTags(organization.permissions)}
         handleDelete={removePermission}
         handleAddition={addPermission}

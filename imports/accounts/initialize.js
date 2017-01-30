@@ -127,6 +127,10 @@ function serverSide() {
     return user;
   });
 
+  Accounts.config({
+    sendVerificationEmail: true,
+  });
+
 
   Meteor.publish('usersForAdmin', function publishUsers() {
     if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
