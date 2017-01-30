@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
+import { Container, Header } from 'semantic-ui-react';
 import { resolveUser, isRole } from '/imports/accounts';
 
 export default class AdminPage extends Component {
@@ -7,7 +8,7 @@ export default class AdminPage extends Component {
     authorized: false,
   }
 
-  async componentDidMount() {
+  async componentWillMount() {
     const user = await resolveUser();
     if (!isRole(user, 'hyperadmin')) {
       console.log('redirecting!!!', user);
@@ -21,17 +22,30 @@ export default class AdminPage extends Component {
 
   render() {
     if (!this.state.authorized) {
-      return <div></div>;
+      return <div />;
+    }
+
+    if (this.props.children) {
+      return (
+        <div>
+          {this.props.children}
+        </div>
+      );
     }
 
     return (
-      <div>
-        {this.props.children}
-      </div>
+      <Container>
+        <Header>
+          <Link to="/admin/users">Users List</Link>
+        </Header>
+        <Header>
+          <Link to="/admin/organizations">Organizations</Link>
+        </Header>
+      </Container>
     );
   }
 }
 
 AdminPage.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.element, // eslint-disable-line
 };

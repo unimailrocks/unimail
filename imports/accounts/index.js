@@ -3,6 +3,7 @@ import { Roles } from 'meteor/alanning:roles';
 import { check } from 'meteor/zodiase:check';
 
 export { LoginPage } from './login';
+export { UsersPage } from './users';
 
 export function isRole(user, role) {
   return Roles.userIsInRole(user, [role]);
