@@ -13,7 +13,7 @@ export function resolveUser() {
   return new Promise(res => {
     const interval = setInterval(() => {
       // roles load later but are important
-      if (!Meteor.loggingIn() && Meteor.user().roles) {
+      if (!Meteor.loggingIn() && (!Meteor.user() || Meteor.user().roles)) {
         clearInterval(interval);
         res(Meteor.user());
       }

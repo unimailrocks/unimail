@@ -22,7 +22,7 @@ function renderUserButton() {
 
 function renderAdminButton() {
   const user = Meteor.user();
-  if (user.roles.includes('hyperadmin')) {
+  if (user && user.roles.includes('hyperadmin')) {
     return (
       <Menu.Item>
         <Link to="/admin">Admin</Link>

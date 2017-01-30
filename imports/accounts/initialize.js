@@ -123,6 +123,7 @@ function serverSide() {
 
   Accounts.onCreateUser((options, user) => {
     user.organizationID = options.organizationID; // eslint-disable-line no-param-reassign
+
     return user;
   });
 
