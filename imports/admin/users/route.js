@@ -1,5 +1,5 @@
 import React from 'react';
-import { IndexRoute, Route } from 'react-router';
+import { Route } from 'react-router';
 import AdminUsersPage from './page';
 import AdminUserPage from './user/page';
 

@@ -7,6 +7,7 @@ import App from '/imports/app';
 import Index from '/imports/index';
 import { LoginPage, resolveUser, UsersPage } from '/imports/accounts';
 import { AdminRoute } from '/imports/admin';
+import { TemplatesRoute } from '/imports/templates';
 
 Meteor.startup(async () => {
   await resolveUser();
@@ -17,6 +18,7 @@ Meteor.startup(async () => {
         <Route path="login" component={LoginPage} />
         <Route path="me" component={UsersPage} />
         {AdminRoute('admin')}
+        {TemplatesRoute('templates')}
       </Route>
     </Router>
     , document.getElementById('render-target'),
