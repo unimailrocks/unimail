@@ -33,6 +33,19 @@ function renderAdminButton() {
   return null;
 }
 
+function renderTemplatesButton() {
+  const user = Meteor.user();
+  if (user) {
+    return (
+      <Menu.Item>
+        <Link to="/templates">Templates</Link>
+      </Menu.Item>
+    );
+  }
+
+  return null;
+}
+
 
 export default class Head extends Component {
   constructor(props) {
@@ -58,6 +71,7 @@ export default class Head extends Component {
           </Menu.Item>
           {renderUserButton()}
           {renderAdminButton()}
+          {renderTemplatesButton()}
         </Menu>
       </div>
     );

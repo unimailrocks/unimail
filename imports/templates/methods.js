@@ -28,7 +28,7 @@ Meteor.methods({
     }
 
     if (!Roles.userIsInRole(this.userId, 'templates.design')) {
-      throw new Meteor.Error('Must have permissions to create templates');
+      throw new Meteor.Error('Must have permissions to design templates.');
     }
 
     if (user.organizationID) {
@@ -54,7 +54,7 @@ Meteor.methods({
     }
 
     if (!Roles.userIsInRole(this.userId, 'templates.design')) {
-      throw new Meteor.Error('Must have permissions to design templates');
+      throw new Meteor.Error('Must have permissions to design templates.');
     }
 
     const template = Templates.findOne(templateID);
@@ -64,5 +64,25 @@ Meteor.methods({
     }
 
     return template.update(updateParams);
+  },
+  'templates.delete'(templateID) {
+    check(templateID, String);
+
+    const user = Meteor.users.findOne(this.userId);
+    if (!user) {
+      throw new Meteor.Error('This is not your template.');
+    }
+
+    if (!Roles.userIsInRole(this.userId, 'templates.design')) {
+      throw new Meteor.Error('Must have permissions to design templates.');
+    }
+
+    const template = Templates.findOne(templateID);
+
+    if (!template || !userCanDesign(template, user)) {
+      throw new Meteor.Error('This is not your template.');
+    }
+
+    return Templates.remove(template._id);
   },
 });
