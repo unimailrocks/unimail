@@ -108,6 +108,7 @@ function attachSchema() {
     organizationID: {
       type: String,
       regEx: SimpleSchema.RegEx.Id,
+      optional: true,
     },
   });
 
@@ -138,6 +139,16 @@ function serverSide() {
     }
 
     return this.ready();
+  });
+
+  Meteor.publish('users', function publishUsers() {
+    const user = Meteor.users.findOne(this.userId);
+    if (!user.organizationID) {
+      // I mean, they still get their own user...
+      return this.ready();
+    }
+
+    return Meteor.users.find({ organizationID: user.organizationID });
   });
 }
 

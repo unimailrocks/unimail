@@ -9,15 +9,19 @@ import { Container, Button, List, Modal, Header, Icon } from 'semantic-ui-react'
 
 import Templates from './collection';
 
+import TemplatePermissionsFormModal from './components/permissions-form-modal';
+
 
 class TemplatesPage extends Component {
   state = {
     openDeleteModal: null,
+    openPermissionsModal: null,
   };
 
-  closeDeleteModal = () => {
+  closeModal = () => {
     this.setState({
       openDeleteModal: null,
+      openPermissionsModal: null,
     });
   }
 
@@ -27,13 +31,30 @@ class TemplatesPage extends Component {
     });
   });
 
+  createOpenPermissionsModalHandler = memoize(templateID => () => {
+    this.setState({
+      openPermissionsModal: templateID,
+    });
+  });
+
   createTemplateDeleteHandler = memoize(templateID => async () => {
     try {
       await Meteor.callPromise('templates.delete', templateID);
     } catch (e) {
       alert('You do not have permissions to delete that template!');
     }
-    this.closeDeleteModal();
+    this.closeModal();
+  });
+
+  createTemplatePermissionsChangeHandler = memoize(templateID => async ({ editors, viewers }) => {
+    try {
+      await Promise.all([
+        Meteor.callPromise('templates.editors.update', templateID, editors),
+        Meteor.callPromise('templates.viewers.update', templateID, viewers),
+      ]);
+    } catch (e) {
+      alert('You do not have permissions to manage this template\'s permissions!');
+    }
   });
 
   render() {
@@ -56,7 +77,10 @@ class TemplatesPage extends Component {
                          that causes these guys to disappear when modals
                          close. So we force them to rerender when modals
                          close... */
-                      this.state.openDeleteModal
+                      [
+                        this.state.openDeleteModal,
+                        this.state.openPermissionsModal,
+                      ].join('')
                     }
                   >
                     {t.title}
@@ -65,26 +89,58 @@ class TemplatesPage extends Component {
                 <List.Content floated="right">
                   <Button.Group style={{ lineHeight: '40px' }}>
                     <Modal
-                      trigger={<Button onClick={this.createOpenDeleteModalHandler(t._id)} icon="trash" />}
+                      trigger={
+                        <Button
+                          onClick={this.createOpenDeleteModalHandler(t._id)}
+                          icon="trash"
+                        />
+                      }
                       basic
                       open={this.state.openDeleteModal === t._id}
-                      onClose={this.closeDeleteModal}
+                      onClose={this.closeModal}
                       size="small"
                     >
-                      <Header><Icon name="trash" color="red" /> Are you sure you want to delete this template?</Header>
+                      <Header>
+                        <Icon
+                          name="trash"
+                          color="red"
+                        />
+                        Are you sure you want to delete this template?</Header>
                       <Modal.Content>
                         <p>You are about to delete template &ldquo;{t.title}&rdquo;</p>
                         <p>This <span style={{ color: 'red' }}>cannot be undone</span>.</p>
                         <p>Are you sure you want to delete this template?</p>
                       </Modal.Content>
                       <Modal.Actions>
-                        <Button basic inverted onClick={this.closeDeleteModal}>Cancel</Button>
-                        <Button basic color="red" inverted onClick={this.createTemplateDeleteHandler(t._id)}>
+                        <Button
+                          basic
+                          inverted
+                          onClick={this.closeModal}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          basic
+                          color="red"
+                          inverted
+                          onClick={this.createTemplateDeleteHandler(t._id)}
+                        >
                           <Icon name="trash" />Delete
                         </Button>
                       </Modal.Actions>
                     </Modal>
-                    <Button icon="lock" />
+                    <TemplatePermissionsFormModal
+                      onSave={this.createTemplatePermissionsChangeHandler(t._id)}
+                      template={t}
+                      trigger={
+                        <Button
+                          onClick={this.createOpenPermissionsModalHandler(t._id)}
+                          icon="lock"
+                        />
+                      }
+                      onClose={this.closeModal}
+                      open={this.state.openPermissionsModal === t._id}
+                    />
                   </Button.Group>
                 </List.Content>
               </List.Item>

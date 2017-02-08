@@ -21,7 +21,15 @@ Templates.attachSchema(new SimpleSchema({
   },
   'editors.$': {
     type: String,
-    regEx: SimpleSchema.RegEx.id,
+    regEx: SimpleSchema.RegEx.Id,
+  },
+  viewers: {
+    type: Array,
+    optional: true,
+  },
+  'viewers.$': {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
   },
 }));
 
