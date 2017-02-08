@@ -11,6 +11,14 @@ export default class NameInput extends Component {
     };
   }
 
+  componentWillReceiveProps({ title }) {
+    if (this.props.title !== title) {
+      this.setState({
+        title,
+      });
+    }
+  }
+
   onKeyDown = e => {
     if (e.key === 'Enter') {
       this.commit();

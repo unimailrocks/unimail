@@ -54,8 +54,10 @@ TemplateEditor.defaultProps = {
 
 export default createContainer(({ routeParams }) => {
   Meteor.subscribe('templates');
+  const template = Templates.findOne(routeParams.id);
+  console.log(template);
 
   return {
-    template: Templates.findOne(routeParams.id),
+    template,
   };
 }, TemplateEditor);
