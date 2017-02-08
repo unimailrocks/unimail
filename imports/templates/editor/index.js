@@ -2,12 +2,23 @@ import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import { browserHistory } from 'react-router';
-import { Container, Segment } from 'semantic-ui-react';
+import { Container, Segment, Menu } from 'semantic-ui-react';
 import { Templates } from '/imports/templates';
 
 import NameInput from './name-input';
+import Tab from './tabs';
 
 class TemplateEditor extends Component {
+
+  state = {
+    activeTab: 'sources',
+  };
+
+  onTabClick = (e, { name }) => {
+    this.setState({
+      activeTab: name,
+    });
+  };
 
   editTitle = async newTitle => {
     if (this.props.routeParams.id === 'new') {
@@ -29,11 +40,20 @@ class TemplateEditor extends Component {
       );
     }
 
+    const { activeTab } = this.state;
     return (
       <Container>
         <Segment className="masthead" vertical>
           <NameInput title={this.props.template.title} onChange={this.editTitle} />
         </Segment>
+
+        <Menu pointing secondary>
+          <Menu.Item name="sources" active={activeTab === 'sources'} onClick={this.onTabClick} />
+          <Menu.Item name="body" active={activeTab === 'body'} onClick={this.onTabClick} />
+          <Menu.Item name="run" active={activeTab === 'run'} onClick={this.onTabClick} />
+        </Menu>
+
+        <Tab name={activeTab} template={this.props.template} />
       </Container>
     );
   }
@@ -54,10 +74,8 @@ TemplateEditor.defaultProps = {
 
 export default createContainer(({ routeParams }) => {
   Meteor.subscribe('templates');
-  const template = Templates.findOne(routeParams.id);
-  console.log(template);
 
   return {
-    template,
+    template: Templates.findOne(routeParams.id),
   };
 }, TemplateEditor);
