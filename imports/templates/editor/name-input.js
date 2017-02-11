@@ -58,7 +58,9 @@ export default class NameInput extends Component {
     ) : null;
     return (
       <div>
-        <Label ribbon color="blue">Title</Label>
+        <Label ribbon color={this.props.error ? 'red' : 'blue'}>
+          Title{this.props.error ? `: ${this.props.error}` : ''}
+        </Label>
         <Input
           value={this.state.title}
           fluid
@@ -82,9 +84,11 @@ NameInput.propTypes = {
   title: PropTypes.string,
   editing: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
+  error: PropTypes.string,
 };
 
 NameInput.defaultProps = {
   title: '',
   editing: false,
+  error: null,
 };

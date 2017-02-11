@@ -12,6 +12,7 @@ class TemplateEditor extends Component {
 
   state = {
     activeTab: 'sources',
+    errors: {},
   };
 
   onTabClick = (e, { name }) => {
@@ -21,11 +22,27 @@ class TemplateEditor extends Component {
   };
 
   editTitle = async newTitle => {
-    if (this.props.routeParams.id === 'new') {
-      const newTemplateID = await Meteor.callPromise('templates.create', newTitle);
-      browserHistory.push(`/templates/${newTemplateID}`);
-    } else {
-      await Meteor.callPromise('templates.title.edit', this.props.routeParams.id, newTitle);
+    try {
+      if (this.props.routeParams.id === 'new') {
+        const newTemplateID = await Meteor.callPromise('templates.create', newTitle);
+        browserHistory.push(`/templates/${newTemplateID}`);
+      } else {
+        await Meteor.callPromise('templates.title.edit', this.props.routeParams.id, newTitle);
+      }
+
+      this.setState({
+        errors: {
+          ...this.state.errors,
+          title: null,
+        },
+      });
+    } catch (e) {
+      this.setState({
+        errors: {
+          ...this.state.errors,
+          title: e.reason,
+        },
+      });
     }
   };
 
@@ -34,7 +51,11 @@ class TemplateEditor extends Component {
       return (
         <Container>
           <Segment className="masthead" vertical>
-            <NameInput editing onChange={this.editTitle} />
+            <NameInput
+              editing
+              error={this.state.errors.title}
+              onChange={this.editTitle}
+            />
           </Segment>
         </Container>
       );
@@ -44,7 +65,11 @@ class TemplateEditor extends Component {
     return (
       <Container>
         <Segment className="masthead" vertical>
-          <NameInput title={this.props.template.title} onChange={this.editTitle} />
+          <NameInput
+            title={this.props.template.title}
+            onChange={this.editTitle}
+            error={this.state.errors.title}
+          />
         </Segment>
 
         <Menu pointing secondary>
