@@ -25,7 +25,7 @@ class TemplateEditor extends Component {
       const newTemplateID = await Meteor.callPromise('templates.create', newTitle);
       browserHistory.push(`/templates/${newTemplateID}`);
     } else {
-      // TODO Update title
+      await Meteor.callPromise('templates.title.edit', this.props.routeParams.id, newTitle);
     }
   };
 

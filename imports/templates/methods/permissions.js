@@ -53,7 +53,7 @@ function userCanDesign(template, user) {
     return true;
   }
 
-  if (template.ownershipType === 'organization' && template.ownerID === user.organizationID) {
+  if (template.ownershipType === 'organization' && template.ownerID === user.profile.organizationID) {
     return true;
   }
 
@@ -65,7 +65,7 @@ function userCanDesign(template, user) {
 }
 
 function userCanManage(template, user) {
-  if (template.ownershipType === 'organization' && template.ownerID !== user.organizationID) {
+  if (template.ownershipType === 'organization' && template.ownerID !== user.profile.organizationID) {
     return false;
   }
 

@@ -125,6 +125,6 @@ export default createContainer(({ routeParams }) => {
 
   return {
     organization: Organizations.findOne(routeParams.id),
-    users: Meteor.users.find({ organizationID: routeParams.id }).fetch(),
+    users: Meteor.users.find({ 'profile.organizationID': routeParams.id }).fetch(),
   };
 }, AdminOrganizationPage);

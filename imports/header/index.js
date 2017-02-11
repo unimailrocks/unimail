@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { Roles } from 'meteor/alanning:roles';
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 import { Sidebar, Segment, Button, Menu, Image, Icon, Header } from 'semantic-ui-react';
@@ -22,7 +23,7 @@ function renderUserButton() {
 
 function renderAdminButton() {
   const user = Meteor.user();
-  if (user && user.roles.includes('hyperadmin')) {
+  if (user && Roles.userIsInRole(user._id, 'hyperadmin')) {
     return (
       <Menu.Item>
         <Link to="/admin">Admin</Link>

@@ -60,6 +60,11 @@ function attachSchema() {
       type: countrySchema,
       optional: true,
     },
+    organizationID: {
+      type: String,
+      regEx: SimpleSchema.RegEx.Id,
+      optional: true,
+    },
   });
 
   const schema = new SimpleSchema({
@@ -105,11 +110,6 @@ function attachSchema() {
       type: Date,
       optional: true,
     },
-    organizationID: {
-      type: String,
-      regEx: SimpleSchema.RegEx.Id,
-      optional: true,
-    },
   });
 
   Meteor.users.attachSchema(schema);
@@ -123,8 +123,12 @@ function serverSide() {
   }
 
   Accounts.onCreateUser((options, user) => {
-    user.organizationID = options.organizationID; // eslint-disable-line no-param-reassign
+    /* eslint-disable no-param-reassign */
+    user.profile = options.profile || {};
 
+    user.profile.organizationID = options.organizationID;
+
+    /* eslint-enable no-param-reassign */
     return user;
   });
 
@@ -135,7 +139,7 @@ function serverSide() {
 
   Meteor.publish('usersForAdmin', function publishUsers() {
     if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
-      return Meteor.users.find({});
+      return Meteor.users.find({ _id: { $ne: this.userId } });
     }
 
     return this.ready();
@@ -148,7 +152,10 @@ function serverSide() {
       return this.ready();
     }
 
-    return Meteor.users.find({ organizationID: user.organizationID });
+    return Meteor.users.find({
+      _id: { $ne: this.userId },
+      organizationID: user.organizationID,
+    });
   });
 }
 

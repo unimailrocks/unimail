@@ -27,8 +27,8 @@ if (Meteor.isServer) {
     }
 
     const user = Meteor.users.findOne(this.userId);
-    if (user.organizationID) {
-      return Organizations.findOne(user.organizationID);
+    if (user.profile.organizationID) {
+      return Organizations.findOne(user.profile.organizationID);
     }
 
     return this.ready();

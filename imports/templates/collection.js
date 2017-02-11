@@ -42,10 +42,10 @@ if (Meteor.isServer) {
     }
 
     const user = Meteor.users.findOne(this.userId);
-    if (user.organizationID) {
+    if (user.profile.organizationID) {
       return Templates.find({
         ownershipType: 'organization',
-        ownerID: user.organizationID,
+        ownerID: user.profile.organizationID,
       });
     }
 
