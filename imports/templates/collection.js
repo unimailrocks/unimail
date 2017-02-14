@@ -31,6 +31,30 @@ Templates.attachSchema(new SimpleSchema({
     type: String,
     regEx: SimpleSchema.RegEx.Id,
   },
+  sources: {
+    // TODO figure out why Array doesn't work here
+    type: Object,
+    blackbox: true,
+    defaultValue: [],
+  },
+  'sources.$._id': {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
+  },
+  'sources.$.name': {
+    type: String,
+  },
+  'sources.$.type': {
+    type: String,
+    allowedValues: [
+      'webpage',
+      'text',
+    ],
+  },
+  'sources.$.identifier': {
+    type: String,
+    optional: true,
+  },
 }));
 
 export default Templates;

@@ -76,7 +76,21 @@ function userCanManage(template, user) {
   return true;
 }
 
+function getUserWithRole(userID, role) {
+  const user = Meteor.users.findOne(userID);
+  if (!user) {
+    throw new Meteor.Error('Must be signed in to access this resource.');
+  }
+
+  if (!Roles.userIsInRole(userID, role)) {
+    throw new Meteor.Error(`Must have ${role} permissions.`);
+  }
+
+  return user;
+}
+
 export {
   userCanDesign,
   userCanManage,
+  getUserWithRole,
 };
