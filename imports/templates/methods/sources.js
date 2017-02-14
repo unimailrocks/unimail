@@ -72,4 +72,29 @@ Meteor.methods({
       },
     });
   },
+  'templates.sources.delete'(templateID, sourceID) {
+    check(templateID, String);
+    check(sourceID, String);
+
+    const user = getUserWithRole(this.userId, 'templates.design');
+    const template = Templates.findOne(templateID);
+    if (!template || !userCanDesign(template, user)) {
+      throw new Meteor.Error('This is not your template.');
+    }
+
+    const currentSource = template.sources.find(s => s._id === sourceID);
+    if (!currentSource) {
+      throw new Meteor.Error('This source does not exist.');
+    }
+
+    console.log('pulling my leg', template, currentSource);
+
+    Templates.update({
+      _id: templateID,
+    }, {
+      $pull: {
+        sources: currentSource,
+      },
+    });
+  },
 });

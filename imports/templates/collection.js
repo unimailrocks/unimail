@@ -3,6 +3,21 @@ import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
 
 const Templates = new Mongo.Collection('templates');
+
+const SourceSchema = new SimpleSchema({
+  _id: {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
+  },
+  name: {
+    type: String,
+  },
+  type: {
+    type: String,
+    allowedValues: ['webpage', 'text'],
+  },
+});
+
 Templates.attachSchema(new SimpleSchema({
   title: {
     type: String,
@@ -33,27 +48,11 @@ Templates.attachSchema(new SimpleSchema({
   },
   sources: {
     // TODO figure out why Array doesn't work here
-    type: Object,
-    blackbox: true,
+    type: Array,
     defaultValue: [],
   },
-  'sources.$._id': {
-    type: String,
-    regEx: SimpleSchema.RegEx.Id,
-  },
-  'sources.$.name': {
-    type: String,
-  },
-  'sources.$.type': {
-    type: String,
-    allowedValues: [
-      'webpage',
-      'text',
-    ],
-  },
-  'sources.$.identifier': {
-    type: String,
-    optional: true,
+  'sources.$': {
+    type: SourceSchema,
   },
 }));
 

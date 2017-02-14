@@ -34,6 +34,20 @@ export default class ExistingSource extends Component {
     }
   };
 
+  delete = async () => {
+    try {
+      await Meteor.callPromise(
+        'templates.sources.delete',
+        this.props.template._id,
+        this.props.source._id,
+      );
+    } catch (e) {
+      this.setState({
+        error: `Cannot delete: ${e.error}`,
+      });
+    }
+  };
+
   render() {
     const { source } = this.props;
     return (
@@ -43,6 +57,7 @@ export default class ExistingSource extends Component {
         type={source.type}
         onPropertyChange={this.onPropertyChange}
         name={source.name}
+        onDelete={this.delete}
       />
     );
   }

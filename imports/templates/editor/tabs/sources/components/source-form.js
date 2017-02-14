@@ -6,6 +6,7 @@ import {
   Input,
   Form,
   Button,
+  Icon,
 } from 'semantic-ui-react';
 
 const labelColors = {
@@ -34,6 +35,7 @@ export default function SourceForm({
   onPropertyChange,
   canSave,
   onSave,
+  onDelete,
   name,
   editableFields,
 }) {
@@ -71,6 +73,13 @@ export default function SourceForm({
     </Form.Field>
   ) : null;
 
+  const deleteButton = onDelete ? (
+    <Button basic color="red" onClick={onDelete}>
+      <Icon name="trash" />
+      Delete
+    </Button>
+  ) : null;
+
   function onNameChange(e) {
     onPropertyChange('name', e.target.value);
   }
@@ -90,6 +99,7 @@ export default function SourceForm({
         {typeField}
         {nameField}
         {saveButton}
+        {deleteButton}
       </Form>
     </Segment>
   );
@@ -102,6 +112,7 @@ SourceForm.propTypes = {
   onPropertyChange: PropTypes.func.isRequired,
   canSave: PropTypes.bool,
   onSave: PropTypes.func,
+  onDelete: PropTypes.func,
   editableFields: PropTypes.arrayOf(PropTypes.string),
 };
 
@@ -109,5 +120,6 @@ SourceForm.defaultProps = {
   error: null,
   canSave: false,
   onSave: null,
+  onDelete: null,
   editableFields: [],
 };
