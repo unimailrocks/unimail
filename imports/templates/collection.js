@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
+import cloneDeep from 'lodash/fp/cloneDeep';
+import diff from 'deep-diff';
 
 const Templates = new Mongo.Collection('templates');
 
@@ -15,6 +17,13 @@ const SourceSchema = new SimpleSchema({
   type: {
     type: String,
     allowedValues: ['webpage', 'text'],
+  },
+});
+
+const RowSchema = new SimpleSchema({
+  _id: {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
   },
 });
 
@@ -47,16 +56,51 @@ Templates.attachSchema(new SimpleSchema({
     regEx: SimpleSchema.RegEx.Id,
   },
   sources: {
-    // TODO figure out why Array doesn't work here
     type: Array,
     defaultValue: [],
   },
   'sources.$': {
     type: SourceSchema,
   },
+  rows: {
+    type: Array,
+    defaultValue: [],
+  },
+  'rows.$': {
+    type: RowSchema,
+  },
+  rowDiffs: {
+    type: Array,
+    defaultValue: [],
+  },
+  'rowDiffs.$': {
+    type: Array,
+  },
+  'rowDiffs.$.$': {
+    type: Object,
+    blackbox: true,
+  },
 }));
 
 export default Templates;
+
+export function consolidateTemplateContent(template) {
+  const rows = cloneDeep(template.rows);
+  const diffs = template.rowDiffs;
+
+  diffs.forEach(d => {
+    d.forEach(change => {
+      diff.applyChange(rows, true, change);
+    });
+  });
+
+  return rows;
+}
+
+export function createTemplateContentDiff(oldRows, newRows) {
+  console.log('there\'s no difference between', oldRows, 'and', newRows, '?');
+  return diff.diff(oldRows, newRows);
+}
 
 if (Meteor.isServer) {
   Meteor.publish('templates', function publishTemplates() {

@@ -5,6 +5,7 @@ import Templates from '../collection';
 
 import { userCanDesign, getUserWithRole } from './permissions';
 import './sources';
+import './rows';
 
 Meteor.methods({
   'templates.create'(title) {

@@ -11,7 +11,7 @@ import Tab from './tabs';
 class TemplateEditor extends Component {
 
   state = {
-    activeTab: 'sources',
+    activeTab: 'body',
     errors: {},
   };
 
