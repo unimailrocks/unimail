@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Button, Segment, Grid, Header } from 'semantic-ui-react';
+import ChangePasswordForm from './change-password-form';
 
 export default class UsersPage extends Component {
   logOut = () => {
@@ -20,10 +21,15 @@ export default class UsersPage extends Component {
         <Segment basic className="masthead" />
         <Grid centered columns={2}>
           <Grid.Column>
-            <Segment>
+            <Segment attached>
               <Header>
                 {Meteor.user().emails[0].address}
               </Header>
+            </Segment>
+            <Segment attached>
+              <ChangePasswordForm />
+            </Segment>
+            <Segment attached>
               <Button
                 onClick={this.logOut}
               >
