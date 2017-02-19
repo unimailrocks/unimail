@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
 import { Roles } from 'meteor/alanning:roles';
 import { check } from 'meteor/zodiase:check';
 
 export { LoginPage } from './login';
+export { RegisterPage } from './register';
 export { UsersPage } from './users';
 
 export function isRole(user, role) {
@@ -13,7 +15,7 @@ export function resolveUser() {
   return new Promise(res => {
     const interval = setInterval(() => {
       // roles load later but are important
-      if (!Meteor.loggingIn() && (!Meteor.user() || Meteor.user().roles)) {
+      if (!Meteor.loggingIn() && (!Meteor.user() || Roles.getRolesForUser(Meteor.user()))) {
         clearInterval(interval);
         res(Meteor.user());
       }
@@ -22,6 +24,14 @@ export function resolveUser() {
 }
 
 Meteor.methods({
+  'users.create'(email, password) {
+    check(email, String);
+    check(password, String);
+    Accounts.createUser({
+      email,
+      password,
+    });
+  },
   'roles.create'(userID, role) {
     check(userID, String, 'User ID must be a string.');
     check(role, String, 'Role must be a string.');

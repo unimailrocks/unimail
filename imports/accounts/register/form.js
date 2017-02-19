@@ -3,38 +3,44 @@ import React, { Component } from 'react';
 import { Link, browserHistory } from 'react-router';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
 
-export default class LoginForm extends Component {
+export default class RegisterForm extends Component {
   state = {
     error: null,
   };
 
-  login = (e) => {
+  register = async (e) => {
     e.preventDefault();
     const email = this.emailInput.value;
     const password = this.passwordInput.value;
 
-    Meteor.loginWithPassword(email, password, err => {
-      if (err) {
-        this.setState({
-          error: err.reason,
-        });
-      } else {
+    try {
+      await Meteor.callPromise('users.create', email, password);
+      Meteor.loginWithPassword(email, password, err => {
+        if (err) {
+          this.setState({
+            error: err.reason,
+          });
+        }
         browserHistory.push('/me');
-      }
-    });
+      });
+    } catch (err) {
+      this.setState({
+        error: err.reason,
+      });
+    }
   }
 
   render() {
     const { error } = this.state;
 
     return (
-      <Form onSubmit={this.login} error={error && error.length > 0}>
+      <Form onSubmit={this.register} error={error && error.length > 0}>
         <Header>
-          Log in
+          Register for Unimail
         </Header>
         <Message
           error
-          header="Login Failure"
+          header="Registration Failure"
           content={error}
         />
         <Form.Field>
@@ -55,18 +61,18 @@ export default class LoginForm extends Component {
         </Form.Field>
         <Button
           color="green"
-          onClick={this.login}
-          fluid
-        >
-          Log in
-        </Button>
-        <Button
-          as={Link}
-          to="/register"
-          color="grey"
+          onClick={this.register}
           fluid
         >
           Register
+        </Button>
+        <Button
+          as={Link}
+          to="/login"
+          color="grey"
+          fluid
+        >
+          Log in
         </Button>
 
       </Form>

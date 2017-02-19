@@ -1,12 +1,10 @@
 /* globals Accounts */
 import { Meteor } from 'meteor/meteor';
+import { Random } from 'meteor/random';
 import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
 
 export default function initializeAccounts() {
-  Accounts.ui.config({
-    passwordSignupFields: 'EMAIL_ONLY',
-  });
   if (Meteor.isServer) {
     serverSide();
   } else {
@@ -124,9 +122,17 @@ function serverSide() {
 
   Accounts.onCreateUser((options, user) => {
     /* eslint-disable no-param-reassign */
+    const userID = user._id = Random.id();
     user.profile = options.profile || {};
 
     user.profile.organizationID = options.organizationID;
+
+    console.log('hello what');
+    if (options.organzationID) {
+      Roles.addUsersToRoles(userID, []);
+    } else {
+      Roles.addUsersToRoles(userID, ['templates.design', 'templates.manage']);
+    }
 
     /* eslint-enable no-param-reassign */
     return user;

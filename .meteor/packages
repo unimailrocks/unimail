@@ -17,7 +17,6 @@ ecmascript@0.6.1              # Enable ECMAScript2015+ syntax in app code
 shell-server@0.2.1            # Server-side component of the `meteor shell` command
 
 accounts-password@1.3.3
-std:accounts-ui
 semantic:ui
 juliancwirko:postcss
 less@2.7.8

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Segment, Grid } from 'semantic-ui-react';
-import LoginForm from './form';
+import RegisterForm from './form';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div>
       <Segment basic className="masthead" />
       <Grid centered columns={2}>
         <Grid.Column>
           <Segment>
-            <LoginForm />
+            <RegisterForm />
           </Segment>
         </Grid.Column>
       </Grid>
