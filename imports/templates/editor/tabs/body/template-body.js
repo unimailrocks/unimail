@@ -78,10 +78,16 @@ export default class TemplateBody extends Component {
         <div
           style={{
             backgroundColor: '#DDD',
-            border: '1px solid black',
           }}
           key={row._id}
-          data-grid={{ x: 0, y: bottom, w: 600, h: 40 }}
+          data-grid={{
+            x: 0,
+            y: bottom,
+            w: 600,
+            h: row.height,
+            minW: 600,
+            maxW: 600,
+          }}
         >
           {row._id}
         </div>
@@ -109,6 +115,7 @@ export default class TemplateBody extends Component {
           onLayoutChange={this.onLayoutChange}
           rowHeight={1}
           margin={[0, 0]}
+          isResizeable
         >
           {this.renderRows()}
         </ReactGridLayout>
