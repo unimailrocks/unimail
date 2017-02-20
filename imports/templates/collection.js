@@ -25,6 +25,9 @@ const RowSchema = new SimpleSchema({
     type: String,
     regEx: SimpleSchema.RegEx.Id,
   },
+  height: {
+    type: Number,
+  },
 });
 
 Templates.attachSchema(new SimpleSchema({
@@ -98,7 +101,6 @@ export function consolidateTemplateContent(template) {
 }
 
 export function createTemplateContentDiff(oldRows, newRows) {
-  console.log('there\'s no difference between', oldRows, 'and', newRows, '?');
   return diff.diff(oldRows, newRows);
 }
 

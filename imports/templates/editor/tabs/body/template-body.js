@@ -1,12 +1,13 @@
 import { Meteor } from 'meteor/meteor';
+import sortBy from 'lodash/fp/sortBy';
+import cloneDeep from 'lodash/fp/cloneDeep';
 import React, { PropTypes, Component } from 'react';
 import { Popup, Button, Segment } from 'semantic-ui-react';
 import ReactGridLayout from 'react-grid-layout';
 
-import { consolidateTemplateContent } from '/imports/templates/collection';
+import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 export default class TemplateBody extends Component {
-
   static propTypes = {
     template: PropTypes.shape({
       rows: PropTypes.arrayOf(PropTypes.shape({
@@ -16,12 +17,48 @@ export default class TemplateBody extends Component {
     }).isRequired,
   };
 
-  onLayoutChange = (newLayout) => {
-    console.log('new layout!', newLayout);
-  };
+  onLayoutChange = async (newLayout) => {
+    // sort the rows by height and trnaslate them to a common layout model
+    const rows = sortBy(['y'], newLayout).map(row => ({
+      id: row.i,
+      height: row.h,
+    }));
 
-  onDragStart = (layout, oldItem, newItem, placeholder) => {
-    console.log({ layout, oldItem, newItem, placeholder });
+    // get current rows by consolidating diffs on template to canonical rows
+    const currentRows = consolidateTemplateContent(this.props.template);
+
+    // map new row layout to the corresponding row models
+    const newRows = rows.map(({ id, height }) => {
+      const row = cloneDeep(currentRows.find(({ _id }) => _id === id));
+      if (row) {
+        // resize row if it needs to be resized
+        row.height = height;
+        return row;
+      }
+
+      return {
+        _id: id,
+        height: 30,
+      };
+    });
+
+    // create diff for model
+    const diff = createTemplateContentDiff(currentRows, newRows);
+
+    // if there's no difference, skip changing model
+    if (!diff) {
+      return;
+    }
+
+    try {
+      await Meteor.callPromise(
+        'templates.rows.update-layout',
+        this.props.template._id,
+        diff,
+      );
+    } catch (e) {
+      console.error('some sort of error?', e);
+    }
   };
 
   addRow = async () => {
@@ -40,12 +77,14 @@ export default class TemplateBody extends Component {
       const rowElement = (
         <div
           style={{
-            backgroundColor: '#A4A4A4',
+            backgroundColor: '#DDD',
             border: '1px solid black',
           }}
           key={row._id}
           data-grid={{ x: 0, y: bottom, w: 600, h: 40 }}
-        />
+        >
+          {row._id}
+        </div>
       );
 
       return { bottom: bottom + 40, elements: elements.concat([rowElement]) };
@@ -66,7 +105,7 @@ export default class TemplateBody extends Component {
       >
         <ReactGridLayout
           width={600}
-          columns={600}
+          cols={600}
           onLayoutChange={this.onLayoutChange}
           rowHeight={1}
           margin={[0, 0]}
