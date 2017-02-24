@@ -7,14 +7,17 @@ import ReactGridLayout from 'react-grid-layout';
 
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
+import Row from './row';
+
 export default class TemplateBody extends Component {
   static propTypes = {
     template: PropTypes.shape({
       rows: PropTypes.arrayOf(PropTypes.shape({
         _id: PropTypes.string.isRequired,
-
       })).isRequired,
     }).isRequired,
+    onFocusContent: PropTypes.func.isRequired,
+    rowsLocked: PropTypes.bool.isRequired,
   };
 
   onLayoutChange = async (newLayout) => {
@@ -61,6 +64,11 @@ export default class TemplateBody extends Component {
     }
   };
 
+  onDrag = (layout, oldItem) => {
+    const rows = consolidateTemplateContent(this.props.template);
+    this.props.onFocusContent('row', rows.find(row => row._id === oldItem.i));
+  };
+
   addRow = async () => {
     try {
       await Meteor.callPromise('templates.rows.create', this.props.template._id);
@@ -76,9 +84,6 @@ export default class TemplateBody extends Component {
     /* eslint-enable no-shadow */
       const rowElement = (
         <div
-          style={{
-            backgroundColor: '#DDD',
-          }}
           key={row._id}
           data-grid={{
             x: 0,
@@ -87,9 +92,13 @@ export default class TemplateBody extends Component {
             h: row.height,
             minW: 600,
             maxW: 600,
+            isDraggable: !this.props.rowsLocked,
           }}
         >
-          {row._id}
+          <Row
+            row={row}
+            onFocusContent={this.props.onFocusContent}
+          />
         </div>
       );
 
@@ -109,13 +118,18 @@ export default class TemplateBody extends Component {
           padding: 0,
         }}
       >
+        {/* (explanation of key prop) */}
+        {/* need to rerender when rowsLocked changes */}
+        {/* because otherwise children don't rerender */}
+        {/* a downfall of React */}
         <ReactGridLayout
           width={600}
           cols={600}
           onLayoutChange={this.onLayoutChange}
           rowHeight={1}
           margin={[0, 0]}
-          isResizeable
+          onDragStop={this.onDrag}
+          key={this.props.rowsLocked}
         >
           {this.renderRows()}
         </ReactGridLayout>
@@ -146,6 +160,3 @@ export default class TemplateBody extends Component {
     );
   }
 }
-
-TemplateBody.propTypes = {
-};
