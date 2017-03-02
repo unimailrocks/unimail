@@ -5,15 +5,12 @@ import React, { PropTypes, Component } from 'react';
 import { Checkbox, Button, Modal, Header, Form, Icon, Divider } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
 
+import UnimailPropTypes from '/imports/prop-types';
 import { Organizations } from '/imports/organizations';
 
 class TemplatePermissionsFormModal extends Component {
   static propTypes = {
-    template: PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      editors: PropTypes.arrayOf(PropTypes.string),
-      viewers: PropTypes.arrayOf(PropTypes.string),
-    }),
+    template: UnimailPropTypes.template.isRequired,
     users: PropTypes.arrayOf(PropTypes.shape({
       _id: PropTypes.string.isRequired,
       emails: PropTypes.arrayOf(PropTypes.shape({

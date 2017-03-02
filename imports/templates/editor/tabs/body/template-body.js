@@ -5,17 +5,14 @@ import React, { PropTypes, Component } from 'react';
 import { Popup, Button, Segment } from 'semantic-ui-react';
 import ReactGridLayout from 'react-grid-layout';
 
+import UnimailPropTypes from '/imports/prop-types';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 import Row from './row';
 
 export default class TemplateBody extends Component {
   static propTypes = {
-    template: PropTypes.shape({
-      rows: PropTypes.arrayOf(PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-      })).isRequired,
-    }).isRequired,
+    template: UnimailPropTypes.template.isRequired,
     onFocusContent: PropTypes.func.isRequired,
     rowsLocked: PropTypes.bool.isRequired,
   };
@@ -93,6 +90,7 @@ export default class TemplateBody extends Component {
             minW: 600,
             maxW: 600,
             isDraggable: !this.props.rowsLocked,
+            isResizable: !this.props.rowsLocked,
           }}
         >
           <Row

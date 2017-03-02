@@ -1,12 +1,11 @@
 import { Meteor } from 'meteor/meteor';
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import UnimailPropTypes from '/imports/prop-types';
 import SourceForm from './source-form';
 
 export default class NewSourceForm extends Component {
   static propTypes = {
-    template: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-    }).isRequired,
+    template: UnimailPropTypes.template.isRequired,
   };
 
   state = {

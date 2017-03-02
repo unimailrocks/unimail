@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash/fp';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { check } from 'meteor/check';
@@ -18,8 +19,28 @@ Meteor.methods({
       throw new Meteor.Error('This is not your template.');
     }
 
-    console.log('Change places!!', diff);
     Templates.update(template._id, {
+      $push: {
+        rowDiffs: diff,
+      },
+    });
+  },
+  'templates.rows.resize'(templateID, rowID, newHeight) {
+    check(templateID, String);
+    check(rowID, String);
+    check(newHeight, Number);
+    const user = getUserWithRole(this.userId, 'templates.design');
+    const template = Templates.findOne(templateID);
+    if (!template || !userCanDesign(template, user)) {
+      throw new Meteor.Error('This is not your template.');
+    }
+
+    const currentRows = consolidateTemplateContent(template);
+    const newRows = cloneDeep(currentRows);
+    newRows.find(row => row._id === rowID).height = newHeight;
+
+    const diff = createTemplateContentDiff(currentRows, newRows);
+    return Templates.update(template._id, {
       $push: {
         rowDiffs: diff,
       },

@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 import { StickyContainer, Sticky } from 'react-sticky';
+import UnimailPropTypes from '/imports/prop-types';
 import TemplateBody from './template-body';
 import LeftRail from './components/left-rail';
 import RightRail from './components/right-rail';
 
 export default class BodyTab extends Component {
+  static propTypes = {
+    template: UnimailPropTypes.template.isRequired,
+  };
+
   state = {
     focusedContent: null,
     focusedContentType: null,
@@ -45,6 +50,7 @@ export default class BodyTab extends Component {
               content={this.state.focusedContent}
               contentType={this.state.focusedContentType}
               onFocusContent={this.focusContent}
+              template={this.props.template}
             />
           </Sticky>
           <TemplateBody

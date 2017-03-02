@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import UnimailPropTypes from '/imports/prop-types';
 import NewSourceForm from './components/new-source-form';
 import ExistingSource from './components/existing-source';
 
@@ -18,13 +19,5 @@ export default function SourcesTab({ template }) {
 }
 
 SourcesTab.propTypes = {
-  template: PropTypes.shape({
-    sources: PropTypes.arrayOf(
-      PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        type: PropTypes.string.isRequired,
-        identifier: PropTypes.string,
-      }),
-    ).isRequired,
-  }).isRequired,
+  template: UnimailPropTypes.template.isRequired,
 };

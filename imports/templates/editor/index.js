@@ -1,8 +1,9 @@
 import { Meteor } from 'meteor/meteor';
-import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
+import React, { Component, PropTypes } from 'react';
 import { browserHistory } from 'react-router';
 import { Container, Segment, Menu } from 'semantic-ui-react';
+import UnimailPropTypes from '/imports/prop-types';
 import { Templates } from '/imports/templates';
 
 import NameInput from './name-input';
@@ -85,9 +86,7 @@ class TemplateEditor extends Component {
 }
 
 TemplateEditor.propTypes = {
-  template: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-  }),
+  template: UnimailPropTypes.template,
   routeParams: PropTypes.shape({
     id: PropTypes.string.isRequired,
   }).isRequired,
