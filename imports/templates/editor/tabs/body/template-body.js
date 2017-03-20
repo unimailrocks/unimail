@@ -18,9 +18,12 @@ export default class TemplateBody extends Component {
   };
 
   onLayoutChange = async (newLayout) => {
+    console.log(newLayout);
     // sort the rows by height and trnaslate them to a common layout model
     const rows = sortBy(['y'], newLayout).map(row => ({
-      id: row.i,
+      // id is formatted like `${id}-${JSON.stringify(row)}`
+      // see renderRows
+      id: row.i.split(/-/)[0],
       height: row.h,
     }));
 
@@ -61,11 +64,6 @@ export default class TemplateBody extends Component {
     }
   };
 
-  onDrag = (layout, oldItem) => {
-    const rows = consolidateTemplateContent(this.props.template);
-    this.props.onFocusContent('row', rows.find(row => row._id === oldItem.i));
-  };
-
   addRow = async () => {
     try {
       await Meteor.callPromise('templates.rows.create', this.props.template._id);
@@ -81,7 +79,7 @@ export default class TemplateBody extends Component {
     /* eslint-enable no-shadow */
       const rowElement = (
         <div
-          key={row._id}
+          key={`${row._id}-${JSON.stringify(row)}`}
           data-grid={{
             x: 0,
             y: bottom,
@@ -119,14 +117,12 @@ export default class TemplateBody extends Component {
         {/* (explanation of key prop) */}
         {/* need to rerender when rowsLocked changes */}
         {/* because otherwise children don't rerender */}
-        {/* a downfall of React */}
         <ReactGridLayout
           width={600}
           cols={600}
           onLayoutChange={this.onLayoutChange}
           rowHeight={1}
           margin={[0, 0]}
-          onDragStop={this.onDrag}
           key={this.props.rowsLocked}
         >
           {this.renderRows()}
