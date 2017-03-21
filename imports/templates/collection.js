@@ -91,8 +91,8 @@ export function consolidateTemplateContent(template) {
   const rows = cloneDeep(template.rows);
   const diffs = template.rowDiffs;
 
-  diffs.forEach(d => {
-    d.forEach(change => {
+  diffs.forEach((d) => {
+    d.forEach((change) => {
       diff.applyChange(rows, true, change);
     });
   });
@@ -111,10 +111,10 @@ if (Meteor.isServer) {
     }
 
     const user = Meteor.users.findOne(this.userId);
-    if (user.profile.organizationID) {
+    if (user.organizationID) {
       return Templates.find({
         ownershipType: 'organization',
-        ownerID: user.profile.organizationID,
+        ownerID: user.organizationID,
       });
     }
 

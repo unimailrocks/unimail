@@ -19,11 +19,11 @@ Meteor.methods({
       throw new Meteor.Error('Must have permissions to design templates.');
     }
 
-    if (user.profile.organizationID) {
+    if (user.organizationID) {
       return Templates.insert({
         title,
         ownershipType: 'organization',
-        ownerID: user.profile.organizationID,
+        ownerID: user.organizationID,
       });
     }
 

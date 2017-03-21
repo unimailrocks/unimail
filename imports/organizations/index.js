@@ -27,8 +27,8 @@ if (Meteor.isServer) {
     }
 
     const user = Meteor.users.findOne(this.userId);
-    if (user.profile.organizationID) {
-      return Organizations.findOne(user.profile.organizationID);
+    if (user.organizationID) {
+      return Organizations.findOne(user.organizationID);
     }
 
     return this.ready();
@@ -77,11 +77,15 @@ Meteor.methods({
       throw new Meteor.Error('Not authorized to create new organization user!');
     }
     const password = generatePassword();
-    Accounts.createUser({
+    const userID = Accounts.createUser({
       email: userEmail,
       password,
       organizationID,
     });
+
+    if (Meteor.isServer) {
+      Accounts.sendEnrollmentEmail(userID);
+    }
 
     return { password };
   },

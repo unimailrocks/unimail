@@ -238,7 +238,7 @@ export default createContainer(() => {
   const user = Meteor.user();
 
   return {
-    users: Meteor.users.find({ organizationID: user.profile.organizationID }).fetch(),
-    organization: user && Organizations.findOne(user.profile.organizationID),
+    users: Meteor.users.find({ organizationID: user.organizationID }).fetch(),
+    organization: user && Organizations.findOne(user.organizationID),
   };
 }, TemplatePermissionsFormModal);

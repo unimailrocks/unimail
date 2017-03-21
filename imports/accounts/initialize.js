@@ -58,11 +58,6 @@ function attachSchema() {
       type: countrySchema,
       optional: true,
     },
-    organizationID: {
-      type: String,
-      regEx: SimpleSchema.RegEx.Id,
-      optional: true,
-    },
   });
 
   const schema = new SimpleSchema({
@@ -108,6 +103,11 @@ function attachSchema() {
       type: Date,
       optional: true,
     },
+    organizationID: {
+      type: String,
+      regEx: SimpleSchema.RegEx.Id,
+      optional: true,
+    },
   });
 
   Meteor.users.attachSchema(schema);
@@ -123,11 +123,9 @@ function serverSide() {
   Accounts.onCreateUser((options, user) => {
     /* eslint-disable no-param-reassign */
     const userID = user._id = Random.id();
-    user.profile = options.profile || {};
 
-    user.profile.organizationID = options.organizationID;
+    user.organizationID = options.organizationID;
 
-    console.log('hello what');
     if (options.organzationID) {
       Roles.addUsersToRoles(userID, []);
     } else {
@@ -154,8 +152,9 @@ function serverSide() {
   Meteor.publish('users', function publishUsers() {
     const user = Meteor.users.findOne(this.userId);
     if (!user.organizationID) {
-      // I mean, they still get their own user...
-      return this.ready();
+      return Meteor.users.find({
+        _id: this.userId,
+      });
     }
 
     return Meteor.users.find({

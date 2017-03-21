@@ -104,7 +104,7 @@ function permissionsToTags(permissions) {
 }
 
 function RemoveX(props) {
-  return <i {...props} className="delete icon"></i>;
+  return <i {...props} className="delete icon" />;
 }
 
 AdminOrganizationPage.propTypes = {
@@ -125,6 +125,6 @@ export default createContainer(({ routeParams }) => {
 
   return {
     organization: Organizations.findOne(routeParams.id),
-    users: Meteor.users.find({ 'profile.organizationID': routeParams.id }).fetch(),
+    users: Meteor.users.find({ organizationID: routeParams.id }).fetch(),
   };
 }, AdminOrganizationPage);
