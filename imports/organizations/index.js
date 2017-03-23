@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { Mongo } from 'meteor/mongo';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
 import generatePassword from 'password-generator';
@@ -21,7 +21,22 @@ Organizations.attachSchema(new SimpleSchema({
 }));
 
 if (Meteor.isServer) {
-  Meteor.publish('organizations', function publishOrganizations() {
+  Meteor.publish('organizations', function publishOrganizations(passwordToken) {
+    check(passwordToken, Match.OneOf(String, undefined));
+    if (!this.userId && passwordToken) {
+      const user = Meteor.users.findOne({
+        'services.password.reset.token': passwordToken,
+      });
+
+      if (!user) {
+        return this.ready();
+      }
+
+      return Organizations.find({ _id: user.organizationID });
+    } else if (!this.userId) {
+      return this.ready();
+    }
+
     if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
       return Organizations.find({});
     }

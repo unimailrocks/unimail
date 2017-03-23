@@ -29,12 +29,12 @@ function AdminOrganizationPage({ users, organization }) {
 
   async function addNewUser() {
     const { value } = newUserInput;
+    newUserInput.value = '';
     try {
-      const { password } = await Meteor.callPromise('organizations.users.create', organization._id, value);
+      await Meteor.callPromise('organizations.users.create', organization._id, value);
     } catch (e) {
       console.error('error creating new organization user', e.message);
     }
-    newUserInput.value = '';
   }
 
   function newUserInputKeyDown(e) {

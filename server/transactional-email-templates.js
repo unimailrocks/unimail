@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { Organizations } from '/imports/organizations';
 
@@ -23,3 +24,5 @@ Accounts.emailTemplates.enrollAccount.html = (user, url) => {
 
   return html;
 };
+
+Accounts.urls.enrollAccount = token => Meteor.absoluteUrl(`enroll/${token}`);

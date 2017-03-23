@@ -1,6 +1,7 @@
 /* globals Accounts */
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
+import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
 
@@ -149,7 +150,17 @@ function serverSide() {
     return this.ready();
   });
 
-  Meteor.publish('users', function publishUsers() {
+  Meteor.publish('users', function publishUsers(passwordToken) {
+    check(passwordToken, Match.OneOf(String, undefined));
+    if (passwordToken && !this.userId) {
+      const users = Meteor.users.find({
+        'services.password.reset.token': passwordToken,
+      });
+      return users;
+    } else if (!this.userId) {
+      return this.ready();
+    }
+
     const user = Meteor.users.findOne(this.userId);
     if (!user.organizationID) {
       return Meteor.users.find({

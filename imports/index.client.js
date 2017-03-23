@@ -5,7 +5,13 @@ import ReactDOM from 'react-dom';
 import { Router, IndexRoute, Route, browserHistory } from 'react-router';
 import App from '/imports/app';
 import Index from '/imports/index';
-import { RegisterPage, LoginPage, resolveUser, UsersPage } from '/imports/accounts';
+import {
+  RegisterPage,
+  LoginPage,
+  resolveUser,
+  UsersPage,
+  EnrollPage,
+} from '/imports/accounts';
 import { AdminRoute } from '/imports/admin';
 import { TemplatesRoute } from '/imports/templates';
 
@@ -18,6 +24,7 @@ Meteor.startup(async () => {
         <Route path="login" component={LoginPage} />
         <Route path="register" component={RegisterPage} />
         <Route path="me" component={UsersPage} />
+        <Route path="enroll/:token" component={EnrollPage} />
         {AdminRoute('admin')}
         {TemplatesRoute('templates')}
       </Route>

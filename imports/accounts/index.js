@@ -6,6 +6,7 @@ import { check } from 'meteor/zodiase:check';
 export { LoginPage } from './login';
 export { RegisterPage } from './register';
 export { UsersPage } from './users';
+export { EnrollPage } from './enroll';
 
 export function isRole(user, role) {
   return Roles.userIsInRole(user, [role]);
@@ -31,6 +32,18 @@ Meteor.methods({
       email,
       password,
     });
+  },
+  'users.enroll'(passwordToken, password) {
+    check(passwordToken, String);
+    check(password, String);
+
+    const user = Meteor.users.findOne({
+      'services.password.reset.token': passwordToken,
+    });
+
+    if (Meteor.isServer) {
+      Accounts.setPassword(user._id, password);
+    }
   },
   'roles.create'(userID, role) {
     check(userID, String, 'User ID must be a string.');
