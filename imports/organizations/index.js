@@ -43,7 +43,7 @@ if (Meteor.isServer) {
 
     const user = Meteor.users.findOne(this.userId);
     if (user.organizationID) {
-      return Organizations.findOne(user.organizationID);
+      return Organizations.find({ _id: user.organizationID });
     }
 
     return this.ready();
