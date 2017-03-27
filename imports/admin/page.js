@@ -1,7 +1,8 @@
+import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 import { browserHistory, Link } from 'react-router';
 import { Container, Header } from 'semantic-ui-react';
-import { resolveUser, isRole } from '/imports/accounts';
+import { isRole } from '/imports/accounts';
 
 export default class AdminPage extends Component {
   state = {
@@ -9,9 +10,8 @@ export default class AdminPage extends Component {
   }
 
   async componentWillMount() {
-    const user = await resolveUser();
+    const user = Meteor.user();
     if (!isRole(user, 'hyperadmin')) {
-      console.log('redirecting!!!', user);
       browserHistory.push('/');
     } else {
       this.setState({

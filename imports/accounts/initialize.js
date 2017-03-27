@@ -150,6 +150,16 @@ function serverSide() {
     return this.ready();
   });
 
+  Meteor.publish('myUser', function publishMyUser() {
+    return Meteor.users.find({
+      _id: this.userId,
+    }, {
+      fields: {
+        organizationID: 1,
+      },
+    });
+  });
+
   Meteor.publish('users', function publishUsers(passwordToken) {
     check(passwordToken, Match.OneOf(String, undefined));
     if (passwordToken && !this.userId) {
@@ -169,7 +179,6 @@ function serverSide() {
     }
 
     return Meteor.users.find({
-      _id: { $ne: this.userId },
       organizationID: user.organizationID,
     });
   });

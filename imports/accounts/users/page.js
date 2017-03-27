@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor';
+import { createContainer } from 'meteor/react-meteor-data';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Button, Segment, Grid, Header } from 'semantic-ui-react';
 import ChangePasswordForm from './change-password-form';
+import UpgradeToOrganizationForm from './upgrade-to-organization-form';
 
 export default class UsersPage extends Component {
   logOut = () => {
@@ -29,6 +31,13 @@ export default class UsersPage extends Component {
             <Segment attached>
               <ChangePasswordForm />
             </Segment>
+            {
+              Meteor.user().organizationID ? null : (
+                <Segment attached>
+                  <UpgradeToOrganizationForm />
+                </Segment>
+              )
+            }
             <Segment attached>
               <Button
                 onClick={this.logOut}

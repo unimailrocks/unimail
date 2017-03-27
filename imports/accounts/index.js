@@ -12,18 +12,6 @@ export function isRole(user, role) {
   return Roles.userIsInRole(user, [role]);
 }
 
-export function resolveUser() {
-  return new Promise(res => {
-    const interval = setInterval(() => {
-      // roles load later but are important
-      if (!Meteor.loggingIn() && (!Meteor.user() || Roles.getRolesForUser(Meteor.user()))) {
-        clearInterval(interval);
-        res(Meteor.user());
-      }
-    }, 10);
-  });
-}
-
 Meteor.methods({
   'users.create'(email, password) {
     check(email, String);

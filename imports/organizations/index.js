@@ -53,13 +53,32 @@ if (Meteor.isServer) {
 Meteor.methods({
   'organizations.create'(organizationName) {
     check(organizationName, String);
-    if (!Roles.userIsInRole(this.userId, ['hyperadmin'])) {
-      throw new Meteor.Error('Not authorized to create new organization!');
+
+    if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+      return Organizations.insert({
+        name: organizationName,
+        permissions: [],
+      });
     }
-    return Organizations.insert({
+
+    const user = Meteor.users.findOne(this.userId);
+
+    if (!user) {
+      throw new Meteor.Error('Must be logged in to create an organization');
+    }
+
+    if (user.organizationID) {
+      throw new Meteor.Error('User already has an organization');
+    }
+
+    const organizationID = Organizations.insert({
       name: organizationName,
       permissions: [],
     });
+
+    Meteor.users.update(this.userId, { $set: { organizationID } });
+
+    return organizationID;
   },
   'organizations.permissions.create'(organizationID, permissionName) {
     check(organizationID, String);
