@@ -12,6 +12,10 @@ export function isRole(user, role) {
   return Roles.userIsInRole(user, [role]);
 }
 
+export function getRoles(user) {
+  return Roles.getAllRoles(user).fetch().map(({ name }) => name);
+}
+
 Meteor.methods({
   'users.create'(email, password) {
     check(email, String);

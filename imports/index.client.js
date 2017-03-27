@@ -1,12 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import '/imports/shared';
-import React from 'react';
+import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import { Router, IndexRoute, Route, browserHistory } from 'react-router';
 import { Dimmer, Loader } from 'semantic-ui-react';
 import App from '/imports/app';
-import UnimailPropTypes from '/imports/prop-types';
 import Index from '/imports/index';
 import {
   RegisterPage,
@@ -16,9 +15,10 @@ import {
 } from '/imports/accounts';
 import { AdminRoute } from '/imports/admin';
 import { TemplatesRoute } from '/imports/templates';
+import { OrganizationPage } from '/imports/organizations';
 
-function Routes({ user }) {
-  if (!user) {
+function Routes({ userLoading }) {
+  if (userLoading) {
     return (
       <Dimmer active>
         <Loader />
@@ -33,6 +33,7 @@ function Routes({ user }) {
         <Route path="login" component={LoginPage} />
         <Route path="register" component={RegisterPage} />
         <Route path="me" component={UsersPage} />
+        <Route path="organization" component={OrganizationPage} />
         <Route path="enroll/:token" component={EnrollPage} />
         {AdminRoute('admin')}
         {TemplatesRoute('templates')}
@@ -42,16 +43,12 @@ function Routes({ user }) {
 }
 
 Routes.propTypes = {
-  user: UnimailPropTypes.user,
-};
-
-Routes.defaultProps = {
-  user: null,
+  userLoading: PropTypes.bool.isRequired,
 };
 
 const ContainedRoutes = createContainer(() => {
   Meteor.subscribe('myUser');
-  return { user: Meteor.user() };
+  return { user: Meteor.user(), userLoading: Meteor.loggingIn() };
 }, Routes);
 
 Meteor.startup(async () => {

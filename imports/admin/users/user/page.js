@@ -3,6 +3,8 @@ import { createContainer } from 'meteor/react-meteor-data';
 import React, { PropTypes } from 'react';
 import { Container, Header } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
+import UnimailPropTypes from '/imports/prop-types';
+import { getRoles } from '/imports/accounts';
 
 function AdminUserPage({ user }) {
   if (!user) {
@@ -59,29 +61,26 @@ function rolesToTags(roles) {
 }
 
 function RemoveX(props) {
-  return <i {...props} className="delete icon"></i>;
+  return <i {...props} className="delete icon" />;
 }
 
 AdminUserPage.propTypes = {
   routeParams: PropTypes.shape({
     id: PropTypes.string.isRequired,
   }).isRequired,
-  user: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    emails: PropTypes.arrayOf(
-      PropTypes.shape({
-        address: PropTypes.string.isRequired,
-        verified: PropTypes.bool.isRequired,
-      })
-    ).isRequired,
-    roles: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }),
+  user: UnimailPropTypes.user,
+};
+
+AdminUserPage.defaultProps = {
+  user: null,
 };
 
 export default createContainer(({ routeParams }) => {
   Meteor.subscribe('usersForAdmin');
+  const user = Meteor.users.findOne({ _id: routeParams.id });
 
   return {
-    user: Meteor.users.findOne({ _id: routeParams.id }),
+    user,
+    roles: getRoles(user),
   };
 }, AdminUserPage);

@@ -110,7 +110,7 @@ export default createContainer(() => {
   Meteor.subscribe('organizations');
 
   return {
-    organization: Organizations.findOne({
+    organization: Meteor.user() && Organizations.findOne({
       _id: Meteor.user().organizationID,
     }),
     user: Meteor.user(),

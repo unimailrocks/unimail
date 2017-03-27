@@ -2,9 +2,14 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { Mongo } from 'meteor/mongo';
 import { check, Match } from 'meteor/check';
-import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
 import generatePassword from 'password-generator';
+
+import { isRole } from '/imports/accounts';
+
+import OrganizationPage from './page';
+
+export { OrganizationPage };
 
 export const Organizations = new Mongo.Collection('organizations');
 
@@ -37,7 +42,7 @@ if (Meteor.isServer) {
       return this.ready();
     }
 
-    if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+    if (isRole(this.userId, 'hyperadmin')) {
       return Organizations.find({});
     }
 
@@ -54,7 +59,7 @@ Meteor.methods({
   'organizations.create'(organizationName) {
     check(organizationName, String);
 
-    if (Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+    if (isRole(this.userId, 'hyperadmin')) {
       return Organizations.insert({
         name: organizationName,
         permissions: [],
@@ -83,7 +88,7 @@ Meteor.methods({
   'organizations.permissions.create'(organizationID, permissionName) {
     check(organizationID, String);
     check(permissionName, String);
-    if (!Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+    if (!isRole(this.userId, 'hyperadmin')) {
       throw new Meteor.Error('Not authorized to give organizations permissions!');
     }
 
@@ -95,7 +100,7 @@ Meteor.methods({
   'organizations.permissions.remove'(organizationID, permissionName) {
     check(organizationID, String);
     check(permissionName, String);
-    if (!Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+    if (!isRole(this.userId, 'hyperadmin')) {
       throw new Meteor.Error('Not authorized to create new organization!');
     }
 
@@ -107,7 +112,17 @@ Meteor.methods({
   'organizations.users.create'(organizationID, userEmail) {
     check(organizationID, String);
     check(userEmail, String);
-    if (!Roles.userIsInRole(this.userId, ['hyperadmin'])) {
+
+    const user = Meteor.users.findOne(this.userId);
+
+    const canCreateOrganizationUser =
+      isRole(user, 'hyperadmin') ||
+      (
+        user.organizationID === organizationID &&
+        isRole(user, 'organizations.manage')
+      );
+
+    if (!canCreateOrganizationUser) {
       throw new Meteor.Error('Not authorized to create new organization user!');
     }
     const password = generatePassword();

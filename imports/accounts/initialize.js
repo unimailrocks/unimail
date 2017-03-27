@@ -182,6 +182,8 @@ function serverSide() {
       organizationID: user.organizationID,
     });
   });
+
+  Meteor.publish(null, () => Meteor.roles.find({}));
 }
 
 function clientSide() {
