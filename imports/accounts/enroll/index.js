@@ -8,6 +8,21 @@ import UnimailPropTypes from '/imports/prop-types';
 import EnrollForm from './form';
 
 function _EnrollPage({ organization, user, routeParams: { token } }) {
+  if (Meteor.user()) {
+    return (
+      <div>
+        <Segment basic className="masthead" />
+        <Grid centered columns={2}>
+          <Grid.Column>
+            <Segment>
+              <p>You are already signed in!</p>
+            </Segment>
+          </Grid.Column>
+        </Grid>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div>
