@@ -1,6 +1,5 @@
 /* globals Accounts */
 import { Meteor } from 'meteor/meteor';
-import { Random } from 'meteor/random';
 import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import SimpleSchema from 'simpl-schema';
@@ -116,25 +115,27 @@ function attachSchema() {
 
 function serverSide() {
   attachSchema();
-  const hyperadmin = Accounts.findUserByEmail('ben.m.berman@gmail.com');
-  if (hyperadmin) {
-    Roles.addUsersToRoles(hyperadmin._id, ['hyperadmin']);
-  }
-
   Accounts.onCreateUser((options, user) => {
     /* eslint-disable no-param-reassign */
-    const userID = user._id = Random.id();
-
     user.organizationID = options.organizationID;
-
-    if (options.organzationID) {
-      Roles.addUsersToRoles(userID, []);
-    } else {
-      Roles.addUsersToRoles(userID, ['templates.design', 'templates.manage']);
-    }
 
     /* eslint-enable no-param-reassign */
     return user;
+  });
+
+  const hyperadmins = [
+    'b@unimail.co',
+    'jon@unimail.co',
+  ];
+
+  Meteor.users.after.insert((id, user) => {
+    if (!user.organizationID) {
+      Roles.addUsersToRoles(user._id, ['templates.design', 'templates.manage']);
+    }
+
+    if (hyperadmins.includes(user.emails[0].address)) {
+      Roles.addUsersToRoles(user._id, ['hyperadmin']);
+    }
   });
 
   Accounts.config({

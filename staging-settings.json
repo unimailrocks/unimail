@@ -1,0 +1,9 @@
+{
+  "galaxy.meteor.com": {
+    "env": {
+      "MONGO_URL": "mongodb://unimail:cuteminthebathroom@ds143910-a0.mlab.com:43910,ds143910-a1.mlab.com:43910/staging?replicaSet=rs-ds143910",
+      "MONGO_OPLOG_URL": "mongodb://oplog-reader:StraightAs@ds143910-a0.mlab.com:43910,ds143910-a1.mlab.com:43910/local?replicaSet=rs-ds143910&authSource=admin",
+      "MAIL_URL": "smtp://postmaster%40mg.unimail.co:7b3f0444d74012566d8c22f8c102d9ad@smtp.mailgun.org:587"
+    }
+  }
+}
