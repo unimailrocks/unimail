@@ -11,3 +11,5 @@ dependencies:
 deployment:
   alpha:
     branch: "alpha"
+    commands:
+      - printf "unimail\nhh369lZs3lFoODIczRCOpgWY6" | meteor deploy a-l-p-h-a.unimail.co --settings staging-settings.json
