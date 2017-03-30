@@ -1,0 +1,15 @@
+machine:
+  environment:
+    DEPLOY_HOSTNAME: galaxy.meteor.com
+
+dependencies:
+  cache_directories:
+    - ~/.meteor
+  override:
+    - meteor || curl https://install.meteor.com | /bin/sh
+
+deployment:
+  alpha:
+    branch: "alpha"
+    commands:
+      - printf "unimail\nhh369lZs3lFoODIczRCOpgWY6" | meteor deploy a-l-p-h-a.unimail.co --settings staging-settings.json
