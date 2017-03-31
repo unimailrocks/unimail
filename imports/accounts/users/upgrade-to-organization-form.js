@@ -13,7 +13,6 @@ export default class UpgradeToOrganizationForm extends Component {
     const orgName = e.target['new-organization-name'].value;
 
     await Meteor.callPromise('organizations.create', orgName);
-    this.closeModal();
   };
 
   openModal = () => {

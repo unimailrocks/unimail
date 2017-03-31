@@ -5,7 +5,7 @@ import { check, Match } from 'meteor/check';
 import SimpleSchema from 'simpl-schema';
 import generatePassword from 'password-generator';
 
-import { isRole } from '/imports/accounts';
+import { isRole, addRole } from '/imports/accounts';
 
 import OrganizationPage from './page';
 
@@ -26,32 +26,32 @@ Organizations.attachSchema(new SimpleSchema({
 }));
 
 if (Meteor.isServer) {
-  Meteor.publish('organizations', function publishOrganizations(passwordToken) {
+  Meteor.publishComposite('organizations', passwordToken => {
     check(passwordToken, Match.OneOf(String, undefined));
-    if (!this.userId && passwordToken) {
-      const user = Meteor.users.findOne({
-        'services.password.reset.token': passwordToken,
-      });
+    return {
+      find() {
+        if (!this.userId && passwordToken) {
+          return Meteor.users.find({
+            'services.password.reset.token': passwordToken,
+          });
+        }
 
-      if (!user) {
-        return this.ready();
-      }
+        return Meteor.users.find({ _id: this.userId });
+      },
+      children: [
+        {
+          find(user) {
+            if (isRole(user, 'hyperadmin')) {
+              return Organizations.find();
+            }
 
-      return Organizations.find({ _id: user.organizationID });
-    } else if (!this.userId) {
-      return this.ready();
-    }
-
-    if (isRole(this.userId, 'hyperadmin')) {
-      return Organizations.find({});
-    }
-
-    const user = Meteor.users.findOne(this.userId);
-    if (user.organizationID) {
-      return Organizations.find({ _id: user.organizationID });
-    }
-
-    return this.ready();
+            return Organizations.find({
+              _id: user.organizationID,
+            });
+          },
+        },
+      ],
+    };
   });
 }
 
@@ -82,6 +82,7 @@ Meteor.methods({
     });
 
     Meteor.users.update(this.userId, { $set: { organizationID } });
+    addRole(this.userId, ['organizations.manage', 'organizations.admin']);
 
     return organizationID;
   },
