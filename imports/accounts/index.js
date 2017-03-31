@@ -8,6 +8,12 @@ export { RegisterPage } from './register';
 export { UsersPage } from './users';
 export { EnrollPage } from './enroll';
 
+Meteor.users.deny({
+  insert() { return true; },
+  update() { return true; },
+  remove() { return true; },
+});
+
 export function isRole(user, role) {
   return Roles.userIsInRole(user, [role]);
 }

@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { Mongo } from 'meteor/mongo';
-import { check, Match } from 'meteor/check';
+import { Match } from 'meteor/check';
+import { check } from 'meteor/zodiase:check';
 import SimpleSchema from 'simpl-schema';
 import generatePassword from 'password-generator';
 
@@ -102,7 +103,7 @@ Meteor.methods({
     check(organizationID, String);
     check(permissionName, String);
     if (!isRole(this.userId, 'hyperadmin')) {
-      throw new Meteor.Error('Not authorized to create new organization!');
+      throw new Meteor.Error('Not authorized to remove organization permissions');
     }
 
     return Organizations.update(
@@ -113,6 +114,10 @@ Meteor.methods({
   'organizations.users.create'(organizationID, userEmail) {
     check(organizationID, String);
     check(userEmail, String);
+
+    if (userEmail.length === 0) {
+      throw new Meteor.Error('Please provide a user email');
+    }
 
     const user = Meteor.users.findOne(this.userId);
 

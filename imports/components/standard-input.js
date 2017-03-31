@@ -6,6 +6,7 @@ export default class StandardInput extends Component {
   static propTypes = {
     triggerOnEnter: PropTypes.bool,
     triggerOnBlur: PropTypes.bool,
+    clearOnSubmit: PropTypes.bool,
     onTrigger: PropTypes.func.isRequired,
     excludeButton: PropTypes.bool,
     color: PropTypes.string,
@@ -17,6 +18,7 @@ export default class StandardInput extends Component {
   static defaultProps = {
     triggerOnEnter: true,
     triggerOnBlur: true,
+    clearOnSubmit: false,
     excludeButton: false,
     color: 'green',
     icon: null,
@@ -53,8 +55,17 @@ export default class StandardInput extends Component {
       }
 
       this.props.onTrigger(this.state.value);
+      if (this.props.clearOnSubmit) {
+        this.clear();
+      }
     }
   };
+
+  clear() {
+    this.setState({
+      value: '',
+    });
+  }
 
   buttonObject() {
     if (this.props.excludeButton) {
@@ -72,6 +83,7 @@ export default class StandardInput extends Component {
     const omittedProps = omit([
       'triggerOnEnter',
       'triggerOnBlur',
+      'clearOnSubmit',
       'onTrigger',
       'excludeButton',
       'color',
