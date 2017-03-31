@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Roles } from 'meteor/alanning:roles';
 import React, { Component } from 'react';
-import { Link } from 'react-router';
-import { Menu } from 'semantic-ui-react';
+import { Link, browserHistory } from 'react-router';
+import { Menu, Icon } from 'semantic-ui-react';
 
 import UnimailPropTypes from '/imports/prop-types';
 import { Organizations } from '/imports/organizations';
@@ -27,11 +27,15 @@ class Head extends Component {
     };
   }
 
-  toggle = () => {
-    this.setState({
-      isOpen: !this.state.isOpen,
+  logOut = () => {
+    Meteor.logout(err => {
+      if (err) {
+        alert('Some error occurred while logging out. We didn\'t even know that was possible. Please contact support and let us know how this happened');
+      }
+
+      browserHistory.push('/');
     });
-  };
+  }
 
   renderUserButton = () => {
     const { user } = this.props;
@@ -89,6 +93,19 @@ class Head extends Component {
     return null;
   }
 
+  renderLogoutButton = () => {
+    const { user } = this.props;
+    if (user) {
+      return (
+        <Menu.Item onClick={this.logOut}>
+          <Icon name="log out" />
+        </Menu.Item>
+      );
+    }
+
+    return null;
+  }
+
   render() {
     return (
       <div>
@@ -100,6 +117,9 @@ class Head extends Component {
           {this.renderAdminButton()}
           {this.renderTemplatesButton()}
           {this.renderOrganizationButton()}
+          <Menu.Menu position="right">
+            {this.renderLogoutButton()}
+          </Menu.Menu>
         </Menu>
       </div>
     );

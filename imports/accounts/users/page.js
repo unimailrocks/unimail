@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor';
-import { createContainer } from 'meteor/react-meteor-data';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Button, Segment, Grid, Header } from 'semantic-ui-react';
