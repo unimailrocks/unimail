@@ -26,9 +26,9 @@ audit-argument-checks@1.0.7
 deanius:promise
 zodiase:check
 aldeed:collection2-core
-fourseven:scss
 random@1.0.10
 mrgalaxy:stripe
 email@1.1.18
 matb33:collection-hooks
 reywood:publish-composite
+fourseven:scss
