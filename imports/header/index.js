@@ -109,7 +109,7 @@ class Head extends Component {
   render() {
     return (
       <div>
-        <Menu>
+        <Menu secondary>
           <Menu.Item>
             <Link to="/">Home</Link>
           </Menu.Item>
