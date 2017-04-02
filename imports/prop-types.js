@@ -1,5 +1,5 @@
 import { PropTypes } from 'react';
-import { template, row, source } from './templates/prop-types';
+import { template, source } from './templates/prop-types';
 import { organization } from './organizations/prop-types';
 import { user } from './accounts/prop-types';
 
@@ -11,7 +11,6 @@ const match = PropTypes.shape({
 
 export default {
   template,
-  row,
   source,
   organization,
   user,
