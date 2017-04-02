@@ -20,8 +20,8 @@ export default function TemplateBodyRightRail(props) {
 }
 
 TemplateBodyRightRail.propTypes = {
-  contentType: PropTypes.oneOf(['row']),
-  content: PropTypes.oneOfType([UnimailPropTypes.row]),
+  contentType: PropTypes.oneOf([]),
+  content: PropTypes.oneOfType([]),
 };
 
 TemplateBodyRightRail.defaultProps = {

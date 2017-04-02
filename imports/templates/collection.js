@@ -20,16 +20,6 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
-const RowSchema = new SimpleSchema({
-  _id: {
-    type: String,
-    regEx: SimpleSchema.RegEx.Id,
-  },
-  height: {
-    type: Number,
-  },
-});
-
 Templates.attachSchema(new SimpleSchema({
   title: {
     type: String,
@@ -65,24 +55,7 @@ Templates.attachSchema(new SimpleSchema({
   'sources.$': {
     type: SourceSchema,
   },
-  rows: {
-    type: Array,
-    defaultValue: [],
-  },
-  'rows.$': {
-    type: RowSchema,
-  },
-  rowDiffs: {
-    type: Array,
-    defaultValue: [],
-  },
-  'rowDiffs.$': {
-    type: Array,
-  },
-  'rowDiffs.$.$': {
-    type: Object,
-    blackbox: true,
-  },
+
 }));
 
 export default Templates;
