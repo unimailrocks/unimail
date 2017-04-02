@@ -3,35 +3,45 @@ import { createContainer } from 'meteor/react-meteor-data';
 import '/imports/shared';
 import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { Dimmer, Loader } from 'semantic-ui-react';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
 import App from '/imports/app';
+import rootReducer from './reducer';
 
-function Routes({ userLoading }) {
+const reduxStore = createStore(
+  rootReducer,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+);
+
+function Root({ userLoading }) {
   return (
-    <div>
-      <Dimmer active={userLoading}>
-        <Loader />
-      </Dimmer>
-      <Router>
-        <App />
-      </Router>
-    </div>
+    <Provider store={reduxStore}>
+      <div>
+        <Dimmer active={userLoading}>
+          <Loader />
+        </Dimmer>
+        <Router>
+          <App />
+        </Router>
+      </div>
+    </Provider>
   );
 }
 
-Routes.propTypes = {
+Root.propTypes = {
   userLoading: PropTypes.bool.isRequired,
 };
 
-const ContainedRoutes = createContainer(() => {
+const ContainedRoot = createContainer(() => {
   Meteor.subscribe('myUser');
   return { user: Meteor.user(), userLoading: Meteor.loggingIn() };
-}, Routes);
+}, Root);
 
 Meteor.startup(async () => {
   ReactDOM.render(
-    <ContainedRoutes />
+    <ContainedRoot />
     , document.getElementById('render-target'),
   );
 });
