@@ -44,10 +44,12 @@
     "react-addons-transition-group": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-grid-layout": "^0.13.9",
+    "react-redux": "^5.0.3",
     "react-router": "^4.0.0",
     "react-router-dom": "^4.0.0",
     "react-sticky": "^5.0.5",
     "react-tag-input": "^4.6.2",
+    "redux": "^3.6.0",
     "semantic-ui-react": "^0.64.4",
     "simpl-schema": "^0.1.0"
   },
