@@ -13,19 +13,12 @@ export default class BodyTab extends Component {
   state = {
     focusedContent: null,
     focusedContentType: null,
-    rowsLocked: false,
   };
 
   focusContent = (focusedContentType, focusedContent) => {
     this.setState({
       focusedContent,
       focusedContentType,
-    });
-  };
-
-  toggleRowsLocked = () => {
-    this.setState({
-      rowsLocked: !this.state.rowsLocked,
     });
   };
 
@@ -40,10 +33,7 @@ export default class BodyTab extends Component {
           }}
         >
           <Sticky>
-            <LeftRail
-              rowsLocked={this.state.rowsLocked}
-              toggleRowsLocked={this.toggleRowsLocked}
-            />
+            <LeftRail />
           </Sticky>
           <Sticky>
             <RightRail
@@ -55,7 +45,6 @@ export default class BodyTab extends Component {
           </Sticky>
           <TemplateBody
             {...this.props}
-            rowsLocked={this.state.rowsLocked}
             onFocusContent={this.focusContent}
           />
         </div>
