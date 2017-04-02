@@ -53,7 +53,7 @@ function userCanDesign(template, user) {
     return true;
   }
 
-  if (template.ownershipType === 'organization' && template.ownerID === userorganizationID) {
+  if (template.ownershipType === 'organization' && template.ownerID === user.organizationID) {
     return true;
   }
 
