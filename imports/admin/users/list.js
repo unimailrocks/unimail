@@ -1,6 +1,6 @@
 import { Roles } from 'meteor/alanning:roles';
 import React, { PropTypes } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Table } from 'semantic-ui-react';
 
 export default function AdminUsersList({ users, fields }) {

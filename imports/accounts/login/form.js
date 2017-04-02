@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
 
 export default class LoginForm extends Component {
@@ -18,8 +18,6 @@ export default class LoginForm extends Component {
         this.setState({
           error: err.reason,
         });
-      } else {
-        browserHistory.push('/me');
       }
     });
   }

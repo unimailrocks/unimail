@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Roles } from 'meteor/alanning:roles';
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Menu, Icon } from 'semantic-ui-react';
 
 import UnimailPropTypes from '/imports/prop-types';
@@ -32,8 +32,6 @@ class Head extends Component {
       if (err) {
         alert('Some error occurred while logging out. We didn\'t even know that was possible. Please contact support and let us know how this happened');
       }
-
-      browserHistory.push('/');
     });
   }
 

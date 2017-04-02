@@ -18,7 +18,6 @@ export default class TemplateBody extends Component {
   };
 
   onLayoutChange = async (newLayout) => {
-    console.log(newLayout);
     // sort the rows by height and trnaslate them to a common layout model
     const rows = sortBy(['y'], newLayout).map(row => ({
       // id is formatted like `${id}-${JSON.stringify(row)}`

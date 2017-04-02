@@ -65,9 +65,6 @@ function RemoveX(props) {
 }
 
 AdminUserPage.propTypes = {
-  routeParams: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-  }).isRequired,
   user: UnimailPropTypes.user,
 };
 
@@ -75,9 +72,9 @@ AdminUserPage.defaultProps = {
   user: null,
 };
 
-export default createContainer(({ routeParams }) => {
+export default createContainer(({ match }) => {
   Meteor.subscribe('usersForAdmin');
-  const user = Meteor.users.findOne({ _id: routeParams.id });
+  const user = Meteor.users.findOne({ _id: match.params.id });
 
   return {
     user,

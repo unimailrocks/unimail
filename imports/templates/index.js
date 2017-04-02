@@ -1,5 +1,5 @@
-import TemplatesRoute from './route';
+import TemplatesRouter from './router';
 import Templates from './collection';
 import './methods';
 
-export { TemplatesRoute, Templates };
+export { TemplatesRouter, Templates };

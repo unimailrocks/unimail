@@ -87,8 +87,6 @@ Meteor.methods({
       throw new Meteor.Error('This source does not exist.');
     }
 
-    console.log('pulling my leg', template, currentSource);
-
     Templates.update({
       _id: templateID,
     }, {

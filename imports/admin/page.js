@@ -1,51 +1,32 @@
 import { Meteor } from 'meteor/meteor';
-import React, { Component, PropTypes } from 'react';
-import { browserHistory, Link } from 'react-router';
-import { Container, Header } from 'semantic-ui-react';
+import { createContainer } from 'meteor/react-meteor-data';
+import React, { PropTypes } from 'react';
+import { Redirect, Route } from 'react-router-dom';
+import UnimailPropTypes from '/imports/prop-types';
 import { isRole } from '/imports/accounts';
+import AdminIndex from './index-page';
+import AdminUsersPage from './users';
+import AdminOrganizationsPage from './organizations';
 
-export default class AdminPage extends Component {
-  state = {
-    authorized: false,
+function AdminPage({ shouldRedirect, match }) {
+  if (shouldRedirect) {
+    return <Redirect to="/" />;
   }
 
-  async componentWillMount() {
-    const user = Meteor.user();
-    if (!isRole(user, 'hyperadmin')) {
-      browserHistory.push('/');
-    } else {
-      this.setState({
-        authorized: true,
-      });
-    }
-  }
-
-  render() {
-    if (!this.state.authorized) {
-      return <div />;
-    }
-
-    if (this.props.children) {
-      return (
-        <div>
-          {this.props.children}
-        </div>
-      );
-    }
-
-    return (
-      <Container>
-        <Header>
-          <Link to="/admin/users">Users List</Link>
-        </Header>
-        <Header>
-          <Link to="/admin/organizations">Organizations</Link>
-        </Header>
-      </Container>
-    );
-  }
+  return (
+    <div>
+      <Route exact path={match.url} component={AdminIndex} />
+      <Route path={`${match.url}/users`} component={AdminUsersPage} />
+      <Route path={`${match.url}/organizations`} component={AdminOrganizationsPage} />
+    </div>
+  );
 }
 
 AdminPage.propTypes = {
-  children: PropTypes.element, // eslint-disable-line
+  shouldRedirect: PropTypes.bool.isRequired,
+  match: UnimailPropTypes.match.isRequired,
 };
+
+export default createContainer(() => ({
+  shouldRedirect: !Meteor.loggingIn() && !isRole(Meteor.user(), 'hyperadmin'),
+}), AdminPage);

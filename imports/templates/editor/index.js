@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { Component, PropTypes } from 'react';
-import { browserHistory } from 'react-router';
+import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 import { Container, Segment, Menu } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
 import { Templates } from '/imports/templates';
@@ -14,6 +14,7 @@ class TemplateEditor extends Component {
   state = {
     activeTab: 'body',
     errors: {},
+    newTemplateID: null,
   };
 
   onTabClick = (e, { name }) => {
@@ -24,11 +25,14 @@ class TemplateEditor extends Component {
 
   editTitle = async newTitle => {
     try {
-      if (this.props.routeParams.id === 'new') {
+      if (this.props.match.params.id === 'new') {
         const newTemplateID = await Meteor.callPromise('templates.create', newTitle);
-        browserHistory.push(`/templates/${newTemplateID}`);
+        this.setState({
+          newTemplateID,
+        });
       } else {
-        await Meteor.callPromise('templates.title.edit', this.props.routeParams.id, newTitle);
+        // TODO: cancel this promise if component gets unmounted
+        await Meteor.callPromise('templates.title.edit', this.props.match.params.id, newTitle);
       }
 
       this.setState({
@@ -48,6 +52,10 @@ class TemplateEditor extends Component {
   };
 
   render() {
+    if (!this.props.template && this.state.newTemplateID) {
+      return <Redirect to={this.state.newTemplateID} />;
+    }
+
     if (!this.props.template) {
       return (
         <Container>
@@ -87,19 +95,17 @@ class TemplateEditor extends Component {
 
 TemplateEditor.propTypes = {
   template: UnimailPropTypes.template,
-  routeParams: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-  }).isRequired,
+  match: UnimailPropTypes.match.isRequired,
 };
 
 TemplateEditor.defaultProps = {
   template: null,
 };
 
-export default createContainer(({ routeParams }) => {
+export default createContainer(({ match }) => {
   Meteor.subscribe('templates');
 
   return {
-    template: Templates.findOne(routeParams.id),
+    template: Templates.findOne(match.params.id),
   };
 }, TemplateEditor);

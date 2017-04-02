@@ -3,42 +3,20 @@ import { createContainer } from 'meteor/react-meteor-data';
 import '/imports/shared';
 import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import { Router, IndexRoute, Route, browserHistory } from 'react-router';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { Dimmer, Loader } from 'semantic-ui-react';
 import App from '/imports/app';
-import Index from '/imports/index';
-import {
-  RegisterPage,
-  LoginPage,
-  UsersPage,
-  EnrollPage,
-} from '/imports/accounts';
-import { AdminRoute } from '/imports/admin';
-import { TemplatesRoute } from '/imports/templates';
-import { OrganizationPage } from '/imports/organizations';
 
 function Routes({ userLoading }) {
-  if (userLoading) {
-    return (
-      <Dimmer active>
+  return (
+    <div>
+      <Dimmer active={userLoading}>
         <Loader />
       </Dimmer>
-    );
-  }
-
-  return (
-    <Router history={browserHistory}>
-      <Route path="/" component={App}>
-        <IndexRoute component={Index} />
-        <Route path="login" component={LoginPage} />
-        <Route path="register" component={RegisterPage} />
-        <Route path="me" component={UsersPage} />
-        <Route path="organization" component={OrganizationPage} />
-        <Route path="enroll/:token" component={EnrollPage} />
-        {AdminRoute('admin')}
-        {TemplatesRoute('templates')}
-      </Route>
-    </Router>
+      <Router>
+        <App />
+      </Router>
+    </div>
   );
 }
 

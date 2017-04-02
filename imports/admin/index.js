@@ -1,3 +1,3 @@
-import AdminRoute from './route';
+import AdminPage from './page';
 
-export { AdminRoute };
+export { AdminPage };

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
-import { browserHistory } from 'react-router';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
 
 import UnimailPropTypes from '/imports/prop-types';
@@ -36,7 +35,6 @@ export default class EnrollForm extends Component {
             error: err.reason,
           });
         }
-        browserHistory.push('/me');
       });
     } catch (err) {
       this.setState({

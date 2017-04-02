@@ -1,13 +1,14 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { PropTypes } from 'react';
+import React from 'react';
 import { Segment, Grid } from 'semantic-ui-react';
 
 import { Organizations } from '/imports/organizations';
 import UnimailPropTypes from '/imports/prop-types';
 import EnrollForm from './form';
 
-function _EnrollPage({ organization, user, routeParams: { token } }) {
+function _EnrollPage({ organization, user, match }) {
+  const { token } = match.params;
   if (Meteor.user()) {
     return (
       <div>
@@ -53,9 +54,7 @@ function _EnrollPage({ organization, user, routeParams: { token } }) {
 }
 
 _EnrollPage.propTypes = {
-  routeParams: PropTypes.shape({
-    token: PropTypes.string.isRequired,
-  }).isRequired,
+  match: UnimailPropTypes.match.isRequired,
   organization: UnimailPropTypes.organization,
   user: UnimailPropTypes.user,
 };
@@ -65,8 +64,8 @@ _EnrollPage.defaultProps = {
   user: null,
 };
 
-export const EnrollPage = createContainer(({ routeParams }) => {
-  const { token } = routeParams;
+export const EnrollPage = createContainer(({ match }) => {
+  const { token } = match.params;
   Meteor.subscribe('users', token);
   Meteor.subscribe('organizations', token);
 

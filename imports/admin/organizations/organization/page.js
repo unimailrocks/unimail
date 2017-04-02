@@ -108,23 +108,20 @@ function RemoveX(props) {
 }
 
 AdminOrganizationPage.propTypes = {
-  routeParams: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-  }).isRequired,
   organization: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     permissions: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }),
+  }).isRequired,
   users: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-export default createContainer(({ routeParams }) => {
+export default createContainer(({ match }) => {
   Meteor.subscribe('organizations');
   Meteor.subscribe('usersForAdmin');
 
   return {
-    organization: Organizations.findOne(routeParams.id),
-    users: Meteor.users.find({ organizationID: routeParams.id }).fetch(),
+    organization: Organizations.findOne(match.params.id),
+    users: Meteor.users.find({ organizationID: match.params.id }).fetch(),
   };
 }, AdminOrganizationPage);
