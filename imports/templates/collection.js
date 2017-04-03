@@ -55,7 +55,6 @@ Templates.attachSchema(new SimpleSchema({
   'sources.$': {
     type: SourceSchema,
   },
-
 }));
 
 export default Templates;
