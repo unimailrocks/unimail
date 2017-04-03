@@ -13,7 +13,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
         'draw-image',
       ];
 
-      if (!validTools.includes(payload)) {
+      if (payload && !validTools.includes(payload)) {
         console.error('Tried to select invalid tool:', payload);
         return state;
       }

@@ -8,11 +8,19 @@ import ReactGridLayout from 'react-grid-layout';
 import UnimailPropTypes from '/imports/prop-types';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
+import DrawingCanvas from './drawing-canvas';
+
 export default class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
     onFocusContent: PropTypes.func.isRequired,
   };
+
+  generateLayout() {
+    return [
+
+    ];
+  }
 
   render() {
     return (
@@ -24,13 +32,19 @@ export default class TemplateBody extends Component {
           padding: 0,
         }}
       >
-        <ReactGridLayout
-          width={600}
-          cols={600}
-          onLayoutChange={this.onLayoutChange}
-          rowHeight={1}
-          margin={[0, 0]}
-        />
+        <div>
+          <DrawingCanvas />
+          <ReactGridLayout
+            width={600}
+            cols={600}
+            onLayoutChange={this.onLayoutChange}
+            rowHeight={1}
+            margin={[0, 0]}
+            style={{
+              minHeight: '300px',
+            }}
+          />
+        </div>
       </Segment>
     );
   }
