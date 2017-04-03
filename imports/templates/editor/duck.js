@@ -1,6 +1,10 @@
 const SELECT_TOOL = 'editor/select-tool';
 
-export default function editorReducer(state = {}, { type, payload }) {
+const initialState = {
+  tool: null,
+};
+
+export default function editorReducer(state = initialState, { type, payload }) {
   switch (type) {
     case SELECT_TOOL: {
       const validTools = [
