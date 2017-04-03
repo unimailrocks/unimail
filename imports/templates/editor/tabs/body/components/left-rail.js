@@ -6,8 +6,12 @@ import { selectTool } from '/imports/templates/editor/duck';
 
 class TemplateBodyLeftRail extends Component {
   static propTypes = {
-    tool: PropTypes.oneOf(['draw-image', null]).isRequired,
+    tool: PropTypes.oneOf(['draw-image']),
     selectTool: PropTypes.func.isRequired,
+  };
+
+  static defaultProps = {
+    tool: null,
   };
 
   selectTool = (e, { name }) => {
@@ -36,9 +40,6 @@ class TemplateBodyLeftRail extends Component {
     );
   }
 }
-
-TemplateBodyLeftRail.propTypes = {
-};
 
 function mapStateToProps({ editor }) {
   return {

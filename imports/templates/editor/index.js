@@ -1,21 +1,45 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { Container, Segment, Menu } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
 import { Templates } from '/imports/templates';
 
+import { registerTemplate } from './duck';
 import NameInput from './name-input';
 import Tab from './tabs';
 
 class TemplateEditor extends Component {
+  static propTypes = {
+    template: UnimailPropTypes.template,
+    match: UnimailPropTypes.match.isRequired,
+    registerTemplate: PropTypes.func.isRequired,
+  };
+
+  static defaultProps = {
+    template: null,
+  };
+
+  constructor(props) {
+    super(props);
+    if (props.template) {
+      props.registerTemplate(props.template);
+    }
+  }
 
   state = {
     activeTab: 'body',
     errors: {},
     newTemplateID: null,
   };
+
+  componentWillReceiveProps({ template: newTemplate }, { template: oldTemplate }) {
+    if (!oldTemplate && newTemplate) {
+      this.props.registerTemplate(newTemplate);
+    }
+  }
 
   onTabClick = (e, { name }) => {
     this.setState({
@@ -93,14 +117,9 @@ class TemplateEditor extends Component {
   }
 }
 
-TemplateEditor.propTypes = {
-  template: UnimailPropTypes.template,
-  match: UnimailPropTypes.match.isRequired,
-};
-
-TemplateEditor.defaultProps = {
-  template: null,
-};
+const reduxContain = connect(null, {
+  registerTemplate,
+});
 
 export default createContainer(({ match }) => {
   Meteor.subscribe('templates');
@@ -108,4 +127,4 @@ export default createContainer(({ match }) => {
   return {
     template: Templates.findOne(match.params.id),
   };
-}, TemplateEditor);
+}, reduxContain(TemplateEditor));
