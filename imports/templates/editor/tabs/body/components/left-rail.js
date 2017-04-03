@@ -2,11 +2,12 @@ import React, { PropTypes, Component } from 'react';
 import { connect } from 'react-redux';
 import { Menu, Icon, Rail } from 'semantic-ui-react';
 
+import UnimailPropTypes from '/imports/prop-types';
 import { selectTool } from '/imports/templates/editor/duck';
 
 class TemplateBodyLeftRail extends Component {
   static propTypes = {
-    tool: PropTypes.oneOf(['draw-image']),
+    tool: UnimailPropTypes.tool,
     selectTool: PropTypes.func.isRequired,
   };
 

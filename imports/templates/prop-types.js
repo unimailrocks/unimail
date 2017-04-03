@@ -14,3 +14,4 @@ export const template = PropTypes.shape({
   sources: PropTypes.arrayOf(source),
 });
 
+export * from './editor/prop-types';
