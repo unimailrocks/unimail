@@ -23,7 +23,6 @@ function generateItemElement(item) {
   }
 }
 
-
 export default class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
