@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { check, Match } from 'meteor/check';
 import Templates from '../collection';
-import { userCanDesign, getUserWithRole } from './permissions';
+import { userCanSee, userCanDesign } from './permissions';
 
 Meteor.methods({
   'templates.sources.create'(templateID, source) {
@@ -17,10 +17,19 @@ Meteor.methods({
 
     const { type, name } = source;
 
-    const user = getUserWithRole(this.userId, 'templates.design');
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
     const template = Templates.findOne(templateID);
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
+
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
     if (template.sources.find(s => s.name === name)) {
@@ -38,10 +47,18 @@ Meteor.methods({
       name: String,
     }));
 
-    const user = getUserWithRole(this.userId, 'templates.design');
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
     const template = Templates.findOne(templateID);
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
     const { _id: sourceID, name, type } = source;
@@ -76,10 +93,18 @@ Meteor.methods({
     check(templateID, String);
     check(sourceID, String);
 
-    const user = getUserWithRole(this.userId, 'templates.design');
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
     const template = Templates.findOne(templateID);
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
     const currentSource = template.sources.find(s => s._id === sourceID);

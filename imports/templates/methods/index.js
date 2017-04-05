@@ -1,21 +1,24 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { Roles } from 'meteor/alanning:roles';
+import { isRole } from '/imports/accounts';
 import Templates from '../collection';
 
-import { userCanDesign, getUserWithRole } from './permissions';
+import { userCanDesign, userCanSee } from './permissions';
 import './sources';
+
+export * from './images';
 
 Meteor.methods({
   'templates.create'(title) {
     check(title, String);
-    const user = Meteor.users.findOne(this.userId);
-    if (!user) {
-      throw new Meteor.Error('Must be signed in to create a template!');
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
     }
 
-    if (!Roles.userIsInRole(this.userId, 'templates.design')) {
-      throw new Meteor.Error('Must have permissions to design templates.');
+    const user = Meteor.users.findOne(this.userId);
+
+    if (!isRole(user, 'templates.design')) {
+      throw new Meteor.Error('Must have permissions to design templates');
     }
 
     if (user.organizationID) {
@@ -32,42 +35,22 @@ Meteor.methods({
       ownerID: this.userId,
     });
   },
-  'templates.update'(templateID, updateParams) {
-    check(templateID, String);
-    check(updateParams, Object);
-    const user = Meteor.users.findOne(this.userId);
-    if (!user) {
-      throw new Meteor.Error('This is not your template.');
-    }
-
-    if (!Roles.userIsInRole(this.userId, 'templates.design')) {
-      throw new Meteor.Error('Must have permissions to design templates.');
-    }
-
-    const template = Templates.findOne(templateID);
-
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
-    }
-
-    return template.update(updateParams);
-  },
   'templates.delete'(templateID) {
     check(templateID, String);
 
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
     const user = Meteor.users.findOne(this.userId);
-    if (!user) {
-      throw new Meteor.Error('This is not your template.');
-    }
-
-    if (!Roles.userIsInRole(this.userId, 'templates.design')) {
-      throw new Meteor.Error('Must have permissions to design templates.');
-    }
-
     const template = Templates.findOne(templateID);
 
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to delete this template');
     }
 
     return Templates.remove(template._id);
@@ -76,11 +59,19 @@ Meteor.methods({
     check(templateID, String);
     check(newTitle, String);
 
-    const user = getUserWithRole(this.userId, 'templates.design');
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
 
     const template = Templates.findOne(templateID);
-    if (!template || !userCanDesign(template, user)) {
-      throw new Meteor.Error('This is not your template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
     return Templates.update(template._id, { $set: { title: newTitle } });

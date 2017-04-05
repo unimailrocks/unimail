@@ -20,6 +20,32 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
+const ItemSchema = new SimpleSchema({
+  _id: {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
+  },
+  placement: {
+    type: Object,
+  },
+  'placement.x': {
+    type: Number,
+  },
+  'placement.y': {
+    type: Number,
+  },
+  'placement.width': {
+    type: Number,
+  },
+  'placement.height': {
+    type: Number,
+  },
+  type: {
+    type: String,
+    allowedValues: ['image'],
+  },
+});
+
 Templates.attachSchema(new SimpleSchema({
   title: {
     type: String,
@@ -31,6 +57,10 @@ Templates.attachSchema(new SimpleSchema({
   ownerID: {
     type: String,
     regEx: SimpleSchema.RegEx.Id,
+  },
+  managers: {
+    type: Array,
+    optional: true,
   },
   editors: {
     type: Array,
@@ -54,6 +84,18 @@ Templates.attachSchema(new SimpleSchema({
   },
   'sources.$': {
     type: SourceSchema,
+  },
+  items: {
+    type: Array,
+    defaultValue: [],
+  },
+  'items.$': {
+    type: ItemSchema,
+  },
+  width: {
+    type: Number,
+    // Spooky magic number wonder what it means
+    defaultValue: 598,
   },
 }));
 
