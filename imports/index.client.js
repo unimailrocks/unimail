@@ -39,7 +39,7 @@ const ContainedRoot = createContainer(() => {
   return { user: Meteor.user(), userLoading: Meteor.loggingIn() };
 }, Root);
 
-Meteor.startup(async () => {
+Meteor.startup(() => {
   ReactDOM.render(
     <ContainedRoot />
     , document.getElementById('render-target'),
