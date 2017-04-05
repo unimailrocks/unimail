@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { Roles } from 'meteor/alanning:roles';
+import { isRole } from '/imports/accounts';
 import Templates from '../collection';
 
 Meteor.methods({
@@ -10,17 +10,17 @@ Meteor.methods({
 
     const user = Meteor.users.findOne(this.userId);
     if (!user) {
-      throw new Meteor.Error('You cannot manage this template.');
+      throw new Meteor.Error('Must be signed in');
     }
 
-    if (!Roles.userIsInRole(this.userId, 'templates.manage')) {
-      throw new Meteor.Error('Must have permissions to manage templates.');
+    if (!isRole(this.userId, 'templates.manage')) {
+      throw new Meteor.Error('Must have permissions to manage templates');
     }
 
     const template = Templates.findOne(templateID);
 
-    if (!template || !userCanManage(template, user)) {
-      throw new Meteor.Error('You cannot manage this template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('Template does not exist');
     }
 
     Templates.update(templateID, { $set: { editors: editorIDs } });
@@ -31,17 +31,17 @@ Meteor.methods({
 
     const user = Meteor.users.findOne(this.userId);
     if (!user) {
-      throw new Meteor.Error('You cannot manage this template.');
+      throw new Meteor.Error('Must be signed in');
     }
 
-    if (!Roles.userIsInRole(this.userId, 'templates.manage')) {
-      throw new Meteor.Error('Must have permissions to manage templates.');
+    if (!isRole(this.userId, 'templates.manage')) {
+      throw new Meteor.Error('Must have permissions to manage templates');
     }
 
     const template = Templates.findOne(templateID);
 
-    if (!template || !userCanManage(template, user)) {
-      throw new Meteor.Error('You cannot manage this template.');
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
     }
 
     Templates.update(templateID, { $set: { viewers: viewerIDs } });
@@ -49,8 +49,16 @@ Meteor.methods({
 });
 
 function userCanDesign(template, user) {
+  if (!userCanSee(template, user)) {
+    return false;
+  }
+
   if (template.editors && template.editors.includes(user._id)) {
     return true;
+  }
+
+  if (!isRole(user, 'templates.design')) {
+    return false;
   }
 
   if (template.ownershipType === 'organization' && template.ownerID === user.organizationID) {
@@ -64,7 +72,12 @@ function userCanDesign(template, user) {
   return false;
 }
 
-function userCanManage(template, user) {
+// Can use know it exists?
+function userCanSee(template, user) {
+  if (!template) {
+    return false;
+  }
+
   if (template.ownershipType === 'organization' && template.ownerID !== user.organizationID) {
     return false;
   }
@@ -76,21 +89,7 @@ function userCanManage(template, user) {
   return true;
 }
 
-function getUserWithRole(userID, role) {
-  const user = Meteor.users.findOne(userID);
-  if (!user) {
-    throw new Meteor.Error('Must be signed in to access this resource.');
-  }
-
-  if (!Roles.userIsInRole(userID, role)) {
-    throw new Meteor.Error(`Must have ${role} permissions.`);
-  }
-
-  return user;
-}
-
 export {
   userCanDesign,
-  userCanManage,
-  getUserWithRole,
+  userCanSee,
 };

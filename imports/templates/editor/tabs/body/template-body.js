@@ -6,9 +6,23 @@ import { Popup, Button, Segment } from 'semantic-ui-react';
 import ReactGridLayout from 'react-grid-layout';
 
 import UnimailPropTypes from '/imports/prop-types';
+import colors from '/imports/styles/colors';
+import * as Templates from '/imports/templates/methods';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 import DrawingCanvas from './drawing-canvas';
+
+function generateItemElement(item) {
+  switch (item.type) {
+    case 'image':
+      return (
+        <div key={item._id} style={{ backgroundColor: colors.grey4 }} />
+      );
+    default:
+      return <div />;
+  }
+}
+
 
 export default class TemplateBody extends Component {
   static propTypes = {
@@ -17,13 +31,28 @@ export default class TemplateBody extends Component {
   };
 
   generateLayout() {
-    return [
+    const { items } = this.props.template;
+    return items.map(({ _id, placement }) => ({
+      x: placement.x,
+      y: placement.y,
+      w: placement.width,
+      h: placement.height,
+      i: _id,
+    }));
+  }
 
-    ];
+  generateDOM() {
+    const { items } = this.props.template;
+    return items.map(generateItemElement);
   }
 
   addElement = ({ type, placement }) => {
-    console.log('adding a', type, 'at', placement);
+    if (type === 'image') {
+      Templates.createImage.call({
+        templateID: this.props.template._id,
+        placement,
+      });
+    }
   }
 
   render() {
@@ -47,7 +76,11 @@ export default class TemplateBody extends Component {
             style={{
               minHeight: '300px',
             }}
-          />
+            verticalCompact={false}
+            layout={this.generateLayout()}
+          >
+            {this.generateDOM()}
+          </ReactGridLayout>
         </div>
       </Segment>
     );
