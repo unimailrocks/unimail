@@ -22,6 +22,10 @@ export default class TemplateBody extends Component {
     ];
   }
 
+  addElement = ({ type, placement }) => {
+    console.log('adding a', type, 'at', placement);
+  }
+
   render() {
     return (
       <Segment
@@ -32,8 +36,8 @@ export default class TemplateBody extends Component {
           padding: 0,
         }}
       >
-        <div>
-          <DrawingCanvas />
+        <div style={{ position: 'relative' }}>
+          <DrawingCanvas onDraw={this.addElement} />
           <ReactGridLayout
             width={600}
             cols={600}
