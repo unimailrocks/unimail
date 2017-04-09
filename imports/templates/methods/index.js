@@ -7,6 +7,7 @@ import { userCanDesign, userCanSee } from './permissions';
 import './sources';
 
 export * from './images';
+export * from './containers';
 
 Meteor.methods({
   'templates.create'(title) {

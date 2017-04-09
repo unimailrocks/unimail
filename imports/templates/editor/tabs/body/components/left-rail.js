@@ -29,6 +29,15 @@ class TemplateBodyLeftRail extends Component {
       <Rail attached position="left">
         <Menu icon="labeled" vertical>
           <Menu.Item
+            name="draw-container"
+            active={tool === 'draw-container'}
+            onClick={this.selectTool}
+          >
+            <Icon name="square outline" />
+            Draw Container
+          </Menu.Item>
+
+          <Menu.Item
             name="draw-image"
             active={tool === 'draw-image'}
             onClick={this.selectTool}

@@ -20,31 +20,46 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
-const ItemSchema = new SimpleSchema({
+const PlacementSchema = new SimpleSchema({
+  x: { type: Number },
+  y: { type: Number },
+  width: { type: Number },
+  height: { type: Number },
+});
+
+const ContainerSchema = new SimpleSchema({
   _id: {
     type: String,
     regEx: SimpleSchema.RegEx.Id,
   },
-  placement: {
+  placement: { type: PlacementSchema },
+  type: {
+    type: String,
+    allowedValues: ['container'],
+  },
+  contents: {
+    type: Array,
+    optional: true,
+  },
+  'contents.$': {
     type: Object,
+    blackbox: true,
   },
-  'placement.x': {
-    type: Number,
+});
+
+const ImageSchema = new SimpleSchema({
+  _id: {
+    type: String,
+    regEx: SimpleSchema.RegEx.Id,
   },
-  'placement.y': {
-    type: Number,
-  },
-  'placement.width': {
-    type: Number,
-  },
-  'placement.height': {
-    type: Number,
-  },
+  placement: { type: PlacementSchema },
   type: {
     type: String,
     allowedValues: ['image'],
   },
 });
+
+const ItemSchema = SimpleSchema.oneOf(ImageSchema, ContainerSchema);
 
 Templates.attachSchema(new SimpleSchema({
   title: {

@@ -21,6 +21,7 @@ class DrawingCanvas extends Component {
 
   static activeTools = [
     'draw-image',
+    'draw-container',
   ];
 
   registerCanvas = c => {
@@ -61,6 +62,14 @@ class DrawingCanvas extends Component {
     this.context.closePath();
   }
 
+  drawContainer(rectangle) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.beginPath();
+    this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    this.context.stroke();
+    this.context.closePath();
+  }
+
   // handles when the mouse moves while clicked
   handleDraw = e => {
     if (!this.drawing) {
@@ -71,6 +80,9 @@ class DrawingCanvas extends Component {
     if (tool === 'draw-image') {
       const coordinates = this.absoluteToRelativeCoordinates(e);
       this.drawImage(this.calculateRectangle(coordinates, this.start));
+    } else if (tool === 'draw-container') {
+      const coordinates = this.absoluteToRelativeCoordinates(e);
+      this.drawContainer(this.calculateRectangle(coordinates, this.start));
     }
   };
 
@@ -84,6 +96,8 @@ class DrawingCanvas extends Component {
     const { tool } = this.props;
     if (tool === 'draw-image') {
       this.context.fillStyle = colors.grey4;
+    } else if (tool === 'draw-container') {
+      this.context.strokeStyle = colors.grey4;
     }
   }
 
@@ -97,6 +111,11 @@ class DrawingCanvas extends Component {
       this.props.onDraw({
         placement: this.calculateRectangle(this.start, this.end),
         type: 'image',
+      });
+    } else if (tool === 'draw-container') {
+      this.props.onDraw({
+        placement: this.calculateRectangle(this.start, this.end),
+        type: 'container',
       });
     }
 
@@ -172,4 +191,3 @@ function mapDispatchToProps(dispatch) {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(DrawingCanvas);
-

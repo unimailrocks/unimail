@@ -18,6 +18,10 @@ function generateItemElement(item) {
       return (
         <div key={item._id} style={{ backgroundColor: colors.grey4 }} />
       );
+    case 'container':
+      return (
+        <div key={item._id} style={{ border: `1px solid ${colors.grey4}` }} />
+      );
     default:
       return <div />;
   }
@@ -26,7 +30,6 @@ function generateItemElement(item) {
 export default class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
-    onFocusContent: PropTypes.func.isRequired,
   };
 
   generateLayout() {
@@ -48,6 +51,11 @@ export default class TemplateBody extends Component {
   addElement = ({ type, placement }) => {
     if (type === 'image') {
       Templates.createImage.call({
+        templateID: this.props.template._id,
+        placement,
+      });
+    } else if (type === 'container') {
+      Templates.createContainer.call({
         templateID: this.props.template._id,
         placement,
       });

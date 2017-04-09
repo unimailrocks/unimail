@@ -11,6 +11,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
     case SELECT_TOOL: {
       const validTools = [
         'draw-image',
+        'draw-container',
       ];
 
       if (payload && !validTools.includes(payload)) {
