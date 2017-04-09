@@ -105,7 +105,8 @@ Templates.attachSchema(new SimpleSchema({
     defaultValue: [],
   },
   'items.$': {
-    type: ItemSchema,
+    type: Object,
+    blackbox: true,
   },
   width: {
     type: Number,

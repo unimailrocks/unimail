@@ -41,16 +41,21 @@ class DrawingCanvas extends Component {
   }
 
   calculateRectangle(point1, point2) {
-    const initialX = min(point1.x, point2.x);
-    const initialY = min(point1.y, point2.y);
-    const x = max(min(initialX, this.canvas.width), 0);
-    const y = max(min(initialY, this.canvas.height), 0);
+    const initialX1 = min(point1.x, point2.x);
+    const initialY1 = min(point1.y, point2.y);
+    const x1 = max(min(initialX1, this.canvas.width), 0);
+    const y1 = max(min(initialY1, this.canvas.height), 0);
 
-    const initialWidth = abs(point1.x - point2.x);
-    const initialHeight = abs(point1.y - point2.y);
-    const width = initialWidth - abs(initialX - x);
-    const height = initialHeight - abs(initialY - y);
-    return { x, y, width, height };
+    const initialX2 = max(point1.x, point2.x);
+    const initialY2 = max(point1.y, point2.y);
+    const x2 = max(min(initialX2, this.canvas.width), 0);
+    const y2 = max(min(initialY2, this.canvas.height), 0);
+
+    const initialWidth = initialX2 - initialX1;
+    const initialHeight = initialY2 - initialY1;
+    const width = initialWidth - abs(initialX2 - x2) - abs(initialX1 - x1);
+    const height = initialHeight - abs(initialY2 - y2) - abs(initialY1 - y1);
+    return { x: x1, y: y1, width, height };
   }
 
   // for drawing the rectangle when you're using the 'draw-image' tool
@@ -93,6 +98,9 @@ class DrawingCanvas extends Component {
     }
     this.drawing = true;
     this.start = this.absoluteToRelativeCoordinates(e);
+    if (this.start.x < 0 || this.start.x > this.canvas.width || this.start.y < 0) {
+      this.releaseTool();
+    }
     const { tool } = this.props;
     if (tool === 'draw-image') {
       this.context.fillStyle = colors.grey4;

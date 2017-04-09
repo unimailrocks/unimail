@@ -31,7 +31,6 @@ export const createContainer = new ValidatedMethod({
       throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
-
     if (placement.x + placement.width > template.width) {
       throw new Meteor.Error('Container is hanging off the right edge of the template');
     }
