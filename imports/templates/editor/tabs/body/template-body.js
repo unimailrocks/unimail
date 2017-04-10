@@ -23,7 +23,7 @@ function generateItemElement(item) {
         <div key={item._id} style={{ border: `1px solid ${colors.grey4}` }} />
       );
     default:
-      return <div />;
+      return <div key="item.type" />;
   }
 }
 
@@ -48,21 +48,15 @@ export default class TemplateBody extends Component {
     return items.map(generateItemElement);
   }
 
-  addElement = ({ type, placement }) => {
-    if (type === 'image') {
-      Templates.createImage.call({
-        templateID: this.props.template._id,
-        placement,
-      });
-    } else if (type === 'container') {
-      Templates.createContainer.call({
-        templateID: this.props.template._id,
-        placement,
-      });
-    }
+  addElement = (item) => {
+    Templates.placeItem.call({
+      templateID: this.props.template._id,
+      item,
+    });
   }
 
   render() {
+    console.log(this.props.template);
     return (
       <Segment
         raised

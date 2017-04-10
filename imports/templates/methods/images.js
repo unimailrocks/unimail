@@ -51,5 +51,4 @@ export const createImage = new ValidatedMethod({
 
     Templates.update(templateID, { $push: { items: image } });
   },
-
 });

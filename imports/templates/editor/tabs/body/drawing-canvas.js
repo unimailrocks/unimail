@@ -173,6 +173,7 @@ class DrawingCanvas extends Component {
             right: 0,
             bottom: 0,
             cursor: 'crosshair',
+            zIndex: 10,
           }}
           onMouseDown={this.handleDrawStart}
           onMouseUp={this.handleDrawFinish}

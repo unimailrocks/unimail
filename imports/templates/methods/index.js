@@ -8,6 +8,7 @@ import './sources';
 
 export * from './images';
 export * from './containers';
+export * from './items';
 
 Meteor.methods({
   'templates.create'(title) {
@@ -27,6 +28,7 @@ Meteor.methods({
         title,
         ownershipType: 'organization',
         ownerID: user.organizationID,
+        items: [],
       });
     }
 
@@ -34,6 +36,7 @@ Meteor.methods({
       title,
       ownershipType: 'user',
       ownerID: this.userId,
+      items: [],
     });
   },
   'templates.delete'(templateID) {

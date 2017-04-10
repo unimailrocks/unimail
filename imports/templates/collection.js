@@ -102,7 +102,6 @@ Templates.attachSchema(new SimpleSchema({
   },
   items: {
     type: Array,
-    defaultValue: [],
   },
   'items.$': {
     type: Object,
