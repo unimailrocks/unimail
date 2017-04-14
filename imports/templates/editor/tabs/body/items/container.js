@@ -58,7 +58,7 @@ export default class Container extends Component {
   }
 
   render() {
-    const { placement, details } = this.props;
+    const { placement } = this.props;
     return (
       <div className={css(styles.fit, containerStyles.bordered)}>
         <ReactGridLayout
