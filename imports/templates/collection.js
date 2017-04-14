@@ -20,29 +20,23 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
+const PlacementSchema = new SimpleSchema({
+  x: { type: Number },
+  y: { type: Number },
+  width: { type: Number },
+  height: { type: Number },
+});
+
 const ItemSchema = new SimpleSchema({
-  _id: {
-    type: String,
-    regEx: SimpleSchema.RegEx.Id,
-  },
-  placement: {
-    type: Object,
-  },
-  'placement.x': {
-    type: Number,
-  },
-  'placement.y': {
-    type: Number,
-  },
-  'placement.width': {
-    type: Number,
-  },
-  'placement.height': {
-    type: Number,
-  },
+  placement: PlacementSchema,
+  _id: { type: String, regEx: SimpleSchema.RegEx.Id },
+  details: { type: Object, blackbox: true },
   type: {
     type: String,
-    allowedValues: ['image'],
+    allowedValues: [
+      'image',
+      'container',
+    ],
   },
 });
 
@@ -87,11 +81,8 @@ Templates.attachSchema(new SimpleSchema({
   },
   items: {
     type: Array,
-    defaultValue: [],
   },
-  'items.$': {
-    type: ItemSchema,
-  },
+  'items.$': ItemSchema,
   width: {
     type: Number,
     // Spooky magic number wonder what it means

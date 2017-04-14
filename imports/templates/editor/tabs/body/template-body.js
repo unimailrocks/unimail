@@ -11,22 +11,11 @@ import * as Templates from '/imports/templates/methods';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 import DrawingCanvas from './drawing-canvas';
-
-function generateItemElement(item) {
-  switch (item.type) {
-    case 'image':
-      return (
-        <div key={item._id} style={{ backgroundColor: colors.grey4 }} />
-      );
-    default:
-      return <div />;
-  }
-}
+import Item from './items';
 
 export default class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
-    onFocusContent: PropTypes.func.isRequired,
   };
 
   generateLayout() {
@@ -42,16 +31,18 @@ export default class TemplateBody extends Component {
 
   generateDOM() {
     const { items } = this.props.template;
-    return items.map(generateItemElement);
+    return items.map(item => (
+      <div key={item._id}>
+        <Item item={item} />
+      </div>
+    ));
   }
 
-  addElement = ({ type, placement }) => {
-    if (type === 'image') {
-      Templates.createImage.call({
-        templateID: this.props.template._id,
-        placement,
-      });
-    }
+  addElement = (item) => {
+    Templates.placeItem.call({
+      templateID: this.props.template._id,
+      item,
+    });
   }
 
   render() {

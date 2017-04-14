@@ -6,8 +6,8 @@ import { Templates } from '/imports/templates';
 
 import { userCanSee, userCanDesign } from './permissions';
 
-export const createImage = new ValidatedMethod({
-  name: 'templates.body.images.create',
+export const createContainer = new ValidatedMethod({
+  name: 'templates.body.containers.create',
   validate: new SimpleSchema({
     templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
     placement: { type: Object },
@@ -32,23 +32,23 @@ export const createImage = new ValidatedMethod({
     }
 
     if (placement.x + placement.width > template.width) {
-      throw new Meteor.Error('Image is hanging off the right edge of the template');
+      throw new Meteor.Error('Container is hanging off the right edge of the template');
     }
 
     if (placement.x < 0) {
-      throw new Meteor.Error('Image is hanging off the left side of the template');
+      throw new Meteor.Error('Container is hanging off the left side of the template');
     }
 
     if (placement.y < 0) {
-      throw new Meteor.Error('Image is hanging off the top of the template');
+      throw new Meteor.Error('Container is hanging off the top of the template');
     }
 
-    const image = {
+    const container = {
       placement,
-      type: 'image',
+      type: 'container',
       _id: Random.id(),
     };
 
-    Templates.update(templateID, { $push: { items: image } });
+    Templates.update(templateID, { $push: { items: container } });
   },
 });
