@@ -11,21 +11,7 @@ import * as Templates from '/imports/templates/methods';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 import DrawingCanvas from './drawing-canvas';
-
-function generateItemElement(item) {
-  switch (item.type) {
-    case 'image':
-      return (
-        <div key={item._id} style={{ backgroundColor: colors.grey4 }} />
-      );
-    case 'container':
-      return (
-        <div key={item._id} style={{ border: `1px solid ${colors.grey4}` }} />
-      );
-    default:
-      return <div key="item.type" />;
-  }
-}
+import Item from './items';
 
 export default class TemplateBody extends Component {
   static propTypes = {
@@ -45,7 +31,11 @@ export default class TemplateBody extends Component {
 
   generateDOM() {
     const { items } = this.props.template;
-    return items.map(generateItemElement);
+    return items.map(item => (
+      <div key={item._id}>
+        <Item item={item} />
+      </div>
+    ));
   }
 
   addElement = (item) => {
@@ -56,7 +46,6 @@ export default class TemplateBody extends Component {
   }
 
   render() {
-    console.log(this.props.template);
     return (
       <Segment
         raised

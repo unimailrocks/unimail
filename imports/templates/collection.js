@@ -20,46 +20,24 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
-const PlacementSchema = new SimpleSchema({
+const PositionSchema = new SimpleSchema({
   x: { type: Number },
   y: { type: Number },
   width: { type: Number },
   height: { type: Number },
 });
 
-const ContainerSchema = new SimpleSchema({
-  _id: {
-    type: String,
-    regEx: SimpleSchema.RegEx.Id,
-  },
-  placement: { type: PlacementSchema },
+const ItemSchema = new SimpleSchema({
+  position: PositionSchema,
+  details: { type: Object, blackbox: true },
   type: {
     type: String,
-    allowedValues: ['container'],
-  },
-  contents: {
-    type: Array,
-    optional: true,
-  },
-  'contents.$': {
-    type: Object,
-    blackbox: true,
+    allowedValues: [
+      'image',
+      'container',
+    ],
   },
 });
-
-const ImageSchema = new SimpleSchema({
-  _id: {
-    type: String,
-    regEx: SimpleSchema.RegEx.Id,
-  },
-  placement: { type: PlacementSchema },
-  type: {
-    type: String,
-    allowedValues: ['image'],
-  },
-});
-
-const ItemSchema = SimpleSchema.oneOf(ImageSchema, ContainerSchema);
 
 Templates.attachSchema(new SimpleSchema({
   title: {
@@ -103,10 +81,7 @@ Templates.attachSchema(new SimpleSchema({
   items: {
     type: Array,
   },
-  'items.$': {
-    type: Object,
-    blackbox: true,
-  },
+  'items.$': ItemSchema,
   width: {
     type: Number,
     // Spooky magic number wonder what it means
