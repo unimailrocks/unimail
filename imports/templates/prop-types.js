@@ -5,15 +5,18 @@ export const source = PropTypes.shape({
   name: PropTypes.string.isRequired,
 });
 
+export const placement = PropTypes.shape({
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+});
+
+
 export const item = PropTypes.shape({
   _id: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['image', 'container']).isRequired,
-  placement: PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number.isRequired,
-  }),
+  placement: placement.isRequired,
   details: PropTypes.object,
 });
 

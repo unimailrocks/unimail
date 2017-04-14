@@ -31,8 +31,8 @@ function placeAmongItems(item, items, existingPath = [], existingPlacement = ite
         if (rectangleContains(i.placement, existingPlacement)) {
           const newPlacement = {
             ...existingPlacement,
-            x: existingPlacement.x + i.placement.x,
-            y: existingPlacement.y + i.placement.y,
+            x: existingPlacement.x - i.placement.x,
+            y: existingPlacement.y - i.placement.y,
           };
           // recursively call this function for the items
           // inside the container (with a relative position)
@@ -124,9 +124,11 @@ export const placeItem = new ValidatedMethod({
     const arrayPath = path.map(i => `.${i}.details.items`).join('');
     const arrayKey = `items${arrayPath}`;
 
+    const _id = Random.id();
+
     const finalItem = {
       ...idLessItem,
-      _id: Random.id(),
+      _id,
       details: constructPrototypeItemDetials(idLessItem.type),
     };
 

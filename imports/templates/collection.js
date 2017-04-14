@@ -20,7 +20,7 @@ const SourceSchema = new SimpleSchema({
   },
 });
 
-const PositionSchema = new SimpleSchema({
+const PlacementSchema = new SimpleSchema({
   x: { type: Number },
   y: { type: Number },
   width: { type: Number },
@@ -28,7 +28,8 @@ const PositionSchema = new SimpleSchema({
 });
 
 const ItemSchema = new SimpleSchema({
-  position: PositionSchema,
+  placement: PlacementSchema,
+  _id: { type: String, regEx: SimpleSchema.RegEx.Id },
   details: { type: Object, blackbox: true },
   type: {
     type: String,
