@@ -45,6 +45,10 @@ export default class TemplateBody extends Component {
     });
   }
 
+  testDraw = rect => {
+    const placed = Item.calculateItemPlacement();
+  }
+
   render() {
     return (
       <Segment
