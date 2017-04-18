@@ -1,5 +1,6 @@
 import get from 'lodash/fp/get';
 import { Meteor } from 'meteor/meteor';
+import { CallPromiseMixin } from 'meteor/didericis:callpromise-mixin';
 import { Random } from 'meteor/random';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import SimpleSchema from 'simpl-schema';
@@ -58,7 +59,7 @@ export function calculateItemPlacement(
           },
         );
       // maybe new element goes *around* the existing element
-      } else if (outerPossible && rectanglesOverlap(placement, i.placement)) {
+      } else if (outerPossible && rectangleContains(placement, i.placement)) {
         // if so, mark inner element as "to be contained"
         containedElementIndices.push(index);
       } else {
@@ -91,6 +92,7 @@ function constructPrototypeItemDetails(type) {
 
 export const placeItem = new ValidatedMethod({
   name: 'templates.body.items.create',
+  mixins: [CallPromiseMixin],
   validate: new SimpleSchema({
     templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
     item: {

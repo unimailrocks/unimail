@@ -35,6 +35,7 @@
     "bcrypt": "^1.0.2",
     "better-npm-run": "0.0.15",
     "classnames": "^2.2.5",
+    "color": "^1.0.3",
     "deep-diff": "^0.3.4",
     "lodash": "^4.17.4",
     "meteor-node-stubs": "^0.2.4",
