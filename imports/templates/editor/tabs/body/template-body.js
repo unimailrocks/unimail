@@ -4,19 +4,26 @@ import cloneDeep from 'lodash/fp/cloneDeep';
 import React, { PropTypes, Component } from 'react';
 import { Popup, Button, Segment } from 'semantic-ui-react';
 import ReactGridLayout from 'react-grid-layout';
+import { connect } from 'react-redux';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
 import * as Templates from '/imports/templates/methods';
+import { calculateItemPlacement } from '/imports/templates/methods/items';
 import { consolidateTemplateContent, createTemplateContentDiff } from '/imports/templates/collection';
 
 import DrawingCanvas from './drawing-canvas';
 import Item from './items';
 
-export default class TemplateBody extends Component {
+class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
+    tool: UnimailPropTypes.tool,
   };
+
+  static defaultProps = {
+    tool: null,
+  }
 
   generateLayout() {
     const { items } = this.props.template;
@@ -38,15 +45,24 @@ export default class TemplateBody extends Component {
     ));
   }
 
-  addElement = (item) => {
-    Templates.placeItem.call({
-      templateID: this.props.template._id,
-      item,
-    });
+  addElement = async (item) => {
+    try {
+      await Templates.placeItem.callPromise({
+        templateID: this.props.template._id,
+        item,
+      });
+    } catch (e) {
+      console.error(e.error);
+    }
   }
 
   testDraw = rect => {
-    const placed = Item.calculateItemPlacement();
+    const { tool } = this.props;
+    const placed = calculateItemPlacement(rect, this.props.template.items, {
+      outerPossible: tool === 'draw-container',
+    });
+
+    return !!placed;
   }
 
   render() {
@@ -60,7 +76,7 @@ export default class TemplateBody extends Component {
         }}
       >
         <div style={{ position: 'relative' }}>
-          <DrawingCanvas onDraw={this.addElement} />
+          <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
           <ReactGridLayout
             width={600}
             cols={600}
@@ -80,3 +96,11 @@ export default class TemplateBody extends Component {
     );
   }
 }
+
+function mapStateToProps(state) {
+  return {
+    tool: state.editor.tool,
+  };
+}
+
+export default connect(mapStateToProps)(TemplateBody);

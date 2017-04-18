@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Dimensions from 'react-container-dimensions';
+import color from 'color';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
@@ -13,10 +14,12 @@ class DrawingCanvas extends Component {
     tool: UnimailPropTypes.tool,
     releaseTool: PropTypes.func.isRequired,
     onDraw: PropTypes.func.isRequired,
+    testDraw: PropTypes.func,
   };
 
   static defaultProps = {
     tool: null,
+    testDraw: () => true,
   };
 
   static activeTools = [
@@ -60,6 +63,14 @@ class DrawingCanvas extends Component {
 
   // for drawing the rectangle when you're using the 'draw-image' tool
   drawImage(rectangle) {
+    if (this.props.testDraw(rectangle)) {
+      this.context.strokeStyle = colors.grey4;
+      this.context.fillStyle = color(colors.white).alpha(0.5).string();
+    } else {
+      this.context.strokeStyle = color(colors.red).alpha(0.8).string();
+      this.context.fillStyle = color(colors.red).alpha(0.3).string();
+    }
+
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.beginPath();
     this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
@@ -68,10 +79,19 @@ class DrawingCanvas extends Component {
   }
 
   drawContainer(rectangle) {
+    if (this.props.testDraw(rectangle)) {
+      this.context.strokeStyle = colors.grey4;
+      this.context.fillStyle = color(colors.white).alpha(0.5).string();
+    } else {
+      this.context.strokeStyle = color(colors.red).alpha(0.8).string();
+      this.context.fillStyle = color(colors.red).alpha(0.3).string();
+    }
+
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.beginPath();
     this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     this.context.stroke();
+    this.context.fill();
     this.context.closePath();
   }
 
