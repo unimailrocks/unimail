@@ -1,4 +1,7 @@
 import get from 'lodash/fp/get';
+import reduce from 'lodash/fp/reduce';
+import findIndex from 'lodash/fp/findIndex';
+import last from 'lodash/fp/last';
 import { Meteor } from 'meteor/meteor';
 import { CallPromiseMixin } from 'meteor/didericis:callpromise-mixin';
 import { Random } from 'meteor/random';
@@ -25,6 +28,7 @@ export function calculateItemPlacement(
   {
     existingPath = [],
     outerPossible = false,
+    innerPossible = true,
   } = {},
 ) {
   const containedElementIndices = [];
@@ -33,6 +37,11 @@ export function calculateItemPlacement(
     const i = items[index];
     // check if the items overlap
     if (rectanglesOverlap(i.placement, placement)) {
+      // shortcut; if we don't allow placing inside other elements, just escape
+      if (innerPossible) {
+        return false;
+      }
+
       // check if existing element is a container that
       // should contain new element
       // skip check if we're already assuming new element
@@ -208,5 +217,75 @@ export const placeItem = new ValidatedMethod({
         [arrayKey]: finalItem,
       },
     });
+  },
+});
+
+export const moveItem = new ValidatedMethod({
+  name: 'templates.body.items.move',
+  mixins: [CallPromiseMixin],
+  validate: new SimpleSchema({
+    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+    placement: { type: Object },
+    'placement.x': { type: Number },
+    'placement.y': { type: Number },
+    'placement.width': { type: Number },
+    'placement.height': { type: Number },
+    path: { type: Array },
+    'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
+  }).validator(),
+  run({ templateID, placement, path }) {
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
+    const template = Templates.findOne(templateID);
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
+    }
+
+    if (placement.x + placement.width > template.width) {
+      throw new Meteor.Error('Item is hanging off the right edge of the template');
+    }
+
+    if (placement.x < 0) {
+      throw new Meteor.Error('Item is hanging off the left side of the template');
+    }
+
+    if (placement.y < 0) {
+      throw new Meteor.Error('Item is hanging off the top of the template');
+    }
+
+    if (placement.width < 0 || placement.height < 0) {
+      throw new Meteor.Error('Item is of negative dimensions');
+    }
+
+    const { indices, siblings } = reduce(({ items, indices: currentIndices }, _id) => {
+      const newIndex = findIndex({ _id }, items);
+      const newIndices = [...currentIndices, newIndex];
+      return {
+        indices: newIndices,
+        items: items[newIndex].items,
+        siblings: items,
+      };
+    }, { items: template.items, indices: [] }, path);
+
+    const placed = calculateItemPlacement(
+      placement,
+      siblings.filter(({ _id }) => _id !== last(path)),
+      { innerPossible: false },
+    );
+
+    if (!placed) {
+      throw new Meteor.Error('Item overlaps');
+    }
+
+    const modelPath = indices.join('.details.items.');
+    const modelKey = `items.${modelPath}.placement`;
+    Templates.update(templateID, { $set: { [modelKey]: placement } });
   },
 });
