@@ -6,9 +6,9 @@ import Templates from '../collection';
 import { userCanDesign, userCanSee } from './permissions';
 import './sources';
 
-export * from './images';
-export * from './containers';
-export * from './items';
+import * as Items from './items';
+
+export { Items };
 
 Meteor.methods({
   'templates.create'(title) {
