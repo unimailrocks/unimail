@@ -6,14 +6,14 @@ import styles from '/imports/styles/functional';
 
 import Container from './container';
 
-export default function Item({ item, depth }) {
+export default function Item({ item, path }) {
   switch (item.type) {
     case 'image':
       return (
         <div className={css(styles.fit)} style={{ backgroundColor: colors.grey4 }} />
       );
     case 'container':
-      return <Container {...item} depth={depth} />;
+      return <Container {...item} path={[...path, item._id]} />;
     default:
       return <div />;
   }
@@ -21,9 +21,9 @@ export default function Item({ item, depth }) {
 
 Item.propTypes = {
   item: UnimailPropTypes.item.isRequired,
-  depth: PropTypes.number,
+  path: PropTypes.arrayOf(PropTypes.string),
 };
 
 Item.defaultProps = {
-  depth: 0,
+  path: [],
 };

@@ -37,16 +37,12 @@ export function calculateItemPlacement(
     const i = items[index];
     // check if the items overlap
     if (rectanglesOverlap(i.placement, placement)) {
-      // shortcut; if we don't allow placing inside other elements, just escape
-      if (innerPossible) {
-        return false;
-      }
-
       // check if existing element is a container that
       // should contain new element
       // skip check if we're already assuming new element
       // will contain siblings of this element
       if (
+        innerPossible &&
         containedElementIndices.length === 0 &&
         i.type === 'container'
         && rectangleContains(i.placement, placement)
@@ -264,15 +260,15 @@ export const moveItem = new ValidatedMethod({
       throw new Meteor.Error('Item is of negative dimensions');
     }
 
-    const { indices, siblings } = reduce(({ items, indices: currentIndices }, _id) => {
-      const newIndex = findIndex({ _id }, items);
-      const newIndices = [...currentIndices, newIndex];
+    const { indices, siblings } = reduce(({ possibleNextItems, indices: currentIndices }, _id) => {
+      const newIndex = findIndex({ _id }, possibleNextItems);
       return {
-        indices: newIndices,
-        items: items[newIndex].items,
-        siblings: items,
+        indices: [...currentIndices, newIndex],
+        possibleNextItems: possibleNextItems[newIndex].details.items,
+        siblings: possibleNextItems,
       };
-    }, { items: template.items, indices: [] }, path);
+    }, { possibleNextItems: template.items, indices: [] }, path);
+
 
     const placed = calculateItemPlacement(
       placement,
