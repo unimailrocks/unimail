@@ -1,6 +1,11 @@
 import React, { Component, PropTypes } from 'react';
+import isMatch from 'lodash/fp/isMatch';
+import find from 'lodash/fp/find';
 import { StyleSheet, css } from 'aphrodite';
+import { connect } from 'react-redux';
 import ReactGridLayout from 'react-grid-layout';
+
+import * as Templates from '/imports/templates/methods';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
@@ -20,28 +25,66 @@ const containerStyles = StyleSheet.create({
   },
 });
 
-export default class Container extends Component {
+class Container extends Component {
   static propTypes = {
-    depth: PropTypes.number.isRequired,
     details: PropTypes.shape({
       items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
     }).isRequired,
     placement: UnimailPropTypes.placement.isRequired,
+    path: PropTypes.arrayOf(PropTypes.string).isRequired,
   };
 
-  onLayoutChange = () => {
+  onLayoutChange = async newLayout => {
+    const { items } = this.props.details;
+    const { path } = this.props;
+    const results = await Promise.all(newLayout.map(async layoutItem => {
+      const relatedItem = find({ _id: layoutItem.i }, items);
+      const itemDimensions = {
+        width: layoutItem.w,
+        height: layoutItem.h,
+        x: layoutItem.x,
+        y: layoutItem.y,
+      };
+
+      if (isMatch(itemDimensions, relatedItem.placement)) {
+        return false;
+      }
+
+      try {
+        await Templates.Items.moveItem.callPromise({
+          templateID: this.props.template._id,
+          placement: itemDimensions,
+          path: [...path, relatedItem._id],
+        });
+      } catch (err) {
+        console.error('>.< some error', err);
+      }
+
+      return true;
+    }));
+
+    // if any of them need a re-layout
+    // then reset the layout
+    if (results.reduce((a, b) => a || b, false)) {
+      this.resetLayout();
+    }
   };
 
   stopDragPropogation = (l, o, n, p, e) => {
     e.stopPropagation();
   }
 
+  resetLayout() {
+    this._shouldReverseLayout = !this._shouldReverseLayout;
+    this.forceUpdate();
+  }
+
   generateDOM() {
-    const { depth, details } = this.props;
+    const { path, details } = this.props;
     const { items } = details;
     return items.map(item => (
-      <div style={{ zIndex: depth }}key={item._id}>
-        <Item item={item} depth={depth + 1} />
+      <div style={{ zIndex: path.length }} key={item._id}>
+        <Item item={item} path={path} />
       </div>
     ));
   }
@@ -59,6 +102,16 @@ export default class Container extends Component {
 
   render() {
     const { placement } = this.props;
+    const layout = this.generateLayout();
+
+    // reverse layout if we're trying to force a re-layout
+    // works because ids still match up with keys but
+    // array is not _.isEqual (which is used internally)
+    // in ReactGridLayout
+    if (this._shouldReverseLayout) {
+      layout.reverse();
+    }
+
     return (
       <div className={css(styles.fit, containerStyles.bordered)}>
         <ReactGridLayout
@@ -70,7 +123,7 @@ export default class Container extends Component {
           rowHeight={1}
           margin={[0, 0]}
           verticalCompact={false}
-          layout={this.generateLayout()}
+          layout={layout}
         >
           {this.generateDOM()}
         </ReactGridLayout>
@@ -78,3 +131,9 @@ export default class Container extends Component {
     );
   }
 }
+
+function mapStateToProps({ editor: { template } }) {
+  return { template };
+}
+
+export default connect(mapStateToProps)(Container);

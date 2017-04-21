@@ -25,7 +25,10 @@ export default function editorReducer(state = initialState, { type, payload }) {
     }
     case LOAD_TEMPLATE: {
       // TODO calculate height to render
-      return state;
+      return {
+        ...state,
+        template: payload,
+      };
     }
     default:
       return state;
