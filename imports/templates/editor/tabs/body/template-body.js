@@ -40,6 +40,7 @@ class TemplateBody extends Component {
         await Templates.Items.moveItem.callPromise({
           templateID,
           placement: itemDimensions,
+          path: [relatedItem._id],
         });
       } catch (err) {
         console.error('>.< some error', err);
