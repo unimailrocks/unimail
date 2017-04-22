@@ -5,7 +5,7 @@ import color from 'color';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
-import { selectTool } from '../../duck';
+import { selectTool } from '../../../duck';
 
 const { max, min, abs } = Math;
 
