@@ -8,7 +8,8 @@ import { connect } from 'react-redux';
 import UnimailPropTypes from '/imports/prop-types';
 import * as Templates from '/imports/templates/methods';
 
-import DrawingCanvas from './drawing-canvas';
+import DrawingCanvas from './components/drawing-canvas';
+import BulletinBoard, { Tacked } from './components/bulletin-board';
 import Item from './items';
 
 class TemplateBody extends Component {
@@ -69,10 +70,14 @@ class TemplateBody extends Component {
 
   generateDOM() {
     const { items } = this.props.template;
+    console.log('sweg', items);
     return items.map(item => (
-      <div key={item._id}>
+      <Tacked
+        key={item._id}
+        {...item.placement}
+      >
         <Item item={item} />
-      </div>
+      </Tacked>
     ));
   }
 
@@ -121,7 +126,10 @@ class TemplateBody extends Component {
       >
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
-          <ReactGridLayout
+          <BulletinBoard widthLocked minHeight={300}>
+            {this.generateDOM()}
+          </BulletinBoard>
+          {/* <ReactGridLayout
             width={600}
             cols={600}
             onLayoutChange={this.onLayoutChange}
@@ -134,7 +142,7 @@ class TemplateBody extends Component {
             layout={layout}
           >
             {this.generateDOM()}
-          </ReactGridLayout>
+          </ReactGridLayout>*/}
         </div>
       </Segment>
     );
