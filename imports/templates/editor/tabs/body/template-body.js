@@ -70,7 +70,6 @@ class TemplateBody extends Component {
 
   generateDOM() {
     const { items } = this.props.template;
-    console.log('sweg', items);
     return items.map(item => (
       <Tacked
         key={item._id}
