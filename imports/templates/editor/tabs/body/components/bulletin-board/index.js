@@ -25,6 +25,7 @@ export default class BulletinBoard extends Component {
         keys[child.key] = true;
       });
     },
+    onRetack: PropTypes.func,
   };
 
   static defaultProps = {
@@ -33,6 +34,7 @@ export default class BulletinBoard extends Component {
     widthLocked: false,
     children: [],
     minHeight: 0,
+    onRetack: null,
   };
 
   state = {
@@ -52,7 +54,20 @@ export default class BulletinBoard extends Component {
   }
 
   onMouseUp = e => {
+    const { detachedChild } = this.state;
     const mouseCoordinates = { x: e.clientX, y: e.clientY };
+
+    const path = [detachedChild.key];
+
+    this.moveItem({
+      path,
+      newPosition: this.detachedChildPosition(mouseCoordinates),
+    });
+
+    this.setState(() => ({
+      detachedChild: null,
+      detachedMouseCoordinates: null,
+    }));
   };
 
   getDetachedBounds() {
@@ -90,6 +105,10 @@ export default class BulletinBoard extends Component {
       width,
       height,
     };
+  }
+
+  moveItem({ path, newPosition }) {
+    this.props.onRetack({ path, newPosition });
   }
 
   detachChild(child) {
@@ -141,6 +160,7 @@ export default class BulletinBoard extends Component {
           bottom: 0,
         }}
         onMouseMove={this.onMouseMove}
+        onMouseUp={this.onMouseUp}
       >
         <div
           style={{

@@ -57,6 +57,10 @@ class TemplateBody extends Component {
     }
   }
 
+  itemMoved = () => {
+
+  };
+
   generateLayout() {
     const { items } = this.props.template;
     return items.map(({ _id, placement }) => ({
@@ -125,7 +129,11 @@ class TemplateBody extends Component {
       >
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
-          <BulletinBoard widthLocked minHeight={300}>
+          <BulletinBoard
+            widthLocked
+            minHeight={300}
+            onRetack={this.itemMoved}
+          >
             {this.generateDOM()}
           </BulletinBoard>
           {/* <ReactGridLayout
