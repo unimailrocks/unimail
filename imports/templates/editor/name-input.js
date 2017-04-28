@@ -72,7 +72,7 @@ export default class NameInput extends Component {
           onBlur={this.commit}
           onFocus={this.enterEditMode}
         >
-          <input autoFocus />
+          <input autoFocus={!this.state.title} />
           {button}
         </Input>
       </div>
