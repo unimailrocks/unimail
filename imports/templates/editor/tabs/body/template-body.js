@@ -57,8 +57,17 @@ class TemplateBody extends Component {
     }
   }
 
-  itemMoved = () => {
-
+  itemMoved = async ({ path, newPosition }) => {
+    const { _id: templateID } = this.props.template;
+    try {
+      await Templates.Items.moveItem.callPromise({
+        templateID,
+        placement: newPosition,
+        path,
+      });
+    } catch (err) {
+      console.error('>.< some error', err);
+    }
   };
 
   generateLayout() {
