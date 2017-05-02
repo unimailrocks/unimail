@@ -53,15 +53,24 @@ export default class BulletinBoard extends Component {
     }));
   }
 
-  onMouseUp = e => {
+  onMouseUp = async e => {
     const { detachedChild } = this.state;
     const mouseCoordinates = { x: e.clientX, y: e.clientY };
 
     const path = [detachedChild.key];
 
-    this.moveItem({
+    const fixedPosition = this.detachedChildPosition(mouseCoordinates);
+    const canvasPosition = this.getCanvasBounds();
+    const newPosition = {
+      x: fixedPosition.x - canvasPosition.left,
+      y: fixedPosition.y - canvasPosition.top,
+      width: fixedPosition.width,
+      height: fixedPosition.height,
+    };
+
+    await this.moveItem({
       path,
-      newPosition: this.detachedChildPosition(mouseCoordinates),
+      newPosition,
     });
 
     this.setState(() => ({
@@ -70,7 +79,7 @@ export default class BulletinBoard extends Component {
     }));
   };
 
-  getDetachedBounds() {
+  getCanvasBounds() {
     return this.container && this.container.getBoundingClientRect();
   }
 
@@ -82,7 +91,7 @@ export default class BulletinBoard extends Component {
   }
 
   clampToDetachedBounds(point) {
-    const detachedBounds = this.getDetachedBounds();
+    const detachedBounds = this.getCanvasBounds();
 
     return {
       y: max(min(point.y, detachedBounds.bottom), detachedBounds.top),
@@ -97,18 +106,18 @@ export default class BulletinBoard extends Component {
       y: mouseCoordinates.y - detachedMouseCoordinates.y,
     };
 
-    const detachedBounds = this.getDetachedBounds();
+    const detachedBounds = this.getCanvasBounds();
     const { width, height } = detachedChild.props;
     return {
-      left: max(min(ostensiblePosition.x, detachedBounds.right - width), detachedBounds.left),
-      top: max(min(ostensiblePosition.y, detachedBounds.bottom - height), detachedBounds.top),
+      x: max(min(ostensiblePosition.x, detachedBounds.right - width), detachedBounds.left),
+      y: max(min(ostensiblePosition.y, detachedBounds.bottom - height), detachedBounds.top),
       width,
       height,
     };
   }
 
   moveItem({ path, newPosition }) {
-    this.props.onRetack({ path, newPosition });
+    return this.props.onRetack({ path, newPosition });
   }
 
   detachChild(child) {
@@ -148,7 +157,7 @@ export default class BulletinBoard extends Component {
       y: 0,
     });
 
-    const { width, height, top, left } = this.detachedChildPosition(mouseCoordinates);
+    const { width, height, y, x } = this.detachedChildPosition(mouseCoordinates);
 
     return (
       <div
@@ -166,8 +175,8 @@ export default class BulletinBoard extends Component {
           style={{
             backgroundColor: 'green',
             position: 'absolute',
-            top,
-            left,
+            top: y,
+            left: x,
             width,
             height,
           }}
