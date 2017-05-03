@@ -11,6 +11,8 @@ import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
 import styles from '/imports/styles/functional';
 
+import BulletinBoard, { Tacked } from '../components/bulletin-board';
+
 import Item from '.';
 
 const containerStyles = StyleSheet.create({
@@ -30,44 +32,7 @@ class Container extends Component {
     details: PropTypes.shape({
       items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
     }).isRequired,
-    placement: UnimailPropTypes.placement.isRequired,
-    path: PropTypes.arrayOf(PropTypes.string).isRequired,
-  };
-
-  onLayoutChange = async newLayout => {
-    const { items } = this.props.details;
-    const { path } = this.props;
-    const results = await Promise.all(newLayout.map(async layoutItem => {
-      const relatedItem = find({ _id: layoutItem.i }, items);
-      const itemDimensions = {
-        width: layoutItem.w,
-        height: layoutItem.h,
-        x: layoutItem.x,
-        y: layoutItem.y,
-      };
-
-      if (isMatch(itemDimensions, relatedItem.placement)) {
-        return false;
-      }
-
-      try {
-        await Templates.Items.moveItem.callPromise({
-          templateID: this.props.template._id,
-          placement: itemDimensions,
-          path: [...path, relatedItem._id],
-        });
-      } catch (err) {
-        console.error('>.< some error', err);
-      }
-
-      return true;
-    }));
-
-    // if any of them need a re-layout
-    // then reset the layout
-    if (results.reduce((a, b) => a || b, false)) {
-      this.resetLayout();
-    }
+    _id: PropTypes.string.isRequired,
   };
 
   stopDragPropogation = (l, o, n, p, e) => {
@@ -80,12 +45,15 @@ class Container extends Component {
   }
 
   generateDOM() {
-    const { path, details } = this.props;
+    const { details } = this.props;
     const { items } = details;
     return items.map(item => (
-      <div style={{ zIndex: path.length }} key={item._id}>
-        <Item item={item} path={path} />
-      </div>
+      <Tacked
+        key={item._id}
+        {...item.placement}
+      >
+        <Item item={item} />
+      </Tacked>
     ));
   }
 
@@ -101,20 +69,13 @@ class Container extends Component {
   }
 
   render() {
-    const { placement } = this.props;
-    const layout = this.generateLayout();
-
-    // reverse layout if we're trying to force a re-layout
-    // works because ids still match up with keys but
-    // array is not _.isEqual (which is used internally)
-    // in ReactGridLayout
-    if (this._shouldReverseLayout) {
-      layout.reverse();
-    }
-
+    const { _id } = this.props;
     return (
       <div className={css(styles.fit, containerStyles.bordered)}>
-        <ReactGridLayout
+        <BulletinBoard id={_id} fit>
+          {this.generateDOM()}
+        </BulletinBoard>
+        {/* <ReactGridLayout
           onDragStart={this.stopDragPropogation}
           className={css(containerStyles.innerGrid)}
           width={placement.width}
@@ -126,7 +87,7 @@ class Container extends Component {
           layout={layout}
         >
           {this.generateDOM()}
-        </ReactGridLayout>
+        </ReactGridLayout> */}
       </div>
     );
   }

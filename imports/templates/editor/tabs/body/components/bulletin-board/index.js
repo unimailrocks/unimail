@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import Tacked from './tacked';
 
-const { min, max, abs } = Math;
+const { min, max } = Math;
 
 export { Tacked };
 
@@ -11,6 +11,8 @@ export default class BulletinBoard extends Component {
     heightLocked: PropTypes.bool,
     widthLocked: PropTypes.bool,
     minHeight: PropTypes.number,
+    fit: PropTypes.bool,
+    id: PropTypes.string,
     children(props, propName, componentName) {
       const children = props[propName];
       const keys = {};
@@ -35,11 +37,27 @@ export default class BulletinBoard extends Component {
     children: [],
     minHeight: 0,
     onRetack: null,
+    fit: false,
+    id: null,
+  };
+
+  static childContextTypes = {
+    __bb_moveItem: PropTypes.func,
+  };
+
+  static contextTypes = {
+    __bb_moveItem: PropTypes.func,
   };
 
   state = {
     detachedChild: null,
   };
+
+  getChildContext() {
+    return {
+      __bb_moveItem: this.moveItem,
+    };
+  }
 
   onMouseMove = e => {
     if (!this.state.detachedChild) {
@@ -83,11 +101,21 @@ export default class BulletinBoard extends Component {
     return this.container && this.container.getBoundingClientRect();
   }
 
-  calculateHeight() {
+  calculateMinHeight() {
     const { children, minHeight } = this.props;
     const bottoms = React.Children.map(children, ({ props }) => props.y + props.height);
 
-    return Math.max(...bottoms, minHeight);
+    const minPx = Math.max(...bottoms, minHeight);
+    return `${minPx}px`;
+  }
+
+  calculateHeight() {
+    const { fit } = this.props;
+    if (fit) {
+      return '100%';
+    }
+
+    return null;
   }
 
   clampToDetachedBounds(point) {
@@ -116,8 +144,13 @@ export default class BulletinBoard extends Component {
     };
   }
 
-  moveItem({ path, newPosition }) {
-    return this.props.onRetack({ path, newPosition });
+  moveItem = ({ path, newPosition }) => {
+    const { id } = this.props;
+    const onRetack = this.props.onRetack || this.context.__bb_moveItem;
+
+    const newPath = id ? [id, ...path] : path;
+
+    return onRetack({ path: newPath, newPosition });
   }
 
   detachChild(child) {
@@ -173,7 +206,6 @@ export default class BulletinBoard extends Component {
       >
         <div
           style={{
-            backgroundColor: 'green',
             position: 'absolute',
             top: y,
             left: x,
@@ -191,7 +223,10 @@ export default class BulletinBoard extends Component {
       <div
         ref={this.registerContainer}
         className={className}
-        style={{ minHeight: `${this.calculateHeight()}px` }}
+        style={{
+          minHeight: this.calculateMinHeight(),
+          height: this.calculateHeight(),
+        }}
       >
         {this.transformChildren(children)}
         {this.renderDetachedChild()}
