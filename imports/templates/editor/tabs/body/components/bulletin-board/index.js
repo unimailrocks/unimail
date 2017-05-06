@@ -80,8 +80,8 @@ export default class BulletinBoard extends Component {
     const fixedPosition = this.detachedChildPosition(mouseCoordinates);
     const canvasPosition = this.getCanvasBounds();
     const newPosition = {
-      x: fixedPosition.x - canvasPosition.left,
-      y: fixedPosition.y - canvasPosition.top,
+      x: fixedPosition.x - canvasPosition.x,
+      y: fixedPosition.y - canvasPosition.y,
       width: fixedPosition.width,
       height: fixedPosition.height,
     };
@@ -98,7 +98,18 @@ export default class BulletinBoard extends Component {
   };
 
   getCanvasBounds() {
-    return this.container && this.container.getBoundingClientRect();
+    if (!this.container) {
+      return null;
+    }
+
+    const bounds = this.container.getBoundingClientRect();
+
+    return {
+      x: bounds.left,
+      y: bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+    };
   }
 
   calculateMinHeight() {
@@ -118,15 +129,6 @@ export default class BulletinBoard extends Component {
     return null;
   }
 
-  clampToDetachedBounds(point) {
-    const detachedBounds = this.getCanvasBounds();
-
-    return {
-      y: max(min(point.y, detachedBounds.bottom), detachedBounds.top),
-      x: max(min(point.x, detachedBounds.right), detachedBounds.left),
-    };
-  }
-
   detachedChildPosition(mouseCoordinates) {
     const { detachedChild, detachedMouseCoordinates } = this.state;
     const ostensiblePosition = {
@@ -137,8 +139,20 @@ export default class BulletinBoard extends Component {
     const detachedBounds = this.getCanvasBounds();
     const { width, height } = detachedChild.props;
     return {
-      x: max(min(ostensiblePosition.x, detachedBounds.right - width), detachedBounds.left),
-      y: max(min(ostensiblePosition.y, detachedBounds.bottom - height), detachedBounds.top),
+      x: max(
+        min(
+          ostensiblePosition.x,
+          (detachedBounds.x + detachedBounds.width) - width,
+        ),
+        detachedBounds.x,
+      ),
+      y: max(
+        min(
+          ostensiblePosition.y,
+          (detachedBounds.y + detachedBounds.height) - height,
+        ),
+        detachedBounds.y,
+      ),
       width,
       height,
     };
