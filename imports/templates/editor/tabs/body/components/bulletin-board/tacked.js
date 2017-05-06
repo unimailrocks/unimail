@@ -1,7 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 
-const px = x => `${x}px`;
-
 export default class Tacked extends Component {
   static propTypes = {
     height: PropTypes.number.isRequired,
@@ -12,24 +10,30 @@ export default class Tacked extends Component {
       PropTypes.arrayOf(PropTypes.element),
       PropTypes.element,
     ]).isRequired,
-    onMouseDown: PropTypes.func,
+    onBeginTransform: PropTypes.func,
   };
 
   static defaultProps = {
-    onMouseDown() {},
+    onBeginTransform() {},
   };
 
-  onMouseDown = e => {
+  beginTranslate = e => {
     e.preventDefault();
     e.stopPropagation();
 
     const containerCoords = this.container.getBoundingClientRect();
-    const relativeCoords = {
+    const relativeCoordinates = {
       x: e.clientX - containerCoords.left,
       y: e.clientY - containerCoords.top,
     };
 
-    this.props.onMouseDown(relativeCoords, { x: e.clientX, y: e.clientY });
+    this.props.onBeginTransform('translate', {
+      relativeCoordinates,
+      mouseCoordinates: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+    });
   };
 
   registerContainer = container => {
@@ -39,32 +43,29 @@ export default class Tacked extends Component {
   render() {
     const { height, width, x, y, children } = this.props;
     return (
-      <div>
+      <div
+        style={{
+          height,
+          width,
+          left: x,
+          top: y,
+          position: 'absolute',
+        }}
+        onMouseDown={this.beginTranslate}
+      >
         <div
           style={{
-            height,
-            width,
-            left: x,
-            top: y,
             position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             border: '1px solid black',
             boxSizing: 'border-box',
           }}
-        />
-        <div
           ref={this.registerContainer}
-          onMouseDown={this.onMouseDown}
-          style={{
-            position: 'absolute',
-            top: y,
-            left: x,
-            height,
-            width,
-          }}
-        >
-          {children}
-        </div>
-
+        />
+        {children}
       </div>
     );
   }

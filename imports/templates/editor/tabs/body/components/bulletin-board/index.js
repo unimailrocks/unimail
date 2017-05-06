@@ -42,11 +42,11 @@ export default class BulletinBoard extends Component {
   };
 
   static childContextTypes = {
-    __bb_moveItem: PropTypes.func,
+    __bb_shapeItem: PropTypes.func,
   };
 
   static contextTypes = {
-    __bb_moveItem: PropTypes.func,
+    __bb_shapeItem: PropTypes.func,
   };
 
   state = {
@@ -55,7 +55,7 @@ export default class BulletinBoard extends Component {
 
   getChildContext() {
     return {
-      __bb_moveItem: this.moveItem,
+      __bb_shapeItem: this.shapeItem,
     };
   }
 
@@ -65,8 +65,7 @@ export default class BulletinBoard extends Component {
     }
 
     const mouseCoordinates = { x: e.clientX, y: e.clientY };
-    this.setState(state => ({
-      ...state,
+    this.setState(() => ({
       mouseCoordinates,
     }));
   }
@@ -86,7 +85,7 @@ export default class BulletinBoard extends Component {
       height: fixedPosition.height,
     };
 
-    await this.moveItem({
+    await this.shapeItem({
       path,
       newPosition,
     });
@@ -158,22 +157,22 @@ export default class BulletinBoard extends Component {
     };
   }
 
-  moveItem = ({ path, newPosition }) => {
+  shapeItem = ({ path, newPosition }) => {
     const { id } = this.props;
-    const onRetack = this.props.onRetack || this.context.__bb_moveItem;
+    const onRetack = this.props.onRetack || this.context.__bb_shapeItem;
 
     const newPath = id ? [id, ...path] : path;
 
     return onRetack({ path: newPath, newPosition });
   }
 
-  detachChild(child) {
-    return (relativeCoordinates, mouseCoordinates) => {
-      this.setState(state => ({
-        ...state,
+  createTransformBeginner(child) {
+    return (currentTransformType, { relativeCoordinates, mouseCoordinates }) => {
+      this.setState(() => ({
         detachedChild: child,
         detachedMouseCoordinates: relativeCoordinates,
         mouseCoordinates,
+        currentTransformType,
       }));
     };
   }
@@ -184,8 +183,9 @@ export default class BulletinBoard extends Component {
       if (detachedChild && child.key === detachedChild.key) {
         return null;
       }
+
       return React.cloneElement(child, {
-        onMouseDown: this.detachChild(child),
+        onBeginTransform: this.createTransformBeginner(child),
       });
     });
   }
