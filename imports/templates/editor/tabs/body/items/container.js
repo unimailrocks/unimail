@@ -71,23 +71,10 @@ class Container extends Component {
   render() {
     const { _id } = this.props;
     return (
-      <div className={css(styles.fit, containerStyles.bordered)}>
+      <div className={css(styles.fit)}>
         <BulletinBoard id={_id} fit>
           {this.generateDOM()}
         </BulletinBoard>
-        {/* <ReactGridLayout
-          onDragStart={this.stopDragPropogation}
-          className={css(containerStyles.innerGrid)}
-          width={placement.width}
-          cols={placement.width}
-          onLayoutChange={this.onLayoutChange}
-          rowHeight={1}
-          margin={[0, 0]}
-          verticalCompact={false}
-          layout={layout}
-        >
-          {this.generateDOM()}
-        </ReactGridLayout> */}
       </div>
     );
   }

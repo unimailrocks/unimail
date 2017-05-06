@@ -39,19 +39,32 @@ export default class Tacked extends Component {
   render() {
     const { height, width, x, y, children } = this.props;
     return (
-      <div
-        ref={this.registerContainer}
-        style={{
-          height: px(height),
-          width: px(width),
-          left: px(x),
-          top: px(y),
-          position: 'absolute',
-          border: '1px solid black',
-        }}
-        onMouseDown={this.onMouseDown}
-      >
-        {children}
+      <div>
+        <div
+          style={{
+            height,
+            width,
+            left: x,
+            top: y,
+            position: 'absolute',
+            border: '3px solid black',
+            boxSizing: 'border-box',
+          }}
+        />
+        <div
+          ref={this.registerContainer}
+          onMouseDown={this.onMouseDown}
+          style={{
+            position: 'absolute',
+            top: y,
+            left: x,
+            height,
+            width,
+          }}
+        >
+          {children}
+        </div>
+
       </div>
     );
   }
