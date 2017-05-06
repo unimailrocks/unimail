@@ -47,7 +47,7 @@ export default class Tacked extends Component {
             left: x,
             top: y,
             position: 'absolute',
-            border: '3px solid black',
+            border: '1px solid black',
             boxSizing: 'border-box',
           }}
         />
