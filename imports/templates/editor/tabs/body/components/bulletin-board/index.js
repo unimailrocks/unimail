@@ -246,6 +246,46 @@ export default class BulletinBoard extends Component {
     return { x, y, width, height };
   }
 
+  boundedPosition({ x, y, width, height }, { resizable = false } = {}) {
+    const detachedBounds = this.getCanvasBounds();
+    if (resizable) {
+      const right = min(x + width, detachedBounds.x + detachedBounds.width);
+      const bottom = min(y + height, detachedBounds.y + detachedBounds.height);
+      const left = max(x, detachedBounds.x);
+      const top = max(y, detachedBounds.y);
+
+      return {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+      };
+    }
+
+    const boundedX = max(
+        min(
+          x,
+          (detachedBounds.x + detachedBounds.width) - width,
+        ),
+        detachedBounds.x,
+      );
+
+    const boundedY = max(
+        min(
+          y,
+          (detachedBounds.y + detachedBounds.height) - height,
+        ),
+        detachedBounds.y,
+      );
+
+    return {
+      x: boundedX,
+      y: boundedY,
+      width,
+      height,
+    };
+  }
+
   detachedChildPosition(mouseCoordinates) {
     const {
       detachedChild,
@@ -281,25 +321,10 @@ export default class BulletinBoard extends Component {
       height: abs(ostensiblePosition.height),
     };
 
-    const detachedBounds = this.getCanvasBounds();
-    return {
-      x: max(
-        min(
-          reflectedPosition.x,
-          (detachedBounds.x + detachedBounds.width) - reflectedPosition.width,
-        ),
-        detachedBounds.x,
-      ),
-      y: max(
-        min(
-          reflectedPosition.y,
-          (detachedBounds.y + detachedBounds.height) - reflectedPosition.height,
-        ),
-        detachedBounds.y,
-      ),
-      width: reflectedPosition.width,
-      height: reflectedPosition.height,
-    };
+    const boundedPosition = this.boundedPosition(reflectedPosition, {
+      resizable: currentTransformType.startsWith('resize'),
+    });
+    return boundedPosition;
   }
 
   shapeItem = ({ path, newPosition }) => {
