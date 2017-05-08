@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react';
+import Frame from './frame';
 
 export default class Tacked extends Component {
   static propTypes = {
@@ -51,20 +52,10 @@ export default class Tacked extends Component {
           top: y,
           position: 'absolute',
         }}
+        ref={this.registerContainer}
         onMouseDown={this.beginTranslate}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            border: '1px solid black',
-            boxSizing: 'border-box',
-          }}
-          ref={this.registerContainer}
-        />
+        <Frame />
         {children}
       </div>
     );
