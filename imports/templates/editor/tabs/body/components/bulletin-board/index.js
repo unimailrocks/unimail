@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import Tacked from './tacked';
 
-const { min, max } = Math;
+const { abs, min, max } = Math;
 
 export { Tacked };
 
@@ -92,7 +92,8 @@ export default class BulletinBoard extends Component {
 
     this.setState(() => ({
       detachedChild: null,
-      detachedMouseCoordinates: null,
+      detachedMouseRelativeCoordinates: null,
+      currentTransformType: null,
     }));
   };
 
@@ -128,32 +129,176 @@ export default class BulletinBoard extends Component {
     return null;
   }
 
+  translatingChildPosition({
+    mouseCoordinates,
+    child,
+    relativeCoordinates,
+  }) {
+    return {
+      x: mouseCoordinates.x - relativeCoordinates.x,
+      y: mouseCoordinates.y - relativeCoordinates.y,
+      width: child.props.width,
+      height: child.props.height,
+    };
+  }
+
+  calculateMouseCorrection(direction) {
+    const { width, height } = this.state.detachedChild.props;
+    const { x, y } = this.state.detachedMouseRelativeCoordinates;
+
+    switch (direction) {
+      case 'l':
+        return {
+          x: -x,
+          y: (height / 2) - y,
+        };
+      case 'ul':
+        return {
+          x: -x,
+          y: -y,
+        };
+      case 'u':
+        return {
+          x: (width / 2) - x,
+          y: -y,
+        };
+      case 'ur':
+        return {
+          x: width - x,
+          y: -y,
+        };
+      case 'r':
+        return {
+          x: width - x,
+          y: (height / 2) - y,
+        };
+      case 'dr':
+        return {
+          x: width - x,
+          y: height - y,
+        };
+      case 'd':
+        return {
+          x: (width / 2) - x,
+          y: height - y,
+        };
+
+      case 'dl':
+        return {
+          x: -x,
+          y: height - y,
+        };
+      default:
+        console.warn('got a weird direction...', direction);
+        return {
+          x: 0,
+          y: 0,
+        };
+    }
+  }
+
+  resizingChildPosition({
+    direction,
+    mouseCoordinates,
+    child,
+  }) {
+    // mouseCorrection is the distance from the point the cursor should be at
+    // so if you grab the node 1 pixel to the right and 1 pixel below
+    // it will still catch on the node, but the corner should remain
+    // at that same difference, which is represented as { x: 1, y: 1 } in this case
+    const detachedBounds = this.getCanvasBounds();
+
+    const mouseCorrection = this.calculateMouseCorrection(direction);
+
+    const initial = {
+      x: child.props.x + detachedBounds.x,
+      y: child.props.y + detachedBounds.y,
+      width: child.props.width,
+      height: child.props.height,
+    };
+
+    const x = direction.includes('l') ?
+      mouseCoordinates.x + mouseCorrection.x :
+      initial.x;
+
+    const y = direction.includes('u') ?
+      mouseCoordinates.y + mouseCorrection.y :
+      initial.y;
+
+    let width;
+    if (direction.includes('l')) {
+      width = (initial.x + initial.width) - x;
+    } else if (direction.includes('r')) {
+      width = mouseCoordinates.x - x;
+    } else {
+      width = initial.width;
+    }
+
+    let height;
+    if (direction.includes('u')) {
+      height = (initial.y + initial.height) - y;
+    } else if (direction.includes('d')) {
+      height = mouseCoordinates.y - y;
+    } else {
+      height = initial.height;
+    }
+
+    return { x, y, width, height };
+  }
+
   detachedChildPosition(mouseCoordinates) {
-    const { detachedChild, detachedMouseCoordinates } = this.state;
-    const ostensiblePosition = {
-      x: mouseCoordinates.x - detachedMouseCoordinates.x,
-      y: mouseCoordinates.y - detachedMouseCoordinates.y,
+    const {
+      detachedChild,
+      detachedMouseRelativeCoordinates,
+      currentTransformType,
+    } = this.state;
+
+    const commonOptions = {
+      child: detachedChild,
+      relativeCoordinates: detachedMouseRelativeCoordinates,
+      mouseCoordinates,
+    };
+
+    let ostensiblePosition;
+    if (currentTransformType === 'translate') {
+      ostensiblePosition = this.translatingChildPosition(commonOptions);
+    } else if (currentTransformType.startsWith('resize')) {
+      const [, direction] = /resize-(.*)/.exec(currentTransformType);
+
+      ostensiblePosition = this.resizingChildPosition({ ...commonOptions, direction });
+    } else {
+      throw new Error(`Trying to render detached child with currentTransformType of ${currentTransformType}`);
+    }
+
+    const reflectedPosition = {
+      x: ostensiblePosition.width < 0 ?
+        ostensiblePosition.x + ostensiblePosition.width :
+        ostensiblePosition.x,
+      y: ostensiblePosition.height < 0 ?
+        ostensiblePosition.y + ostensiblePosition.height :
+        ostensiblePosition.y,
+      width: abs(ostensiblePosition.width),
+      height: abs(ostensiblePosition.height),
     };
 
     const detachedBounds = this.getCanvasBounds();
-    const { width, height } = detachedChild.props;
     return {
       x: max(
         min(
-          ostensiblePosition.x,
-          (detachedBounds.x + detachedBounds.width) - width,
+          reflectedPosition.x,
+          (detachedBounds.x + detachedBounds.width) - reflectedPosition.width,
         ),
         detachedBounds.x,
       ),
       y: max(
         min(
-          ostensiblePosition.y,
-          (detachedBounds.y + detachedBounds.height) - height,
+          reflectedPosition.y,
+          (detachedBounds.y + detachedBounds.height) - reflectedPosition.height,
         ),
         detachedBounds.y,
       ),
-      width,
-      height,
+      width: reflectedPosition.width,
+      height: reflectedPosition.height,
     };
   }
 
@@ -170,7 +315,7 @@ export default class BulletinBoard extends Component {
     return (currentTransformType, { relativeCoordinates, mouseCoordinates }) => {
       this.setState(() => ({
         detachedChild: child,
-        detachedMouseCoordinates: relativeCoordinates,
+        detachedMouseRelativeCoordinates: relativeCoordinates,
         mouseCoordinates,
         currentTransformType,
       }));
@@ -199,12 +344,14 @@ export default class BulletinBoard extends Component {
     if (!detachedChild) {
       return null;
     }
+    const { width, height, y, x } = this.detachedChildPosition(mouseCoordinates);
+
     const untacked = React.cloneElement(detachedChild, {
       x: 0,
       y: 0,
+      width,
+      height,
     });
-
-    const { width, height, y, x } = this.detachedChildPosition(mouseCoordinates);
 
     return (
       <div

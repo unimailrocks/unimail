@@ -18,24 +18,35 @@ export default class Tacked extends Component {
     onBeginTransform() {},
   };
 
-  beginTranslate = e => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  getCoordinatesFromEvent(e) {
     const containerCoords = this.container.getBoundingClientRect();
     const relativeCoordinates = {
       x: e.clientX - containerCoords.left,
       y: e.clientY - containerCoords.top,
     };
 
-    this.props.onBeginTransform('translate', {
+    return {
       relativeCoordinates,
       mouseCoordinates: {
         x: e.clientX,
         y: e.clientY,
       },
-    });
+    };
+  }
+
+  beginTranslate = e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    this.props.onBeginTransform('translate', this.getCoordinatesFromEvent(e));
   };
+
+  beginResize = ({ direction, event }) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.props.onBeginTransform(`resize-${direction}`, this.getCoordinatesFromEvent(event));
+  }
 
   registerContainer = container => {
     this.container = container;
@@ -55,7 +66,9 @@ export default class Tacked extends Component {
         ref={this.registerContainer}
         onMouseDown={this.beginTranslate}
       >
-        <Frame />
+        <Frame
+          onResizeBegin={this.beginResize}
+        />
         {children}
       </div>
     );
