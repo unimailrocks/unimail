@@ -1,3 +1,4 @@
+/* eslint-disable react/sort-comp */
 import React, { Component, PropTypes } from 'react';
 import Tacked from './tacked';
 
@@ -8,8 +9,6 @@ export { Tacked };
 export default class BulletinBoard extends Component {
   static propTypes = {
     className: PropTypes.string,
-    heightLocked: PropTypes.bool,
-    widthLocked: PropTypes.bool,
     minHeight: PropTypes.number,
     fit: PropTypes.bool,
     id: PropTypes.string,
@@ -43,19 +42,46 @@ export default class BulletinBoard extends Component {
 
   static childContextTypes = {
     __bb_shapeItem: PropTypes.func,
+    __bb_registerResizeResponder: PropTypes.func,
+    __bb_contextID: PropTypes.string,
   };
 
   static contextTypes = {
     __bb_shapeItem: PropTypes.func,
+    __bb_registerResizeResponder: PropTypes.func,
+    __bb_translation: PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+    __bb_contextID: PropTypes.string,
   };
 
   state = {
     detachedChild: null,
   };
 
+  resizeResponders = {};
+
+  componentWillReceiveProps(newProps, nextContext) {
+    if (!newProps.onRetack && !nextContext.__bb_shapeItem) {
+      throw new Error('Base BulletinBoard must have `onRetack` prop!');
+    }
+    const newContextID = nextContext.__bb_contextID;
+    if (newContextID) {
+      this.context.__bb_registerResizeResponder(newContextID, this.respondToResize);
+    }
+  }
+
+  componentDidMount() {
+    if (this.context.__bb_registerResizeResponder) {
+      this.context.__bb_registerResizeResponder(this.context.__bb_contextID, this.respondToResize);
+    }
+  }
+
   getChildContext() {
     return {
       __bb_shapeItem: this.shapeItem,
+      __bb_registerResizeResponder: this.registerSubboardShrinkwrapper,
     };
   }
 
@@ -76,19 +102,21 @@ export default class BulletinBoard extends Component {
 
     const path = [detachedChild.key];
 
-    const fixedPosition = this.detachedChildPosition(mouseCoordinates);
-    const canvasPosition = this.getCanvasBounds();
-    const newPosition = {
-      x: fixedPosition.x - canvasPosition.x,
-      y: fixedPosition.y - canvasPosition.y,
-      width: fixedPosition.width,
-      height: fixedPosition.height,
-    };
+    const { position: fixedPosition, changes } = this.detachedChildPosition(mouseCoordinates);
+    const newPosition = this.translateToCanvas(fixedPosition);
+    const ancestorUpdates = Promise.all(
+      changes.map(this.shapeItem),
+    );
 
-    await this.shapeItem({
-      path,
-      newPosition,
-    });
+    // make all changes necessary
+    // pass them up or out (to context or to props)
+    await Promise.all([
+      this.shapeItem({
+        path,
+        newPosition,
+      }),
+      ancestorUpdates,
+    ]);
 
     this.setState(() => ({
       detachedChild: null,
@@ -116,7 +144,7 @@ export default class BulletinBoard extends Component {
     const { children, minHeight } = this.props;
     const bottoms = React.Children.map(children, ({ props }) => props.y + props.height);
 
-    const minPx = Math.max(...bottoms, minHeight);
+    const minPx = max(...bottoms, minHeight);
     return `${minPx}px`;
   }
 
@@ -129,7 +157,7 @@ export default class BulletinBoard extends Component {
     return null;
   }
 
-  translatingChildPosition({
+  static translatingChildPosition({
     mouseCoordinates,
     child,
     relativeCoordinates,
@@ -246,6 +274,10 @@ export default class BulletinBoard extends Component {
     return { x, y, width, height };
   }
 
+  registerSubboardShrinkwrapper = (contextID, resizeResponder) => {
+    this.resizeResponders[contextID] = resizeResponder;
+  }
+
   boundedPosition({ x, y, width, height }, { resizable = false } = {}) {
     const detachedBounds = this.getCanvasBounds();
     if (resizable) {
@@ -286,6 +318,140 @@ export default class BulletinBoard extends Component {
     };
   }
 
+  translateToCanvas(absolutePosition) {
+    const bounds = this.getCanvasBounds();
+    return {
+      ...absolutePosition,
+      x: absolutePosition.x - bounds.x,
+      y: absolutePosition.y - bounds.y,
+    };
+  }
+
+  /*
+   * Returns an object
+     {
+       // the canvas position,
+       // making sure we don't collide with successor elements
+       position: { x, y, width, height },
+
+       // the changes in x and y from their suspected position
+       diff: { x, y },
+
+       // arguments to pass to shapeItem
+       // (reflect changes to successor items)
+       changes: [{ newPosition, path }]
+     }
+   */
+  shrinkWrappedPosition(absolutePosition, id) {
+    // descendant component's respondToResize
+    const responder = this.resizeResponders[id];
+    if (!responder) {
+      // there is no billboard inside the detached child
+      return {
+        position: absolutePosition,
+        diff: { x: 0, y: 0 },
+        changes: [],
+      };
+    }
+
+    const { x, y } = this.state.detachedChild.props;
+    const canvasPosition = this.translateToCanvas(absolutePosition);
+    const ostensibleDiff = {
+      x: canvasPosition.x - x,
+      y: canvasPosition.y - y,
+    };
+
+    const ostensibleDims = {
+      width: canvasPosition.width,
+      height: canvasPosition.height,
+    };
+
+    const { dims, diff, changes } = responder(ostensibleDiff, ostensibleDims);
+
+    const position = {
+      // unapply old diff, apply new diff
+      x: absolutePosition.x - ostensibleDiff.x + diff.x, // eslint-disable-line no-mixed-operators
+      y: absolutePosition.y - ostensibleDiff.y + diff.y, // eslint-disable-line no-mixed-operators
+      width: dims.width,
+      height: dims.height,
+    };
+
+    return { position, diff, changes };
+  }
+
+  // just communicates with parent's shrinkWrappedPosition
+  // about current BulletinBoard's needs
+  respondToResize = (ostensibleDiff, ostensibleDims) => {
+    // these define the smallest rectangle that a rectangle
+    // containing all of the children would have to
+    const thresholds = {
+      top: Infinity,
+      bottom: 0,
+      left: Infinity,
+      right: 0,
+    };
+
+    const { children } = this.props;
+    if (children.length === 0) {
+      return { diff: ostensibleDiff, dims: ostensibleDims, changes: [] };
+    }
+
+    React.Children.forEach(children, ({ props: { x, y, width, height } }) => {
+      if (thresholds.top > y) {
+        thresholds.top = y;
+      }
+
+      if (thresholds.bottom < y + height) {
+        thresholds.bottom = y + height;
+      }
+
+      if (thresholds.left > x) {
+        thresholds.left = x;
+      }
+
+      if (thresholds.right < x + width) {
+        thresholds.right = x + width;
+      }
+    });
+
+    // the corrected diff
+    const newDiff = {
+      // force corner to not infringe from the top
+      // or the left
+      x: min(thresholds.left, ostensibleDiff.x),
+      y: min(thresholds.top, ostensibleDiff.y),
+    };
+
+    const newDims = {
+      width: max(
+        // in the case that the left gets corrected
+        // we increase the width as much as the expected width
+        ostensibleDims.width + (ostensibleDiff.x - newDiff.x),
+        // but make sure it's big enough to not infringe
+        // on the right
+        thresholds.right - newDiff.x,
+      ),
+      // likeewise for height
+      height: max(
+        ostensibleDims.height + (ostensibleDiff.y - newDiff.y),
+        thresholds.bottom - newDiff.y,
+      ),
+    };
+
+    const myKey = this.props.id ? [this.props.id] : [];
+    const changes = React.Children.map(children, child => ({
+      path: [...myKey, child.key],
+      newPosition: {
+        x: child.props.x - newDiff.x,
+        y: child.props.y - newDiff.y,
+        width: child.props.width,
+        height: child.props.height,
+      },
+    }));
+
+    return { diff: newDiff, dims: newDims, changes };
+  }
+
   detachedChildPosition(mouseCoordinates) {
     const {
       detachedChild,
@@ -301,7 +467,7 @@ export default class BulletinBoard extends Component {
 
     let ostensiblePosition;
     if (currentTransformType === 'translate') {
-      ostensiblePosition = this.translatingChildPosition(commonOptions);
+      ostensiblePosition = this.constructor.translatingChildPosition(commonOptions);
     } else if (currentTransformType.startsWith('resize')) {
       const [, direction] = /resize-(.*)/.exec(currentTransformType);
 
@@ -324,9 +490,17 @@ export default class BulletinBoard extends Component {
     const boundedPosition = this.boundedPosition(reflectedPosition, {
       resizable: currentTransformType.startsWith('resize'),
     });
-    return boundedPosition;
+
+    const { position: shrinkWrappedPosition, diff, changes } =
+      this.shrinkWrappedPosition(boundedPosition, detachedChild.key);
+
+    return { position: shrinkWrappedPosition, diff, changes };
   }
 
+  // if it's our child that's being resized, call with [child.key] as path
+  // otherwise, this is called by child BulletinBoard shaping a successor's item
+  // pass out of the component to props.onRetack
+  // if that prop doesn't exist, call up to ancestor BulletinBoard
   shapeItem = ({ path, newPosition }) => {
     const { id } = this.props;
     const onRetack = this.props.onRetack || this.context.__bb_shapeItem;
@@ -336,6 +510,7 @@ export default class BulletinBoard extends Component {
     return onRetack({ path: newPath, newPosition });
   }
 
+  // For when a Tacked tells a BulletinBoard we're starting some kind of motion
   createTransformBeginner(child) {
     return (currentTransformType, { relativeCoordinates, mouseCoordinates }) => {
       this.setState(() => ({
@@ -347,8 +522,13 @@ export default class BulletinBoard extends Component {
     };
   }
 
+  getInnerTranslation() {
+    return this.context.__bb_translation || { x: 0, y: 0 };
+  }
+
   transformChildren(children) {
     const { detachedChild } = this.state;
+    const translation = this.getInnerTranslation();
     return React.Children.map(children, child => {
       if (detachedChild && child.key === detachedChild.key) {
         return null;
@@ -356,6 +536,9 @@ export default class BulletinBoard extends Component {
 
       return React.cloneElement(child, {
         onBeginTransform: this.createTransformBeginner(child),
+        id: child.key,
+        x: child.props.x - translation.x,
+        y: child.props.y - translation.y,
       });
     });
   }
@@ -369,13 +552,17 @@ export default class BulletinBoard extends Component {
     if (!detachedChild) {
       return null;
     }
-    const { width, height, y, x } = this.detachedChildPosition(mouseCoordinates);
+    const { position, diff } = this.detachedChildPosition(mouseCoordinates);
+    const { width, height, y, x } = position;
 
     const untacked = React.cloneElement(detachedChild, {
       x: 0,
       y: 0,
       width,
       height,
+      id: detachedChild.key,
+      // indirectly sets context.__bb_translation
+      ancestorTranslation: diff,
     });
 
     return (

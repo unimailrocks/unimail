@@ -12,11 +12,34 @@ export default class Tacked extends Component {
       PropTypes.element,
     ]).isRequired,
     onBeginTransform: PropTypes.func,
+    id: PropTypes.string,
+    ancestorTranslation: PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
   };
 
   static defaultProps = {
     onBeginTransform() {},
+    id: null,
+    ancestorTranslation: null,
   };
+
+  static childContextTypes = {
+    __bb_translation: PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired,
+    }),
+    __bb_contextID: PropTypes.string,
+  }
+
+  getChildContext() {
+    const { ancestorTranslation, id } = this.props;
+    return {
+      __bb_translation: ancestorTranslation,
+      __bb_contextID: id,
+    };
+  }
 
   getCoordinatesFromEvent(e) {
     const containerCoords = this.container.getBoundingClientRect();
