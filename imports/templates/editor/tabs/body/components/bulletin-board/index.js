@@ -102,7 +102,7 @@ export default class BulletinBoard extends Component {
 
     const path = [detachedChild.key];
 
-    const { position: fixedPosition, changes } = this.detachedChildPosition(mouseCoordinates);
+    const { position: fixedPosition, changes = [] } = this.detachedChildPosition(mouseCoordinates);
     const newPosition = this.translateToCanvas(fixedPosition);
     const ancestorUpdates = Promise.all(
       changes.map(this.shapeItem),
@@ -487,14 +487,22 @@ export default class BulletinBoard extends Component {
       height: abs(ostensiblePosition.height),
     };
 
+    const isResizing = currentTransformType.startsWith('resize');
+
     const boundedPosition = this.boundedPosition(reflectedPosition, {
-      resizable: currentTransformType.startsWith('resize'),
+      resizable: isResizing,
     });
 
-    const { position: shrinkWrappedPosition, diff, changes } =
-      this.shrinkWrappedPosition(boundedPosition, detachedChild.key);
+    if (isResizing) {
+      const { position: shrinkWrappedPosition, diff, changes } =
+        this.shrinkWrappedPosition(boundedPosition, detachedChild.key);
 
-    return { position: shrinkWrappedPosition, diff, changes };
+      return { position: shrinkWrappedPosition, diff, changes };
+    }
+
+    return {
+      position: boundedPosition,
+    };
   }
 
   // if it's our child that's being resized, call with [child.key] as path
@@ -552,7 +560,7 @@ export default class BulletinBoard extends Component {
     if (!detachedChild) {
       return null;
     }
-    const { position, diff } = this.detachedChildPosition(mouseCoordinates);
+    const { position, diff = { x: 0, y: 0 } } = this.detachedChildPosition(mouseCoordinates);
     const { width, height, y, x } = position;
 
     const untacked = React.cloneElement(detachedChild, {
