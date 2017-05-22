@@ -2,6 +2,8 @@ import get from 'lodash/fp/get';
 import reduce from 'lodash/fp/reduce';
 import findIndex from 'lodash/fp/findIndex';
 import last from 'lodash/fp/last';
+import initial from 'lodash/fp/initial';
+import isEqual from 'lodash/fp/isEqual';
 import { Meteor } from 'meteor/meteor';
 import { CallPromiseMixin } from 'meteor/didericis:callpromise-mixin';
 import { Random } from 'meteor/random';
@@ -28,13 +30,17 @@ export function calculateItemPlacement(
   {
     existingPath = [],
     outerPossible = false,
-    innerPossible = true,
+    ignoreID,
   } = {},
 ) {
   const containedElementIndices = [];
   // iterate over all items under consideration
   for (let index = 0; index < items.length; index += 1) {
     const i = items[index];
+    if (i._id === ignoreID) {
+      continue;
+    }
+
     // check if the items overlap
     if (rectanglesOverlap(i.placement, placement)) {
       // check if existing element is a container that
@@ -42,7 +48,6 @@ export function calculateItemPlacement(
       // skip check if we're already assuming new element
       // will contain siblings of this element
       if (
-        innerPossible &&
         containedElementIndices.length === 0 &&
         i.type === 'container'
         && rectangleContains(i.placement, placement)
@@ -61,6 +66,7 @@ export function calculateItemPlacement(
           {
             existingPath: [...existingPath, index],
             outerPossible,
+            ignoreID,
           },
         );
       // maybe new element goes *around* the existing element
@@ -260,28 +266,90 @@ export const moveItem = new ValidatedMethod({
       throw new Meteor.Error('Item is of negative dimensions');
     }
 
-    const { indices, siblings } = reduce(({ possibleNextItems, indices: currentIndices }, _id) => {
+    // translate path (_id array) to indices (like [0, 2, 1])
+    // also get absolute placement of item
+    // (complicated so we can do both in one pass)
+    const { indices, absolutePlacement: currentAbsolutePlacement } = reduce(({
+      possibleNextItems = template.items,
+      indices: currentIndices = [],
+      absolutePlacement = { x: 0, y: 0 },
+    }, _id) => {
       const newIndex = findIndex({ _id }, possibleNextItems);
+      const nextItem = possibleNextItems[newIndex];
+      const nextPlacement = nextItem.placement;
       return {
         indices: [...currentIndices, newIndex],
-        possibleNextItems: possibleNextItems[newIndex].details.items,
-        siblings: possibleNextItems,
+        possibleNextItems: nextItem.details.items,
+        absolutePlacement: {
+          x: absolutePlacement.x + nextPlacement.x,
+          y: absolutePlacement.y + nextPlacement.y,
+        },
       };
-    }, { possibleNextItems: template.items, indices: [] }, path);
+    }, {}, path);
 
+    const modelKeyPart = indices.join('.details.items.');
+    const itemKey = `items.${modelKeyPart}`;
+    const item = get(itemKey, template);
+
+    const currentRelativePlacement = item.placement;
+
+    const newAbsolutePlacement = {
+      x: (currentAbsolutePlacement.x - currentRelativePlacement.x) + placement.x,
+      y: (currentAbsolutePlacement.y - currentRelativePlacement.y) + placement.y,
+      width: placement.width,
+      height: placement.height,
+    };
 
     const placed = calculateItemPlacement(
-      placement,
-      siblings.filter(({ _id }) => _id !== last(path)),
-      { innerPossible: false },
+      newAbsolutePlacement,
+      template.items,
+      // for now, don't allow old elements to go inside the moved item
+      // This introduces the complexity of allowing "weaving", which is just
+      // not worth implementing for now
+      // (that's why we keep outerPossible false)
+      { ignoreID: last(path) },
     );
 
     if (!placed) {
       throw new Meteor.Error('Item overlaps');
     }
 
-    const modelPath = indices.join('.details.items.');
-    const modelKey = `items.${modelPath}.placement`;
-    Templates.update(templateID, { $set: { [modelKey]: placement } });
+    const { placement: relativePlacement, path: newIndices } = placed;
+    if (isEqual(newIndices, initial(indices))) {
+      const placementKey = `items.${modelKeyPart}.placement`;
+      Templates.update(templateID, { $set: { [placementKey]: relativePlacement } });
+    } else {
+      const newModelParentKeyPart = newIndices.join('.details.items.');
+      const newModelParentKey = newModelParentKeyPart.length > 0 ?
+        `items.${newModelParentKeyPart}.details.items` :
+        'items';
+
+
+      Templates.update(
+        templateID,
+        {
+          $push: {
+            [newModelParentKey]: {
+              ...item,
+              placement: relativePlacement,
+            },
+          },
+        },
+      );
+
+      const modelParentKeyPart = initial(indices).join('.details.items.');
+      const modelParentKey = modelParentKeyPart.length > 0 ?
+        `items.${modelParentKeyPart}.details.items` :
+        'items';
+
+      Templates.update(
+        templateID,
+        {
+          $pull: {
+            [modelParentKey]: item,
+          },
+        },
+      );
+    }
   },
 });
