@@ -16,6 +16,7 @@
     "import/prefer-default-export": 0,
     "no-underscore-dangle": 0,
     "object-shorthand": ["error", "always"],
-    "jsx-a11y/no-static-element-interactions": 0
+    "jsx-a11y/no-static-element-interactions": 0,
+    "no-continue": 0
   }
 }
