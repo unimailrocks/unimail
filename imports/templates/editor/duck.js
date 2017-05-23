@@ -1,9 +1,14 @@
 const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
+const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
+const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
 
 const initialState = {
   tool: null,
   templateHeight: 300,
+  modes: {
+    guided: true,
+  },
 };
 
 export default function editorReducer(state = initialState, { type, payload }) {
@@ -30,6 +35,24 @@ export default function editorReducer(state = initialState, { type, payload }) {
         template: payload,
       };
     }
+    case ENTER_UNGUIDED_MODE: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          guided: false,
+        },
+      };
+    }
+    case ENTER_GUIDED_MODE: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          guided: true,
+        },
+      };
+    }
     default:
       return state;
   }
@@ -47,5 +70,17 @@ export function registerTemplate(template) {
   return {
     type: LOAD_TEMPLATE,
     payload: template,
+  };
+}
+
+export function enterUnguidedMode() {
+  return {
+    type: ENTER_UNGUIDED_MODE,
+  };
+}
+
+export function enterGuidedMode() {
+  return {
+    type: ENTER_GUIDED_MODE,
   };
 }

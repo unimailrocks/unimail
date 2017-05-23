@@ -1,31 +1,14 @@
-import React, { Component, PropTypes } from 'react';
-import isMatch from 'lodash/fp/isMatch';
-import find from 'lodash/fp/find';
-import { StyleSheet, css } from 'aphrodite';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { css } from 'aphrodite';
 import { connect } from 'react-redux';
-import ReactGridLayout from 'react-grid-layout';
-
-import * as Templates from '/imports/templates/methods';
 
 import UnimailPropTypes from '/imports/prop-types';
-import colors from '/imports/styles/colors';
 import styles from '/imports/styles/functional';
 
 import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
-
-const containerStyles = StyleSheet.create({
-  bordered: {
-    border: `1px solid ${colors.grey4}`,
-    boxSizing: 'border-box',
-  },
-  innerGrid: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-});
 
 class Container extends Component {
   static propTypes = {
@@ -33,6 +16,7 @@ class Container extends Component {
       items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
     }).isRequired,
     _id: PropTypes.string.isRequired,
+    guided: PropTypes.bool.isRequired,
   };
 
   stopDragPropogation = (l, o, n, p, e) => {
@@ -45,11 +29,12 @@ class Container extends Component {
   }
 
   generateDOM() {
-    const { details } = this.props;
+    const { details, guided } = this.props;
     const { items } = details;
     return items.map(item => (
       <Tacked
         key={item._id}
+        bounded={guided}
         {...item.placement}
       >
         <Item item={item} />
@@ -80,8 +65,8 @@ class Container extends Component {
   }
 }
 
-function mapStateToProps({ editor: { template } }) {
-  return { template };
+function mapStateToProps({ editor: { template, modes: { guided } } }) {
+  return { template, guided };
 }
 
 export default connect(mapStateToProps)(Container);

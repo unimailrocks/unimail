@@ -250,22 +250,6 @@ export const moveItem = new ValidatedMethod({
       throw new Meteor.Error('You don\'t have permissions to design this template');
     }
 
-    if (placement.x + placement.width > template.width) {
-      throw new Meteor.Error('Item is hanging off the right edge of the template');
-    }
-
-    if (placement.x < 0) {
-      throw new Meteor.Error('Item is hanging off the left side of the template');
-    }
-
-    if (placement.y < 0) {
-      throw new Meteor.Error('Item is hanging off the top of the template');
-    }
-
-    if (placement.width < 0 || placement.height < 0) {
-      throw new Meteor.Error('Item is of negative dimensions');
-    }
-
     // translate path (_id array) to indices (like [0, 2, 1])
     // also get absolute placement of item
     // (complicated so we can do both in one pass)
@@ -299,6 +283,22 @@ export const moveItem = new ValidatedMethod({
       width: placement.width,
       height: placement.height,
     };
+
+    if (newAbsolutePlacement.x + newAbsolutePlacement.width > template.width) {
+      throw new Meteor.Error('Item is hanging off the right edge of the template');
+    }
+
+    if (newAbsolutePlacement.x < 0) {
+      throw new Meteor.Error('Item is hanging off the left side of the template');
+    }
+
+    if (newAbsolutePlacement.y < 0) {
+      throw new Meteor.Error('Item is hanging off the top of the template');
+    }
+
+    if (newAbsolutePlacement.width < 0 || newAbsolutePlacement.height < 0) {
+      throw new Meteor.Error('Item is of negative dimensions');
+    }
 
     const placed = calculateItemPlacement(
       newAbsolutePlacement,

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-prop-types */
 import React, { Component, PropTypes } from 'react';
 import Frame from './frame';
 
@@ -11,6 +12,9 @@ export default class Tacked extends Component {
       PropTypes.arrayOf(PropTypes.element),
       PropTypes.element,
     ]).isRequired,
+    bounded: PropTypes.bool,
+
+    // used in BulletinBoard; should not be passed in by consumers
     onBeginTransform: PropTypes.func,
     id: PropTypes.string,
     ancestorTranslation: PropTypes.shape({
@@ -23,6 +27,7 @@ export default class Tacked extends Component {
     onBeginTransform() {},
     id: null,
     ancestorTranslation: null,
+    bounded: true,
   };
 
   static childContextTypes = {

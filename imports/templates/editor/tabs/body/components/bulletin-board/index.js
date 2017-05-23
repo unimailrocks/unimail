@@ -57,7 +57,7 @@ export default class BulletinBoard extends Component {
   };
 
   state = {
-    detachedChild: null,
+    detachedChildKey: null,
   };
 
   resizeResponders = {};
@@ -70,6 +70,10 @@ export default class BulletinBoard extends Component {
     if (newContextID) {
       this.context.__bb_registerResizeResponder(newContextID, this.respondToResize);
     }
+  }
+
+  componentWillUpdate(newProps, newState) {
+    this.detachedChild = this.getDetachedChild(newProps, newState.detachedChildKey);
   }
 
   componentDidMount() {
@@ -86,7 +90,7 @@ export default class BulletinBoard extends Component {
   }
 
   onMouseMove = e => {
-    if (!this.state.detachedChild) {
+    if (!this.detachedChild) {
       return;
     }
 
@@ -97,7 +101,7 @@ export default class BulletinBoard extends Component {
   }
 
   onMouseUp = async e => {
-    const { detachedChild } = this.state;
+    const { detachedChild } = this;
     const mouseCoordinates = { x: e.clientX, y: e.clientY };
 
     const path = [detachedChild.key];
@@ -119,11 +123,26 @@ export default class BulletinBoard extends Component {
     ]);
 
     this.setState(() => ({
-      detachedChild: null,
+      detachedChildKey: null,
       detachedMouseRelativeCoordinates: null,
       currentTransformType: null,
     }));
   };
+
+  getDetachedChild(props, key) {
+    if (!key) {
+      return null;
+    }
+
+    let detachedChild = null;
+    React.Children.forEach(this.props.children, child => {
+      if (child.key === key) {
+        detachedChild = child;
+      }
+    });
+
+    return detachedChild;
+  }
 
   getCanvasBounds() {
     if (!this.container) {
@@ -171,7 +190,7 @@ export default class BulletinBoard extends Component {
   }
 
   calculateMouseCorrection(direction) {
-    const { width, height } = this.state.detachedChild.props;
+    const detachedChild = this.detachedChild;
     const { x, y } = this.state.detachedMouseRelativeCoordinates;
 
     switch (direction) {
@@ -278,7 +297,8 @@ export default class BulletinBoard extends Component {
     this.resizeResponders[contextID] = resizeResponder;
   }
 
-  boundedPosition({ x, y, width, height }, { resizable = false } = {}) {
+  boundedPosition(position, { resizable = false } = {}) {
+    const { x, y, width, height } = position;
     const detachedBounds = this.getCanvasBounds();
     if (resizable) {
       const right = min(x + width, detachedBounds.x + detachedBounds.width);
@@ -354,7 +374,8 @@ export default class BulletinBoard extends Component {
       };
     }
 
-    const { x, y } = this.state.detachedChild.props;
+    const detachedChild = this.detachedChild;
+    const { x, y } = detachedChild.props;
     const canvasPosition = this.translateToCanvas(absolutePosition);
     const ostensibleDiff = {
       x: canvasPosition.x - x,
@@ -453,8 +474,8 @@ export default class BulletinBoard extends Component {
   }
 
   detachedChildPosition(mouseCoordinates) {
+    const { detachedChild } = this;
     const {
-      detachedChild,
       detachedMouseRelativeCoordinates,
       currentTransformType,
     } = this.state;
@@ -489,9 +510,10 @@ export default class BulletinBoard extends Component {
 
     const isResizing = currentTransformType.startsWith('resize');
 
-    const boundedPosition = this.boundedPosition(reflectedPosition, {
-      resizable: isResizing,
-    });
+    const boundedPosition = detachedChild.props.bounded ?
+      this.boundedPosition(reflectedPosition, {
+        resizable: isResizing,
+      }) : reflectedPosition;
 
     if (isResizing) {
       const { position: shrinkWrappedPosition, diff, changes } =
@@ -522,7 +544,7 @@ export default class BulletinBoard extends Component {
   createTransformBeginner(child) {
     return (currentTransformType, { relativeCoordinates, mouseCoordinates }) => {
       this.setState(() => ({
-        detachedChild: child,
+        detachedChildKey: child.key,
         detachedMouseRelativeCoordinates: relativeCoordinates,
         mouseCoordinates,
         currentTransformType,
@@ -534,8 +556,9 @@ export default class BulletinBoard extends Component {
     return this.context.__bb_translation || { x: 0, y: 0 };
   }
 
+  // transform the children that will be rendered
   transformChildren(children) {
-    const { detachedChild } = this.state;
+    const { detachedChild } = this;
     const translation = this.getInnerTranslation();
     return React.Children.map(children, child => {
       if (detachedChild && child.key === detachedChild.key) {
@@ -556,7 +579,8 @@ export default class BulletinBoard extends Component {
   };
 
   renderDetachedChild() {
-    const { detachedChild, mouseCoordinates } = this.state;
+    const { mouseCoordinates } = this.state;
+    const { detachedChild } = this;
     if (!detachedChild) {
       return null;
     }
