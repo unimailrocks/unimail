@@ -10,7 +10,6 @@ class TemplateBodyLeftRail extends Component {
   static propTypes = {
     tool: UnimailPropTypes.tool,
     selectTool: PropTypes.func.isRequired,
-    style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   };
 
   static defaultProps = {
@@ -26,31 +25,29 @@ class TemplateBodyLeftRail extends Component {
   }
 
   render() {
-    const { tool, style } = this.props;
+    const { tool } = this.props;
     return (
-      <div style={style}>
-        <Rail attached position="left">
-          <Menu icon="labeled" vertical>
-            <Menu.Item
-              name="draw-container"
-              active={tool === 'draw-container'}
-              onClick={this.selectTool}
-            >
-              <Icon name="square outline" />
+      <Rail attached position="left">
+        <Menu icon="labeled" vertical>
+          <Menu.Item
+            name="draw-container"
+            active={tool === 'draw-container'}
+            onClick={this.selectTool}
+          >
+            <Icon name="square outline" />
               Draw Container
             </Menu.Item>
 
-            <Menu.Item
-              name="draw-image"
-              active={tool === 'draw-image'}
-              onClick={this.selectTool}
-            >
-              <Icon name="picture" />
+          <Menu.Item
+            name="draw-image"
+            active={tool === 'draw-image'}
+            onClick={this.selectTool}
+          >
+            <Icon name="picture" />
               Draw Image
             </Menu.Item>
-          </Menu>
-        </Rail>
-      </div>
+        </Menu>
+      </Rail>
     );
   }
 }
