@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Label, Input, Button } from 'semantic-ui-react';
 
 export default class NameInput extends Component {

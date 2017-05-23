@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { css } from 'aphrodite';
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';

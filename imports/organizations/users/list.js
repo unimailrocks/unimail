@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { Table, Button } from 'semantic-ui-react';
 
 import { isRole } from '/imports/accounts';

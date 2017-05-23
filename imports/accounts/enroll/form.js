@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
-import React, { Component, PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
 
 import UnimailPropTypes from '/imports/prop-types';
