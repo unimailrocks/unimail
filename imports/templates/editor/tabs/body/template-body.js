@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Segment } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 
 import UnimailPropTypes from '/imports/prop-types';
 import * as Templates from '/imports/templates/methods';
+
+import KeyListener from '/imports/components/key-listener';
+import { enterGuidedMode, enterUnguidedMode } from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
 import BulletinBoard, { Tacked } from './components/bulletin-board';
@@ -13,6 +17,8 @@ class TemplateBody extends Component {
   static propTypes = {
     template: UnimailPropTypes.template.isRequired,
     tool: UnimailPropTypes.tool,
+    enterGuidedMode: PropTypes.func.isRequired,
+    enterUnguidedMode: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
@@ -74,6 +80,10 @@ class TemplateBody extends Component {
           padding: 0,
         }}
       >
+        <KeyListener
+          onShiftDown={this.props.enterUnguidedMode}
+          onShiftUp={this.props.enterGuidedMode}
+        />
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
           <BulletinBoard
@@ -95,4 +105,7 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(TemplateBody);
+export default connect(mapStateToProps, {
+  enterGuidedMode,
+  enterUnguidedMode,
+})(TemplateBody);
