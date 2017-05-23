@@ -10,20 +10,17 @@ export default function TemplateBodyRightRail(props) {
   }
 
   return (
-    <div style={props.style}>
-      <Rail attached position="right">
-        <Segment raised>
-          <ContentForm key={props.content._id} {...props} />
-        </Segment>
-      </Rail>
-    </div>
+    <Rail attached position="right">
+      <Segment raised>
+        <ContentForm key={props.content._id} {...props} />
+      </Segment>
+    </Rail>
   );
 }
 
 TemplateBodyRightRail.propTypes = {
   contentType: PropTypes.oneOf([]),
   content: PropTypes.oneOfType([]),
-  style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
 };
 
 TemplateBodyRightRail.defaultProps = {

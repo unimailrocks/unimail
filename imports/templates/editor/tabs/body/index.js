@@ -34,19 +34,24 @@ export default class BodyTab extends Component {
         >
           <Sticky>
             {
-              ({ style }) => <LeftRail style={style} />
+              ({ style }) => (
+                <div style={style}>
+                  <LeftRail />
+                </div>
+              )
             }
           </Sticky>
           <Sticky>
             {
               ({ style }) => (
-                <RightRail
-                  style={style}
-                  content={this.state.focusedContent}
-                  contentType={this.state.focusedContentType}
-                  onFocusContent={this.focusContent}
-                  template={this.props.template}
-                />
+                <div style={style}>
+                  <RightRail
+                    content={this.state.focusedContent}
+                    contentType={this.state.focusedContentType}
+                    onFocusContent={this.focusContent}
+                    template={this.props.template}
+                  />
+                </div>
               )
             }
           </Sticky>
