@@ -1,5 +1,6 @@
+import PropTypes from 'prop-types';
 /* eslint-disable react/no-unused-prop-types */
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import Frame from './frame';
 
 export default class Tacked extends Component {

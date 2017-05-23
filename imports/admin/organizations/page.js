@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import { ReactiveVar } from 'meteor/reactive-var';
-import React, { Component, PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Grid, Container, Header, Input, Statistic, Segment } from 'semantic-ui-react';
 import { Organizations } from '/imports/organizations';
 import AdminOrganizationsList from './list';

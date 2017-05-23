@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { Container, Header } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
 import UnimailPropTypes from '/imports/prop-types';

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import UnimailPropTypes from '/imports/prop-types';
 import { isRole } from '/imports/accounts';

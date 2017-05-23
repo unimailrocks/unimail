@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 
 export * from './templates/prop-types';
 export * from './organizations/prop-types';

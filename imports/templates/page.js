@@ -3,7 +3,9 @@ import { createContainer } from 'meteor/react-meteor-data';
 
 import { memoize } from 'lodash/fp';
 
-import React, { Component, PropTypes } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Button, List, Modal, Header, Icon } from 'semantic-ui-react';
 

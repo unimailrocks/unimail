@@ -1,5 +1,6 @@
+import PropTypes from 'prop-types';
 /* eslint-disable react/sort-comp */
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import Tacked from './tacked';
 
 const { abs, min, max } = Math;

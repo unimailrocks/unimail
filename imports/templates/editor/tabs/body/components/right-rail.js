@@ -1,7 +1,6 @@
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { Rail, Segment } from 'semantic-ui-react';
-
-import UnimailPropTypes from '/imports/prop-types';
 
 import ContentForm from './content-form';
 
@@ -11,17 +10,20 @@ export default function TemplateBodyRightRail(props) {
   }
 
   return (
-    <Rail attached position="right">
-      <Segment raised>
-        <ContentForm key={props.content._id} {...props} />
-      </Segment>
-    </Rail>
+    <div style={props.style}>
+      <Rail attached position="right">
+        <Segment raised>
+          <ContentForm key={props.content._id} {...props} />
+        </Segment>
+      </Rail>
+    </div>
   );
 }
 
 TemplateBodyRightRail.propTypes = {
   contentType: PropTypes.oneOf([]),
   content: PropTypes.oneOfType([]),
+  style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
 };
 
 TemplateBodyRightRail.defaultProps = {

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Label, Grid, Container, Header } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
 import { isRole } from '/imports/accounts';

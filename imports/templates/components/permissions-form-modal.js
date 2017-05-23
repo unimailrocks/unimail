@@ -1,7 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import { Checkbox, Button, Modal, Header, Form, Icon, Divider } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
 

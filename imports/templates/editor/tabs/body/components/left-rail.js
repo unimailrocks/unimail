@@ -1,4 +1,5 @@
-import React, { PropTypes, Component } from 'react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Menu, Icon, Rail } from 'semantic-ui-react';
 
@@ -9,6 +10,7 @@ class TemplateBodyLeftRail extends Component {
   static propTypes = {
     tool: UnimailPropTypes.tool,
     selectTool: PropTypes.func.isRequired,
+    style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   };
 
   static defaultProps = {
@@ -24,29 +26,31 @@ class TemplateBodyLeftRail extends Component {
   }
 
   render() {
-    const { tool } = this.props;
+    const { tool, style } = this.props;
     return (
-      <Rail attached position="left">
-        <Menu icon="labeled" vertical>
-          <Menu.Item
-            name="draw-container"
-            active={tool === 'draw-container'}
-            onClick={this.selectTool}
-          >
-            <Icon name="square outline" />
-            Draw Container
-          </Menu.Item>
+      <div style={style}>
+        <Rail attached position="left">
+          <Menu icon="labeled" vertical>
+            <Menu.Item
+              name="draw-container"
+              active={tool === 'draw-container'}
+              onClick={this.selectTool}
+            >
+              <Icon name="square outline" />
+              Draw Container
+            </Menu.Item>
 
-          <Menu.Item
-            name="draw-image"
-            active={tool === 'draw-image'}
-            onClick={this.selectTool}
-          >
-            <Icon name="picture" />
-            Draw Image
-          </Menu.Item>
-        </Menu>
-      </Rail>
+            <Menu.Item
+              name="draw-image"
+              active={tool === 'draw-image'}
+              onClick={this.selectTool}
+            >
+              <Icon name="picture" />
+              Draw Image
+            </Menu.Item>
+          </Menu>
+        </Rail>
+      </div>
     );
   }
 }
