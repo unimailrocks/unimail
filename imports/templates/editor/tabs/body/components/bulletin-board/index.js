@@ -191,6 +191,7 @@ export default class BulletinBoard extends Component {
 
   calculateMouseCorrection(direction) {
     const detachedChild = this.detachedChild;
+    const { width, height } = detachedChild.props;
     const { x, y } = this.state.detachedMouseRelativeCoordinates;
 
     switch (direction) {
