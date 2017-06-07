@@ -607,6 +607,7 @@ export default class BulletinBoard extends Component {
           right: 0,
           left: 0,
           bottom: 0,
+          zIndex: 10,
         }}
         onMouseMove={this.onMouseMove}
         onMouseUp={this.onMouseUp}
