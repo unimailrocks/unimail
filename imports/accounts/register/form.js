@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
+import * as users from '/imports/accounts';
 
 export default class RegisterForm extends Component {
   state = {
@@ -14,7 +15,7 @@ export default class RegisterForm extends Component {
     const password = this.passwordInput.value;
 
     try {
-      await Meteor.callPromise('users.create', email, password);
+      await users.create.callPromise({ email, password });
       Meteor.loginWithPassword(email, password, err => {
         if (err) {
           this.setState({

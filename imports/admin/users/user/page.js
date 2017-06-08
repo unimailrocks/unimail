@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
-import PropTypes from 'prop-types';
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Container, Header } from 'semantic-ui-react';
 import { WithContext as ReactTags } from 'react-tag-input';
 import UnimailPropTypes from '/imports/prop-types';
-import { getRoles } from '/imports/accounts';
+import { getRoles, roles } from '/imports/accounts';
 
 function AdminUserPage({ user }) {
   if (!user) {
@@ -15,21 +15,22 @@ function AdminUserPage({ user }) {
   }
 
   async function removeRole(index) {
-    if (!confirm(`Are you sure you want to delete role ${user.roles[index]} from user ${user.emails[0].address}?`)) {
+    const role = user.roles[index];
+    if (!confirm(`Are you sure you want to delete role ${role} from user ${user.emails[0].address}?`)) {
       return;
     }
     try {
-      await Meteor.callPromise('roles.delete', user._id, user.roles[index]);
+      await roles.destroy.callPromise({ userID: user._id, role });
     } catch (e) {
-      console.error('error removing role', err.message);
+      console.error('error removing role', e.message);
     }
   }
 
   async function addRole(role) {
     try {
-      await Meteor.callPromise('roles.create', user._id, role);
+      await roles.create.callPromise({ userID: user._id, role });
     } catch (e) {
-      console.error('error adding role', err.message);
+      console.error('error adding role', e.message);
     }
   }
 
@@ -54,16 +55,26 @@ function AdminUserPage({ user }) {
   );
 }
 
-function rolesToTags(roles) {
-  return roles.map((role, i) => ({
+function rolesToTags(_roles) {
+  return _roles.map((role, i) => ({
     id: i,
     text: role,
   }));
 }
 
 function RemoveX(props) {
-  return <i {...props} className="delete icon" />;
+  return <i onClick={props.onClick} className={`${props.className || ''} delete icon`} />;
 }
+
+RemoveX.propTypes = {
+  className: PropTypes.string,
+  onClick: PropTypes.func,
+};
+
+RemoveX.defaultProps = {
+  className: '',
+  onClick() {},
+};
 
 AdminUserPage.propTypes = {
   user: UnimailPropTypes.user,

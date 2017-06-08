@@ -1,8 +1,9 @@
-import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Header, Button, Modal } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
+
+import * as users from '/imports/accounts';
 
 export default class DeleteUserModal extends Component {
   static propTypes = {
@@ -25,7 +26,7 @@ export default class DeleteUserModal extends Component {
   }
 
   deleteUser = () => {
-    Meteor.callPromise('users.delete', this.props.user._id);
+    users.destroy.callPromise({ userID: this.props.user._id });
   }
 
   renderButton() {

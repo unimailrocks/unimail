@@ -108,6 +108,22 @@ function attachSchema() {
       regEx: SimpleSchema.RegEx.Id,
       optional: true,
     },
+    apiTokens: {
+      type: Array,
+      defaultValue: [],
+    },
+    'apiTokens.$': {
+      type: Object,
+    },
+    'apiTokens.$.key': {
+      type: String,
+    },
+    'apiTokens.$.hash': {
+      type: String,
+    },
+    'apiTokens.$.name': {
+      type: String,
+    },
   });
 
   Meteor.users.attachSchema(schema);
@@ -156,7 +172,7 @@ function serverSide() {
       _id: this.userId,
     }, {
       fields: {
-        organizationID: 1,
+        'apiTokens.hash': 0,
       },
     });
   });
@@ -176,11 +192,17 @@ function serverSide() {
     if (!user.organizationID) {
       return Meteor.users.find({
         _id: this.userId,
+      }, {
+        fields: {
+          'apiTokens.hash': 0,
+        },
       });
     }
 
     return Meteor.users.find({
       organizationID: user.organizationID,
+    }, {
+      apiTokens: 0,
     });
   });
 
