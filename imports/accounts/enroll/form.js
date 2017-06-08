@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { Header, Button, Form, Message } from 'semantic-ui-react';
 
 import UnimailPropTypes from '/imports/prop-types';
+import * as users from '/imports/accounts';
 
 export default class EnrollForm extends Component {
   static propTypes = {
@@ -20,6 +21,7 @@ export default class EnrollForm extends Component {
     e.preventDefault();
     const password = this.passwordInput.value;
     const confirmPassword = this.confirmPasswordInput.value;
+    const passwordToken = this.props.token;
 
     if (password !== confirmPassword) {
       this.setState({
@@ -29,7 +31,7 @@ export default class EnrollForm extends Component {
     }
 
     try {
-      await Meteor.callPromise('users.enroll', this.props.token, password);
+      await users.enroll.callPromise({ passwordToken, password });
       Meteor.loginWithPassword(this.props.user.emails[0].address, password, err => {
         if (err) {
           this.setState({

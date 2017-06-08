@@ -56,12 +56,12 @@ export default class ChangePasswordForm extends Component {
         success={!!this.state.validation}
         onSubmit={this.changePassword}
       >
-        <Dimmer active={this.state.waiting} inverted>
-          <Loader />
-        </Dimmer>
         <Header>
           Change Password
         </Header>
+        <Dimmer active={this.state.waiting} inverted>
+          <Loader />
+        </Dimmer>
         <Message
           error
           header="Change Password Failure"

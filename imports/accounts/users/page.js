@@ -1,15 +1,18 @@
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
-import { Button, Segment, Grid, Header } from 'semantic-ui-react';
+import { Button, Segment, Grid, Header, Dimmer, Loader } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
 import ChangePasswordForm from './change-password-form';
+import APITokensList from './api-tokens-list';
 import UpgradeToOrganizationForm from './upgrade-to-organization-form';
 
 class UsersPage extends Component {
   static propTypes = {
     user: UnimailPropTypes.user,
+    shouldRedirect: PropTypes.bool.isRequired,
   }
 
   static defaultProps = {
@@ -25,13 +28,22 @@ class UsersPage extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, shouldRedirect } = this.props;
 
-    if (!user) {
+    if (shouldRedirect) {
       return (
         <Redirect to="/" />
       );
     }
+
+    if (!user) {
+      return (
+        <Dimmer active inverted>
+          <Loader />
+        </Dimmer>
+      );
+    }
+
     return (
       <div>
         <Segment basic className="masthead" />
@@ -53,6 +65,9 @@ class UsersPage extends Component {
               )
             }
             <Segment attached>
+              <APITokensList />
+            </Segment>
+            <Segment attached>
               <Button
                 onClick={this.logOut}
               >
@@ -68,4 +83,5 @@ class UsersPage extends Component {
 
 export default createContainer(() => ({
   user: Meteor.user(),
+  shouldRedirect: !Meteor.loggingIn() && !Meteor.user(),
 }), UsersPage);

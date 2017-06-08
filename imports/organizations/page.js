@@ -103,7 +103,7 @@ export default createContainer(() => {
   const user = Meteor.user();
 
   return {
-    organization: Organizations.findOne({ _id: user.organizationID }),
-    users: Meteor.users.find({ organizationID: user.organizationID }).fetch(),
+    organization: user && Organizations.findOne({ _id: user.organizationID }),
+    users: user && Meteor.users.find({ organizationID: user.organizationID }).fetch(),
   };
 }, OrganizationPage);
