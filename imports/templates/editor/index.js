@@ -91,7 +91,7 @@ class TemplateEditor extends Component {
       );
     }
 
-    const tabNames = ['sources', 'body', 'run'];
+    const tabNames = ['sources', 'body', 'render'];
     const tabs = tabNames.map(name => (
       <Route
         path={`/templates/${template._id}/${name}`}

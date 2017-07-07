@@ -3,7 +3,7 @@ import React from 'react';
 
 import SourcesTab from './sources';
 import BodyTab from './body';
-import RunTab from './run';
+import RenderTab from './render';
 
 export default function EditorTab(props) {
   switch (props.name) {
@@ -11,8 +11,8 @@ export default function EditorTab(props) {
       return <SourcesTab {...props} />;
     case 'body':
       return <BodyTab {...props} />;
-    case 'run':
-      return <RunTab {...props} />;
+    case 'render':
+      return <RenderTab {...props} />;
     default:
       return <div />;
   }
