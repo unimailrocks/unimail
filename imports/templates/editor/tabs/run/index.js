@@ -1,9 +1,14 @@
 import React from 'react';
+import UnimailPropTypes from '/imports/prop-types';
 
-export default function RunTab() {
+export default function RunTab({ template }) {
   return (
     <div>
-      TODO run tab
+      <h2>Render &ldquo;{template.title}&rdquo;</h2>
     </div>
   );
 }
+
+RunTab.propTypes = {
+  template: UnimailPropTypes.template.isRequired,
+};
