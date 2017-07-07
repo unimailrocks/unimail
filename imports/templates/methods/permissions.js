@@ -48,7 +48,19 @@ Meteor.methods({
   },
 });
 
-function userCanDesign(template, user) {
+export function userHas(template, user) {
+  if (template.ownershipType === 'organization' && template.ownerID === user.organizationID) {
+    return true;
+  }
+
+  if (template.ownershipType === 'user' && template.ownerID === user._id) {
+    return true;
+  }
+
+  return false;
+}
+
+export function userCanDesign(template, user) {
   if (!userCanSee(template, user)) {
     return false;
   }
@@ -61,35 +73,26 @@ function userCanDesign(template, user) {
     return false;
   }
 
-  if (template.ownershipType === 'organization' && template.ownerID === user.organizationID) {
-    return true;
-  }
-
-  if (template.ownershipType === 'user' && template.ownerID === user._id) {
-    return true;
-  }
-
-  return false;
+  return userHas(template, user);
 }
 
-// Can use know it exists?
-function userCanSee(template, user) {
+// Can user know it exists?
+export function userCanSee(template, user) {
   if (!template) {
     return false;
   }
 
-  if (template.ownershipType === 'organization' && template.ownerID !== user.organizationID) {
-    return false;
-  }
-
-  if (template.ownershipType === 'user' && template.ownerID !== user._id) {
-    return false;
-  }
-
-  return true;
+  return userHas(template, user);
 }
 
-export {
-  userCanDesign,
-  userCanSee,
-};
+export function userCanRender(template, user) {
+  if (!userCanSee(template, user)) {
+    return false;
+  }
+
+  if (!isRole(user, 'templates.render')) {
+    return false;
+  }
+
+  return userHas(template, user);
+}

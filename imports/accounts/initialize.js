@@ -146,7 +146,7 @@ function serverSide() {
 
   Meteor.users.after.insert((id, user) => {
     if (!user.organizationID) {
-      Roles.addUsersToRoles(user._id, ['templates.design', 'templates.manage']);
+      Roles.addUsersToRoles(user._id, ['templates.design', 'templates.manage', 'templates.render']);
     }
 
     if (hyperadmins.includes(user.emails[0].address)) {
