@@ -72,7 +72,7 @@ class TemplatesPage extends Component {
               <List.Item key={t._id}>
                 <List.Content floated="left">
                   <Link
-                    to={`/templates/${t._id}`}
+                    to={`/templates/${t._id}/body`}
                     style={{ lineHeight: '40px', color: 'black' }}
                     key={
                       /* this combats a freaky Chrome browser glitch

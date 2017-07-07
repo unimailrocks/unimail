@@ -1,9 +1,10 @@
+import startCase from 'lodash/fp/startCase';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Route, Link, Switch } from 'react-router-dom';
 import { Container, Segment, Menu } from 'semantic-ui-react';
 import UnimailPropTypes from '/imports/prop-types';
 import { Templates } from '/imports/templates';
@@ -31,7 +32,6 @@ class TemplateEditor extends Component {
   }
 
   state = {
-    activeTab: 'body',
     errors: {},
     newTemplateID: null,
   };
@@ -41,12 +41,6 @@ class TemplateEditor extends Component {
       this.props.registerTemplate(newTemplate);
     }
   }
-
-  onTabClick = (e, { name }) => {
-    this.setState({
-      activeTab: name,
-    });
-  };
 
   editTitle = async newTitle => {
     try {
@@ -77,11 +71,13 @@ class TemplateEditor extends Component {
   };
 
   render() {
-    if (!this.props.template && this.state.newTemplateID) {
-      return <Redirect to={this.state.newTemplateID} />;
+    const { template } = this.props;
+    const { newTemplateID } = this.state;
+    if (!template && newTemplateID) {
+      return <Redirect to={`${newTemplateID}/body`} />;
     }
 
-    if (!this.props.template) {
+    if (!template) {
       return (
         <Container>
           <Segment className="masthead" vertical>
@@ -95,24 +91,52 @@ class TemplateEditor extends Component {
       );
     }
 
-    const { activeTab } = this.state;
+    const tabNames = ['sources', 'body', 'run'];
+    const tabs = tabNames.map(name => (
+      <Route
+        path={`/templates/${template._id}/${name}`}
+        key={name}
+        render={() => (
+          <div>
+            <Menu pointing secondary>
+              {
+                tabNames.map(itemName => (
+                  <Menu.Item active={itemName === name} key={itemName}>
+                    <Link to={`/templates/${template._id}/${itemName}`}>
+                      {startCase(itemName)}
+                    </Link>
+                  </Menu.Item>
+                ))
+              }
+            </Menu>
+            <Tab name={name} template={template} />
+          </div>
+        )}
+      />
+    ));
+
     return (
       <Container>
         <Segment className="masthead" vertical>
           <NameInput
-            title={this.props.template.title}
+            title={template.title}
             onChange={this.editTitle}
             error={this.state.errors.title}
           />
         </Segment>
 
-        <Menu pointing secondary>
-          <Menu.Item name="sources" active={activeTab === 'sources'} onClick={this.onTabClick} />
-          <Menu.Item name="body" active={activeTab === 'body'} onClick={this.onTabClick} />
-          <Menu.Item name="run" active={activeTab === 'run'} onClick={this.onTabClick} />
-        </Menu>
-
-        <Tab name={activeTab} template={this.props.template} />
+        {
+          template ? (
+            <Switch>
+              {tabs}
+              <Route
+                render={() => (
+                  <Redirect to={`/templates/${template._id}/body`} />
+                )}
+              />
+            </Switch>
+          ) : null
+        }
       </Container>
     );
   }
