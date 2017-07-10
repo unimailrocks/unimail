@@ -1,28 +1,30 @@
 {
-  "name": "unimail",
+  "name": "unimail-app",
   "private": true,
   "scripts": {
     "start": "better-npm-run start",
-    "pretend-staging": "better-npm-run pretend-staging",
+    "pretend-alpha": "better-npm-run pretend-alpha",
     "deploy:alpha": "better-npm-run deploy:alpha"
   },
   "betterScripts": {
     "start": {
       "command": "meteor run",
       "env": {
-        "MAIL_URL": "smtp://postmaster%40mg.unimail.co:7b3f0444d74012566d8c22f8c102d9ad@smtp.mailgun.org:587"
+        "MAIL_URL": "smtp://postmaster%40mg.unimail.co:7b3f0444d74012566d8c22f8c102d9ad@smtp.mailgun.org:587",
+        "UNIMAIL_API_URL": "http://localhost:3004"
       }
     },
-    "pretend-staging": {
+    "pretend-alpha": {
       "command": "meteor run",
       "env": {
         "MONGO_URL": "mongodb://unimail:cuteminthebathroom@ds143910-a0.mlab.com:43910,ds143910-a1.mlab.com:43910/staging?replicaSet=rs-ds143910",
         "MONGO_OPLOG_URL": "mongodb://oplog-reader:StraightAs@ds143910-a0.mlab.com:43910,ds143910-a1.mlab.com:43910/local?replicaSet=rs-ds143910&authSource=admin",
-        "MAIL_URL": "smtp://postmaster%40mg.unimail.co:7b3f0444d74012566d8c22f8c102d9ad@smtp.mailgun.org:587"
+        "MAIL_URL": "smtp://postmaster%40mg.unimail.co:7b3f0444d74012566d8c22f8c102d9ad@smtp.mailgun.org:587",
+        "UNIMAIL_API_URL": "https://alpha.api.unimail.co"
       }
     },
     "deploy:alpha": {
-      "command": "meteor deploy a-l-p-h-a.unimail.co --settings staging-settings.json",
+      "command": "meteor deploy a-l-p-h-a.unimail.co --settings alpha-settings.json",
       "env": {
         "DEPLOY_HOSTNAME": "galaxy.meteor.com"
       }
@@ -58,7 +60,8 @@
     "react-tag-input": "^4.7.2",
     "redux": "^3.6.0",
     "semantic-ui-react": "^0.68.3",
-    "simpl-schema": "^0.3.0"
+    "simpl-schema": "^0.3.0",
+    "unimail": "^0.5.3"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.1",
