@@ -1,9 +1,11 @@
 import { Meteor } from 'meteor/meteor';
+import { Promise } from 'meteor/promise';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { CallPromiseMixin } from 'meteor/didericis:callpromise-mixin';
 import SimpleSchema from 'simpl-schema';
 
 import { Templates } from '/imports/templates';
+import { apiTokens } from '/imports/accounts';
 
 import { userCanSee, userCanRender } from './permissions';
 
@@ -21,7 +23,7 @@ export const createRender = new ValidatedMethod({
     const user = Meteor.users.findOne(this.userId);
     const template = Templates.findOne(templateID);
     if (!userCanSee(template, user)) {
-      throw new Meteor.Error('This emplate does not exist');
+      throw new Meteor.Error('This template does not exist');
     }
 
     if (!userCanRender(template, user)) {
@@ -29,6 +31,16 @@ export const createRender = new ValidatedMethod({
     }
 
     // actually render the template
-    console.log('rendering', template._id);
+    if (Meteor.isClient) {
+      return;
+    }
+
+    const api = require('/server/api'); // eslint-disable-line global-require
+
+    const html = apiTokens.withTemporaryToken(token =>
+      Promise.await(api.renderTemplate(template, token)),
+    );
+
+    return html;
   },
 });

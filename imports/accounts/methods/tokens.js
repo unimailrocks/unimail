@@ -5,6 +5,8 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import SimpleSchema from 'simpl-schema';
 import randomBytes from 'random-bytes';
 
+export const INTERNAL_TOKEN_NAME = '_-_iNtErNaL_-_';
+
 export const create = new ValidatedMethod({
   name: 'users.apiTokens.create',
   mixins: [CallPromiseMixin],
@@ -62,3 +64,13 @@ export const destroy = new ValidatedMethod({
     Meteor.users.update(this.userId, { $pull: { apiTokens: token } });
   },
 });
+
+export function withTemporaryToken(fn) {
+  const token = create.call({ name: INTERNAL_TOKEN_NAME });
+
+  try {
+    return fn(token);
+  } finally {
+    destroy.call({ key: token.key });
+  }
+}
