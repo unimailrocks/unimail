@@ -11,7 +11,7 @@ export default function Item({ item, path }) {
   switch (item.type) {
     case 'image':
       return (
-        <div className={css(styles.fit)} style={{ backgroundColor: colors.grey4 }} />
+        <div className={css(styles.fit)} style={{ backgroundColor: colors.grey4.string() }} />
       );
     case 'container':
       return <Container {...item} path={[...path, item._id]} />;

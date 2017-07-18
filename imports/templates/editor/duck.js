@@ -2,6 +2,8 @@ const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
 const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
 const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
+const OPEN_RENDER_PREVIEW = 'editor/renders/preview/open';
+const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
 
 const initialState = {
   tool: null,
@@ -53,6 +55,21 @@ export default function editorReducer(state = initialState, { type, payload }) {
         },
       };
     }
+
+    case OPEN_RENDER_PREVIEW: {
+      return {
+        ...state,
+        previewingRender: payload.render,
+      };
+    }
+
+    case CLOSE_RENDER_PREVIEW: {
+      return {
+        ...state,
+        previewingRender: null,
+      };
+    }
+
     default:
       return state;
   }
@@ -82,5 +99,20 @@ export function enterUnguidedMode() {
 export function enterGuidedMode() {
   return {
     type: ENTER_GUIDED_MODE,
+  };
+}
+
+export function openRenderPreview(render) {
+  return {
+    type: OPEN_RENDER_PREVIEW,
+    payload: {
+      render,
+    },
+  };
+}
+
+export function closeRenderPreview() {
+  return {
+    type: CLOSE_RENDER_PREVIEW,
   };
 }

@@ -39,6 +39,7 @@
     "classnames": "^2.2.5",
     "color": "^1.0.3",
     "copy-to-clipboard": "^3.0.6",
+    "dateformat": "^2.0.0",
     "deep-diff": "^0.3.8",
     "lodash": "^4.17.4",
     "meteor-node-stubs": "^0.2.6",
@@ -53,6 +54,7 @@
     "react-copyable": "0.0.6",
     "react-dom": "^15.5.4",
     "react-grid-layout": "^0.14.6",
+    "react-infinite": "^0.11.0",
     "react-redux": "^5.0.5",
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
@@ -61,7 +63,7 @@
     "redux": "^3.6.0",
     "semantic-ui-react": "^0.68.3",
     "simpl-schema": "^0.3.0",
-    "unimail": "^0.5.3"
+    "unimail": "^0.6.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.1",

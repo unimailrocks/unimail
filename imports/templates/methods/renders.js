@@ -37,10 +37,8 @@ export const createRender = new ValidatedMethod({
 
     const api = require('/server/api'); // eslint-disable-line global-require
 
-    const html = apiTokens.withTemporaryToken(token =>
+    return apiTokens.withTemporaryToken(token =>
       Promise.await(api.renderTemplate(template, token)),
     );
-
-    return html;
   },
 });

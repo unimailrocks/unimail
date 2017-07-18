@@ -65,9 +65,9 @@ class DrawingCanvas extends Component {
   // for drawing the rectangle when you're using the 'draw-image' tool
   drawImage(rectangle) {
     if (this.props.testDraw(rectangle)) {
-      this.context.fillStyle = color(colors.grey4).alpha(0.5).string();
+      this.context.fillStyle = colors.grey4.alpha(0.5).string();
     } else {
-      this.context.fillStyle = color(colors.red).alpha(0.3).string();
+      this.context.fillStyle = colors.red.alpha(0.3).string();
     }
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -80,10 +80,10 @@ class DrawingCanvas extends Component {
   drawContainer(rectangle) {
     if (this.props.testDraw(rectangle)) {
       this.context.strokeStyle = colors.grey4;
-      this.context.fillStyle = color(colors.white).alpha(0.5).string();
+      this.context.fillStyle = colors.white.alpha(0.5).string();
     } else {
-      this.context.strokeStyle = color(colors.red).alpha(0.8).string();
-      this.context.fillStyle = color(colors.red).alpha(0.3).string();
+      this.context.strokeStyle = colors.red.alpha(0.8).string();
+      this.context.fillStyle = colors.red.alpha(0.3).string();
     }
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);

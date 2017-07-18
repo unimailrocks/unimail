@@ -20,6 +20,14 @@ export const item = PropTypes.shape({
   details: PropTypes.object,
 });
 
+export const render = PropTypes.shape({
+  _id: PropTypes.string.isRequired,
+  renderedAt: PropTypes.instanceOf(Date).isRequired,
+  html: PropTypes.string.isRequired,
+  // the key in S3 for the preview image
+  previewImageKey: PropTypes.string.isRequired,
+});
+
 export const template = PropTypes.shape({
   _id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
@@ -29,6 +37,8 @@ export const template = PropTypes.shape({
   viewers: PropTypes.arrayOf(PropTypes.string),
   sources: PropTypes.arrayOf(source),
   items: PropTypes.arrayOf(item).isRequired,
+  renders: PropTypes.arrayOf(render),
 });
+
 
 export * from './editor/prop-types';
