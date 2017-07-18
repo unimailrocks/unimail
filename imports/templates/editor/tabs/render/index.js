@@ -1,37 +1,40 @@
 import React, { Component } from 'react';
-import { Button } from 'semantic-ui-react';
-import UnimailPropTypes from '/imports/prop-types';
-import { Renders } from '/imports/templates/methods';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Rail, Segment, Button, Modal } from 'semantic-ui-react';
 
-export default class RenderTab extends Component {
-  state = {
-    renderedHTML: null,
-  };
+import UnimailPropTypes from '/imports/prop-types';
+import { commonFriendlyDateString } from '/imports/utils/strings';
+import { Renders } from '/imports/templates/methods';
+import { openRenderPreview, closeRenderPreview } from '/imports/templates/editor/duck';
+
+import RendersList from './components/renders-list';
+import PreviewingRender from './components/previewing-render';
+
+class RenderTab extends Component {
+  static propTypes = {
+    template: UnimailPropTypes.template.isRequired,
+    previewingRender: UnimailPropTypes.render,
+    closePreview: PropTypes.func.isRequired,
+    openPreview: PropTypes.func.isRequired,
+  }
+
+  static defaultProps = {
+    previewingRender: null,
+  }
 
   createRender = async () => {
-    const html = await Renders.createRender.callPromise({
+    const render = await Renders.createRender.callPromise({
       templateID: this.props.template._id,
     });
 
-    this.setState(() => ({
-      renderedHTML: html,
-    }), () => {
-      const iframe = this.previewIframe;
-      const document = iframe.contentDocument || iframe.contentWindow.document;
-      document.body.innerHTML = this.state.renderedHTML;
-      document.body.style.margin = 0;
-    });
-  }
-
-  registerNewIframe = iframe => {
-    this.previewIframe = iframe;
+    this.props.openPreview(render);
   }
 
   render() {
-    const { template } = this.props;
-    const { renderedHTML } = this.state;
+    const { template, previewingRender, closePreview } = this.props;
     return (
-      <div>
+      <Segment style={{ minHeight: '50vh' }}>
         <h2>Render &ldquo;{template.title}&rdquo;</h2>
         <em>Inputs will go here</em>
         <br />
@@ -41,25 +44,50 @@ export default class RenderTab extends Component {
           Render!
         </Button>
 
-        {
-          renderedHTML ? ([
-            <h3 key="preview-label">Preview</h3>,
-            <iframe
-              key="preview-iframe"
-              title={`Rendered ${template.title}`}
-              ref={this.registerNewIframe}
-              width="600"
-              height="800"
-            />,
-            <h3 key="code-label">Code</h3>,
-            <textarea key="rendered-html" defaultValue={renderedHTML} />,
-          ]) : null
-        }
-      </div>
+        <Rail internal position="right">
+          <Segment>
+            <h2>Previously rendered</h2>
+            <div style={{ height: '50vh' }}>
+              <RendersList renders={this.props.template.renders || []} />
+            </div>
+          </Segment>
+        </Rail>
+
+        <Modal
+          open={!!previewingRender}
+          onClose={closePreview}
+        >
+          <Modal.Header>
+            {
+              previewingRender ? (
+                `Previewing a render made ${commonFriendlyDateString(previewingRender.renderedAt)}`
+              ) : null
+            }
+          </Modal.Header>
+          <Modal.Content>
+            <PreviewingRender render={previewingRender} />
+          </Modal.Content>
+        </Modal>
+      </Segment>
     );
   }
 }
 
-RenderTab.propTypes = {
-  template: UnimailPropTypes.template.isRequired,
-};
+function mapStateToProps({ editor: { previewingRender } }) {
+  return {
+    previewingRender,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    closePreview() {
+      dispatch(closeRenderPreview());
+    },
+    openPreview(render) {
+      dispatch(openRenderPreview(render));
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RenderTab);
