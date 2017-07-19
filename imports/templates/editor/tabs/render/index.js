@@ -31,6 +31,13 @@ class RenderTab extends Component {
     this.props.openPreview(render);
   }
 
+  sendEmailPreview = async () => {
+    await Renders.emailPreview.callPromise({
+      renderID: this.props.previewingRender._id,
+      templateID: this.props.template._id,
+    });
+  }
+
   render() {
     const { template, previewingRender, closePreview } = this.props;
     return (
@@ -57,16 +64,38 @@ class RenderTab extends Component {
           open={!!previewingRender}
           onClose={closePreview}
         >
-          <Modal.Header>
-            {
-              previewingRender ? (
+          {
+            previewingRender ? ([
+              <Modal.Header key="header">
                 `Previewing a render made ${commonFriendlyDateString(previewingRender.renderedAt)}`
-              ) : null
-            }
-          </Modal.Header>
-          <Modal.Content>
-            <PreviewingRender render={previewingRender} />
-          </Modal.Content>
+              </Modal.Header>,
+              <Modal.Content key="content">
+                <PreviewingRender render={previewingRender} />
+              </Modal.Content>,
+              <Modal.Actions key="actions">
+                <Button
+                  as="a"
+                  icon="download"
+                  href={`data:text/html;charset=utf-8,${encodeURIComponent(previewingRender.html)}`}
+                  download={`Rendered ${commonFriendlyDateString(previewingRender.renderedAt)}`}
+                  content="Download"
+                  color="blue"
+                />
+                <Button
+                  icon="mail outline"
+                  onClick={this.sendEmailPreview}
+                  content="Email to me"
+                  color="blue"
+                />
+
+                <Button
+                  onClick={closePreview}
+                  content="Close"
+                  color="grey"
+                />
+              </Modal.Actions>,
+            ]) : null
+          }
         </Modal>
       </Segment>
     );
