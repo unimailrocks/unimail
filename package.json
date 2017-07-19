@@ -4,7 +4,10 @@
   "scripts": {
     "start": "better-npm-run start",
     "pretend-alpha": "better-npm-run pretend-alpha",
-    "deploy:alpha": "better-npm-run deploy:alpha"
+    "deploy:alpha": "bnr migrate:alpha && better-npm-run deploy:alpha",
+    "migrate:local": "better-npm-run migrate:local",
+    "migrate:create": "bnr migrate:local create",
+    "migrate:alpha": "better-npm-run migrate:alpha"
   },
   "betterScripts": {
     "start": {
@@ -28,6 +31,18 @@
       "env": {
         "DEPLOY_HOSTNAME": "galaxy.meteor.com"
       }
+    },
+    "migrate:local": {
+      "command": "mm",
+      "env": {
+        "MONGO_URL": "mongodb://127.0.0.1:3001/meteor"
+      }
+    },
+    "migrate:alpha": {
+      "command": "mm",
+      "env": {
+        "MONGO_URL": "mongodb://unimail:cuteminthebathroom@ds143910-a0.mlab.com:43910,ds143910-a1.mlab.com:43910/staging?replicaSet=rs-ds143910"
+      }
     }
   },
   "dependencies": {
@@ -44,6 +59,7 @@
     "lodash": "^4.17.4",
     "mailgun-js": "^0.11.2",
     "meteor-node-stubs": "^0.2.6",
+    "mongodb-migrations": "^0.8.5",
     "password-generator": "^2.1.0",
     "prop-types": "^15.5.10",
     "random-bytes": "^1.0.0",
