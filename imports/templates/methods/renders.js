@@ -30,7 +30,6 @@ export const createRender = new ValidatedMethod({
       throw new Meteor.Error('Must have permissions to render templates');
     }
 
-    // actually render the template
     if (Meteor.isClient) {
       return;
     }
@@ -40,5 +39,42 @@ export const createRender = new ValidatedMethod({
     return apiTokens.withTemporaryToken(token =>
       Promise.await(api.renderTemplate(template, token)),
     );
+  },
+});
+
+export const emailPreview = new ValidatedMethod({
+  name: 'templates.renders.email',
+  mixins: [CallPromiseMixin],
+  validate: new SimpleSchema({
+    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+    renderID: { type: String },
+  }).validator(),
+  run({ templateID, renderID }) {
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
+    const template = Templates.findOne(templateID);
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    const render = template.renders.find(r => r._id === renderID);
+
+    if (!render) {
+      throw new Meteor.Error('This render does not exist');
+    }
+
+    if (Meteor.isClient) {
+      return;
+    }
+
+    const email = require('/server/email'); // eslint-disable-line global-require
+    return Promise.await(email.sendEmail({
+      to: user.emails[0].address,
+      subject: `[Email preview]: ${template.title}`,
+      html: render.html,
+    }));
   },
 });

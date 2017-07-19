@@ -48,7 +48,7 @@ class RenderTab extends Component {
           <Segment>
             <h2>Previously rendered</h2>
             <div style={{ height: '50vh' }}>
-              <RendersList renders={this.props.template.renders || []} />
+              <RendersList template={template} />
             </div>
           </Segment>
         </Rail>

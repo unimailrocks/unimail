@@ -5,7 +5,8 @@ import ContainerDimensions from 'react-container-dimensions';
 import UnimailPropTypes from '/imports/prop-types';
 import Render from './render';
 
-export default function RendersList({ renders }) {
+export default function RendersList({ template }) {
+  const { renders } = template;
   const sortedRenders = [...renders];
   sortedRenders.sort((a, b) => b.renderedAt - a.renderedAt);
 
@@ -23,7 +24,7 @@ export default function RendersList({ renders }) {
             elementHeight={200}
           >
             {sortedRenders.map(r => (
-              <Render key={r._id} render={r} />
+              <Render key={r._id} template={template} render={r} />
             ))}
           </Infinite>
         )}
@@ -33,5 +34,5 @@ export default function RendersList({ renders }) {
 }
 
 RendersList.propTypes = {
-  renders: PropTypes.arrayOf(UnimailPropTypes.render).isRequired,
+  template: UnimailPropTypes.template.isRequired,
 };
