@@ -40,6 +40,13 @@ const ItemSchema = new SimpleSchema({
   },
 });
 
+const RenderSchema = new SimpleSchema({
+  _id: { type: String },
+  renderedAt: { type: Date },
+  html: { type: String },
+  previewImageKey: { type: String },
+});
+
 Templates.attachSchema(new SimpleSchema({
   title: {
     type: String,
@@ -87,6 +94,13 @@ Templates.attachSchema(new SimpleSchema({
     type: Number,
     // Spooky magic number wonder what it means
     defaultValue: 598,
+  },
+  renders: {
+    type: Array,
+    defaultValue: [],
+  },
+  'renders.$': {
+    type: RenderSchema,
   },
 }));
 
