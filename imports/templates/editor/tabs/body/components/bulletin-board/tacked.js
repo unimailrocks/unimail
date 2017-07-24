@@ -18,6 +18,8 @@ export default class Tacked extends Component {
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
 
+    onInteract: PropTypes.func,
+
     // used in BulletinBoard; should not be passed in by consumers
     onBeginTransform: PropTypes.func,
     id: PropTypes.string,
@@ -30,6 +32,7 @@ export default class Tacked extends Component {
   static defaultProps = {
     onMouseEnter: null,
     onMouseLeave: null,
+    onInteract: null,
   };
 
   static contextTypes = {
@@ -83,6 +86,10 @@ export default class Tacked extends Component {
     e.stopPropagation();
 
     this.props.onBeginTransform('translate', this.getCoordinatesFromEvent(e));
+
+    if (this.props.onInteract) {
+      this.props.onInteract();
+    }
   };
 
   beginResize = ({ direction, event }) => {
@@ -94,6 +101,10 @@ export default class Tacked extends Component {
     event.stopPropagation();
 
     this.props.onBeginTransform(`resize-${direction}`, this.getCoordinatesFromEvent(event));
+
+    if (this.props.onInteract) {
+      this.props.onInteract();
+    }
   }
 
   registerContainer = container => {

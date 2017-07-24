@@ -13,6 +13,7 @@ import {
   enterLockedMode,
   enterUnlockedMode,
   hoverItem,
+  selectItem,
 } from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
@@ -56,6 +57,7 @@ class TemplateBody extends Component {
         {...item.placement}
         onMouseEnter={() => this.props.hoverItem([item._id])}
         onMouseLeave={() => this.props.hoverItem(null)}
+        onInteract={() => this.props.selectItem([item._id])}
       >
         <Item item={item} />
       </Tacked>
@@ -127,4 +129,5 @@ export default connect(mapStateToProps, {
   enterUnlockedMode,
   enterLockedMode,
   hoverItem,
+  selectItem,
 })(TemplateBody);

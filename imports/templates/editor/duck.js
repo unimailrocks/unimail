@@ -1,6 +1,7 @@
 const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
 const HOVER_ITEM = 'editor/items/hovered';
+const SELECT_ITEM = 'editor/items/selected';
 const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
 const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
 const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
@@ -49,6 +50,14 @@ export default function editorReducer(state = initialState, { type, payload }) {
         hoveredItemPath: payload,
       };
     }
+
+    case SELECT_ITEM: {
+      return {
+        ...state,
+        selectedItemPath: payload,
+      };
+    }
+
 
     case ENTER_UNGUIDED_MODE: {
       return {
@@ -121,6 +130,14 @@ export function hoverItem(path) {
     payload: path,
   };
 }
+
+export function selectItem(path) {
+  return {
+    type: SELECT_ITEM,
+    payload: path,
+  };
+}
+
 
 // when template is first loaded
 export function registerTemplate(template) {
