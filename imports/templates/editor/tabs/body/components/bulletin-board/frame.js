@@ -33,6 +33,13 @@ const config = [
 export default class Frame extends Component {
   static propTypes = {
     onResizeBegin: PropTypes.func.isRequired,
+    onMouseEnter: PropTypes.func,
+    onMouseLeave: PropTypes.func,
+  };
+
+  static defaultProps = {
+    onMouseEnter: null,
+    onMouseLeave: null,
   };
 
   resizeDotMouseDown = direction => event => {
@@ -65,6 +72,8 @@ export default class Frame extends Component {
           border: '1px solid black',
           boxSizing: 'border-box',
         }}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >{circles}</div>
     );
   }
