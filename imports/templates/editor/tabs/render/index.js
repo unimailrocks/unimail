@@ -67,7 +67,7 @@ class RenderTab extends Component {
           {
             previewingRender ? ([
               <Modal.Header key="header">
-                `Previewing a render made ${commonFriendlyDateString(previewingRender.renderedAt)}`
+                Previewing a render made {commonFriendlyDateString(previewingRender.renderedAt)}
               </Modal.Header>,
               <Modal.Content key="content">
                 <PreviewingRender render={previewingRender} />

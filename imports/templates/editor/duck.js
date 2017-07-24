@@ -2,6 +2,8 @@ const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
 const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
 const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
+const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
+const ENTER_UNLOCKED_MODE = 'editor/modes/locked/off';
 const OPEN_RENDER_PREVIEW = 'editor/renders/preview/open';
 const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
 
@@ -10,6 +12,7 @@ const initialState = {
   templateHeight: 300,
   modes: {
     guided: true,
+    locked: false,
   },
 };
 
@@ -56,6 +59,27 @@ export default function editorReducer(state = initialState, { type, payload }) {
       };
     }
 
+    case ENTER_UNLOCKED_MODE: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          locked: false,
+        },
+      };
+    }
+
+    case ENTER_LOCKED_MODE: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          locked: true,
+        },
+      };
+    }
+
+
     case OPEN_RENDER_PREVIEW: {
       return {
         ...state,
@@ -99,6 +123,18 @@ export function enterUnguidedMode() {
 export function enterGuidedMode() {
   return {
     type: ENTER_GUIDED_MODE,
+  };
+}
+
+export function enterUnlockedMode() {
+  return {
+    type: ENTER_UNLOCKED_MODE,
+  };
+}
+
+export function enterLockedMode() {
+  return {
+    type: ENTER_LOCKED_MODE,
   };
 }
 

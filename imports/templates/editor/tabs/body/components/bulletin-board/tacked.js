@@ -24,6 +24,10 @@ export default class Tacked extends Component {
     }),
   };
 
+  static contextTypes = {
+    __bb_options: PropTypes.func,
+  }
+
   static defaultProps = {
     onBeginTransform() {},
     id: null,
@@ -64,6 +68,9 @@ export default class Tacked extends Component {
   }
 
   beginTranslate = e => {
+    if (e.button !== 0 || this.context.__bb_options().locked) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
 
@@ -71,6 +78,10 @@ export default class Tacked extends Component {
   };
 
   beginResize = ({ direction, event }) => {
+    if (event.button !== 0 || this.context.__bb_options().locked) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
 

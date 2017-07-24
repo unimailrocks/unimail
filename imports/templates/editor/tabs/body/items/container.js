@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { css } from 'aphrodite';
 import { connect } from 'react-redux';
+import { css } from 'aphrodite';
 
 import UnimailPropTypes from '/imports/prop-types';
 import styles from '/imports/styles/functional';
@@ -10,63 +10,43 @@ import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
 
-class Container extends Component {
-  static propTypes = {
-    details: PropTypes.shape({
-      items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
-    }).isRequired,
-    _id: PropTypes.string.isRequired,
-    guided: PropTypes.bool.isRequired,
-  };
+function Container({ _id, details, path, guided }) {
+  const { items } = details;
 
-  stopDragPropogation = (l, o, n, p, e) => {
-    e.stopPropagation();
-  }
+  const itemElements = items.map(item => (
+    <Tacked
+      bounded={guided}
+      {...item.placement}
+      key={item._id}
+    >
+      <Item item={item} path={path} />
+    </Tacked>
+  ));
 
-  resetLayout() {
-    this._shouldReverseLayout = !this._shouldReverseLayout;
-    this.forceUpdate();
-  }
-
-  generateDOM() {
-    const { details, guided } = this.props;
-    const { items } = details;
-    return items.map(item => (
-      <Tacked
-        key={item._id}
-        bounded={guided}
-        {...item.placement}
-      >
-        <Item item={item} />
-      </Tacked>
-    ));
-  }
-
-  generateLayout() {
-    const { items } = this.props.details;
-    return items.map(({ _id, placement }) => ({
-      x: placement.x,
-      y: placement.y,
-      w: placement.width,
-      h: placement.height,
-      i: _id,
-    }));
-  }
-
-  render() {
-    const { _id } = this.props;
-    return (
-      <div className={css(styles.fit)}>
-        <BulletinBoard id={_id} fit>
-          {this.generateDOM()}
-        </BulletinBoard>
-      </div>
-    );
-  }
+  return (
+    <div className={css(styles.fit)}>
+      <BulletinBoard id={_id} fit>
+        {itemElements}
+      </BulletinBoard>
+    </div>
+  );
 }
 
-function mapStateToProps({ editor: { template, modes: { guided } } }) {
-  return { template, guided };
+Container.propTypes = {
+  details: PropTypes.shape({
+    items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
+  }).isRequired,
+  _id: PropTypes.string.isRequired,
+  path: PropTypes.arrayOf(PropTypes.string).isRequired,
+  guided: PropTypes.bool,
+};
+
+Container.defaultProps = {
+  guided: true,
+};
+
+function mapStateToProps({ editor: { modes: { guided } } }) {
+  return { guided };
 }
 
 export default connect(mapStateToProps)(Container);

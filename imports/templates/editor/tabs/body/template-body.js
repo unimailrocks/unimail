@@ -7,7 +7,12 @@ import UnimailPropTypes from '/imports/prop-types';
 import * as Templates from '/imports/templates/methods';
 
 import KeyListener from '/imports/components/key-listener';
-import { enterGuidedMode, enterUnguidedMode } from '../../duck';
+import {
+  enterGuidedMode,
+  enterUnguidedMode,
+  enterLockedMode,
+  enterUnlockedMode,
+} from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
 import BulletinBoard, { Tacked } from './components/bulletin-board';
@@ -19,6 +24,9 @@ class TemplateBody extends Component {
     tool: UnimailPropTypes.tool,
     enterGuidedMode: PropTypes.func.isRequired,
     enterUnguidedMode: PropTypes.func.isRequired,
+    enterLockedMode: PropTypes.func.isRequired,
+    enterUnlockedMode: PropTypes.func.isRequired,
+    locked: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
@@ -83,6 +91,8 @@ class TemplateBody extends Component {
         <KeyListener
           onShiftDown={this.props.enterUnguidedMode}
           onShiftUp={this.props.enterGuidedMode}
+          onControlDown={this.props.enterLockedMode}
+          onControlUp={this.props.enterUnlockedMode}
         />
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
@@ -90,6 +100,7 @@ class TemplateBody extends Component {
             widthLocked
             minHeight={300}
             onRetack={this.itemMoved}
+            locked={this.props.locked}
           >
             {this.generateDOM()}
           </BulletinBoard>
@@ -102,10 +113,13 @@ class TemplateBody extends Component {
 function mapStateToProps(state) {
   return {
     tool: state.editor.tool,
+    locked: state.editor.modes.locked,
   };
 }
 
 export default connect(mapStateToProps, {
   enterGuidedMode,
   enterUnguidedMode,
+  enterUnlockedMode,
+  enterLockedMode,
 })(TemplateBody);
