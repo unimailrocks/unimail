@@ -28,6 +28,7 @@ export default class BulletinBoard extends Component {
       });
     },
     onRetack: PropTypes.func,
+    locked: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -39,12 +40,22 @@ export default class BulletinBoard extends Component {
     onRetack: null,
     fit: false,
     id: null,
+    locked: null,
+  };
+
+  static optionsType = PropTypes.shape({
+    locked: PropTypes.bool,
+  });
+
+  static defaultOptions = {
+    locked: false,
   };
 
   static childContextTypes = {
     __bb_shapeItem: PropTypes.func,
     __bb_registerResizeResponder: PropTypes.func,
     __bb_contextID: PropTypes.string,
+    __bb_options: PropTypes.func,
   };
 
   static contextTypes = {
@@ -55,6 +66,7 @@ export default class BulletinBoard extends Component {
       y: PropTypes.number.isRequired,
     }),
     __bb_contextID: PropTypes.string,
+    __bb_options: PropTypes.func,
   };
 
   state = {
@@ -87,6 +99,7 @@ export default class BulletinBoard extends Component {
     return {
       __bb_shapeItem: this.shapeItem,
       __bb_registerResizeResponder: this.registerSubboardShrinkwrapper,
+      __bb_options: () => this.getOptions(),
     };
   }
 
@@ -129,6 +142,14 @@ export default class BulletinBoard extends Component {
       currentTransformType: null,
     }));
   };
+
+  getOptions() {
+    return {
+      locked: this.constructor.defaultOptions.locked ||
+              (this.context.__bb_options || (() => ({})))().locked ||
+              this.props.locked,
+    };
+  }
 
   getDetachedChild(props, key) {
     if (!key) {
