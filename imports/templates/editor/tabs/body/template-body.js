@@ -12,6 +12,7 @@ import {
   enterUnguidedMode,
   enterLockedMode,
   enterUnlockedMode,
+  hoverItem,
 } from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
@@ -26,6 +27,7 @@ class TemplateBody extends Component {
     enterUnguidedMode: PropTypes.func.isRequired,
     enterLockedMode: PropTypes.func.isRequired,
     enterUnlockedMode: PropTypes.func.isRequired,
+    hoverItem: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
   };
 
@@ -52,6 +54,8 @@ class TemplateBody extends Component {
       <Tacked
         key={item._id}
         {...item.placement}
+        onMouseEnter={() => this.props.hoverItem([item._id])}
+        onMouseLeave={() => this.props.hoverItem(null)}
       >
         <Item item={item} />
       </Tacked>
@@ -122,4 +126,5 @@ export default connect(mapStateToProps, {
   enterUnguidedMode,
   enterUnlockedMode,
   enterLockedMode,
+  hoverItem,
 })(TemplateBody);

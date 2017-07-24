@@ -1,5 +1,6 @@
 const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
+const HOVER_ITEM = 'editor/items/hovered';
 const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
 const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
 const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
@@ -33,6 +34,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
         tool: payload,
       };
     }
+
     case LOAD_TEMPLATE: {
       // TODO calculate height to render
       return {
@@ -40,6 +42,14 @@ export default function editorReducer(state = initialState, { type, payload }) {
         template: payload,
       };
     }
+
+    case HOVER_ITEM: {
+      return {
+        ...state,
+        hoveredItemPath: payload,
+      };
+    }
+
     case ENTER_UNGUIDED_MODE: {
       return {
         ...state,
@@ -79,7 +89,6 @@ export default function editorReducer(state = initialState, { type, payload }) {
       };
     }
 
-
     case OPEN_RENDER_PREVIEW: {
       return {
         ...state,
@@ -103,6 +112,13 @@ export function selectTool(tool) {
   return {
     type: SELECT_TOOL,
     payload: tool,
+  };
+}
+
+export function hoverItem(path) {
+  return {
+    type: HOVER_ITEM,
+    payload: path,
   };
 }
 

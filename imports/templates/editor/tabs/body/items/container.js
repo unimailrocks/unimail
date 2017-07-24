@@ -6,11 +6,13 @@ import { css } from 'aphrodite';
 import UnimailPropTypes from '/imports/prop-types';
 import styles from '/imports/styles/functional';
 
+import { hoverItem } from '/imports/templates/editor/duck';
+
 import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
 
-function Container({ _id, details, path, guided }) {
+function Container({ _id, details, path, guided, hoverItem }) {
   const { items } = details;
 
   const itemElements = items.map(item => (
@@ -18,6 +20,8 @@ function Container({ _id, details, path, guided }) {
       bounded={guided}
       {...item.placement}
       key={item._id}
+      onMouseEnter={() => hoverItem([...path, item._id])}
+      onMouseLeave={() => hoverItem(null)}
     >
       <Item item={item} path={path} />
     </Tacked>
@@ -39,6 +43,7 @@ Container.propTypes = {
   _id: PropTypes.string.isRequired,
   path: PropTypes.arrayOf(PropTypes.string).isRequired,
   guided: PropTypes.bool,
+  hoverItem: PropTypes.func.isRequired,
 };
 
 Container.defaultProps = {
@@ -49,4 +54,4 @@ function mapStateToProps({ editor: { modes: { guided } } }) {
   return { guided };
 }
 
-export default connect(mapStateToProps)(Container);
+export default connect(mapStateToProps, { hoverItem })(Container);

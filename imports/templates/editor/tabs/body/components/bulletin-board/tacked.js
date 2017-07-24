@@ -15,6 +15,9 @@ export default class Tacked extends Component {
     ]).isRequired,
     bounded: PropTypes.bool,
 
+    onMouseEnter: PropTypes.func,
+    onMouseLeave: PropTypes.func,
+
     // used in BulletinBoard; should not be passed in by consumers
     onBeginTransform: PropTypes.func,
     id: PropTypes.string,
@@ -22,6 +25,11 @@ export default class Tacked extends Component {
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
     }),
+  };
+
+  static defaultProps = {
+    onMouseEnter: null,
+    onMouseLeave: null,
   };
 
   static contextTypes = {
@@ -93,7 +101,15 @@ export default class Tacked extends Component {
   };
 
   render() {
-    const { height, width, x, y, children } = this.props;
+    const {
+      height,
+      width,
+      x,
+      y,
+      children,
+      onMouseEnter,
+      onMouseLeave,
+    } = this.props;
     return (
       <div
         style={{
@@ -108,6 +124,8 @@ export default class Tacked extends Component {
       >
         <Frame
           onResizeBegin={this.beginResize}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
         />
         {children}
       </div>
