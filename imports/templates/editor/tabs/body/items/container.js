@@ -6,13 +6,13 @@ import { css } from 'aphrodite';
 import UnimailPropTypes from '/imports/prop-types';
 import styles from '/imports/styles/functional';
 
-import { hoverItem } from '/imports/templates/editor/duck';
+import { hoverItem, selectItem } from '/imports/templates/editor/duck';
 
 import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
 
-function Container({ _id, details, path, guided, hoverItem }) {
+function Container({ _id, details, path, guided, hoverItem, selectItem }) {
   const { items } = details;
 
   const itemElements = items.map(item => (
@@ -22,6 +22,7 @@ function Container({ _id, details, path, guided, hoverItem }) {
       key={item._id}
       onMouseEnter={() => hoverItem([...path, item._id])}
       onMouseLeave={() => hoverItem(null)}
+      onInteract={() => selectItem([...path, item._id])}
     >
       <Item item={item} path={path} />
     </Tacked>
@@ -44,6 +45,7 @@ Container.propTypes = {
   path: PropTypes.arrayOf(PropTypes.string).isRequired,
   guided: PropTypes.bool,
   hoverItem: PropTypes.func.isRequired,
+  selectItem: PropTypes.func.isRequired,
 };
 
 Container.defaultProps = {
@@ -54,4 +56,4 @@ function mapStateToProps({ editor: { modes: { guided } } }) {
   return { guided };
 }
 
-export default connect(mapStateToProps, { hoverItem })(Container);
+export default connect(mapStateToProps, { hoverItem, selectItem })(Container);
