@@ -1,29 +1,46 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 import { Rail, Segment } from 'semantic-ui-react';
+
+import UnimailPropTypes from '/imports/prop-types';
 
 import ContentForm from './content-form';
 
-export default function TemplateBodyRightRail(props) {
-  if (!props.contentType) {
+function TemplateBodyRightRail({ item }) {
+  if (!item) {
     return null;
   }
 
   return (
     <Rail attached position="right">
       <Segment raised>
-        <ContentForm key={props.content._id} {...props} />
+        <pre>
+          {JSON.stringify(item, null, 2)}
+        </pre>
       </Segment>
     </Rail>
   );
 }
 
 TemplateBodyRightRail.propTypes = {
-  contentType: PropTypes.oneOf([]),
-  content: PropTypes.oneOfType([]),
+  item: UnimailPropTypes.item,
 };
 
 TemplateBodyRightRail.defaultProps = {
-  contentType: null,
-  content: null,
+  item: null,
 };
+
+function mapStateToProps({ editor: { template, selectedItemPath } }) {
+  if (!selectedItemPath) {
+    return {};
+  }
+
+  const item = selectedItemPath.reduce(({ details: { items } }, id) =>
+    items.find(({ _id }) => _id === id),
+    { details: template },
+  );
+
+  return { item };
+}
+
+export default connect(mapStateToProps)(TemplateBodyRightRail);
