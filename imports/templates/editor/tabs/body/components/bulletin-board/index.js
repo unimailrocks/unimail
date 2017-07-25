@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 /* eslint-disable react/sort-comp */
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Tacked from './tacked';
 

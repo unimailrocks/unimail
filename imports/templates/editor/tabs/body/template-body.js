@@ -17,8 +17,8 @@ import {
 } from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
-import BulletinBoard, { Tacked } from './components/bulletin-board';
 import Item from './items';
+import Container from './items/container';
 
 class TemplateBody extends Component {
   static propTypes = {
@@ -102,14 +102,16 @@ class TemplateBody extends Component {
         />
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
-          <BulletinBoard
-            widthLocked
-            minHeight={300}
-            onRetack={this.itemMoved}
-            locked={this.props.locked}
-          >
-            {this.generateDOM()}
-          </BulletinBoard>
+          <Container
+            details={{ items: this.props.template.items }}
+            path={[]}
+            bulletinBoardProps={{
+              widthLocked: true,
+              minHeight: 300,
+              onRetack: this.itemMoved,
+              locked: this.props.locked,
+            }}
+          />
         </div>
       </Segment>
     );

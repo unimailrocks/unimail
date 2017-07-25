@@ -12,7 +12,15 @@ import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
 
-function Container({ _id, details, path, guided, hoverItem, selectItem }) {
+function Container({
+  _id,
+  details,
+  path,
+  guided,
+  hoverItem,
+  selectItem,
+  bulletinBoardProps,
+}) {
   const { items } = details;
 
   const itemElements = items.map(item => (
@@ -30,7 +38,10 @@ function Container({ _id, details, path, guided, hoverItem, selectItem }) {
 
   return (
     <div className={css(styles.fit)}>
-      <BulletinBoard id={_id} fit>
+      <BulletinBoard
+        id={_id}
+        {...bulletinBoardProps}
+      >
         {itemElements}
       </BulletinBoard>
     </div>
@@ -41,15 +52,20 @@ Container.propTypes = {
   details: PropTypes.shape({
     items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
   }).isRequired,
-  _id: PropTypes.string.isRequired,
+  _id: PropTypes.string,
   path: PropTypes.arrayOf(PropTypes.string).isRequired,
   guided: PropTypes.bool,
   hoverItem: PropTypes.func.isRequired,
   selectItem: PropTypes.func.isRequired,
+  bulletinBoardProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
 };
 
 Container.defaultProps = {
   guided: true,
+  _id: null,
+  bulletinBoardProps: {
+    fit: true,
+  },
 };
 
 function mapStateToProps({ editor: { modes: { guided } } }) {
