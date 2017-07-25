@@ -1,16 +1,25 @@
+import { isEqual } from 'lodash/fp';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { css } from 'aphrodite';
+import { StyleSheet, css } from 'aphrodite';
 
 import UnimailPropTypes from '/imports/prop-types';
-import styles from '/imports/styles/functional';
+import functionalStyles from '/imports/styles/functional';
+import colors from '/imports/styles/colors';
 
 import { hoverItem, selectItem } from '/imports/templates/editor/duck';
 
 import BulletinBoard, { Tacked } from '../components/bulletin-board';
 
 import Item from '.';
+
+const styles = StyleSheet.create({
+  faintOutline: {
+    border: `1px solid ${colors.black.alpha(0.3).toString()}`,
+    boxShadow: `0 0 1px ${colors.white.alpha(0.3).toString()}`,
+  },
+});
 
 function Container({
   _id,
@@ -20,24 +29,31 @@ function Container({
   hoverItem,
   selectItem,
   bulletinBoardProps,
+  selectedItemPath,
 }) {
   const { items } = details;
 
-  const itemElements = items.map(item => (
-    <Tacked
-      bounded={guided}
-      {...item.placement}
-      key={item._id}
-      onMouseEnter={() => hoverItem([...path, item._id])}
-      onMouseLeave={() => hoverItem(null)}
-      onInteract={() => selectItem([...path, item._id])}
-    >
-      <Item item={item} path={path} />
-    </Tacked>
-  ));
+  const itemElements = items.map(item => {
+    const fullPath = [...path, item._id];
+    const selected = isEqual(fullPath, selectedItemPath);
+    return (
+      <Tacked
+        bounded={guided}
+        {...item.placement}
+        key={item._id}
+        onMouseEnter={() => hoverItem(fullPath)}
+        onMouseLeave={() => hoverItem(null)}
+        onInteract={() => selectItem(fullPath)}
+        showFrame={selected}
+        className={css(!selected && styles.faintOutline)}
+      >
+        <Item item={item} path={path} />
+      </Tacked>
+    );
+  });
 
   return (
-    <div className={css(styles.fit)}>
+    <div className={css(functionalStyles.fit)}>
       <BulletinBoard
         id={_id}
         {...bulletinBoardProps}
@@ -58,6 +74,7 @@ Container.propTypes = {
   hoverItem: PropTypes.func.isRequired,
   selectItem: PropTypes.func.isRequired,
   bulletinBoardProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  selectedItemPath: PropTypes.arrayOf(PropTypes.string),
 };
 
 Container.defaultProps = {
@@ -66,10 +83,11 @@ Container.defaultProps = {
   bulletinBoardProps: {
     fit: true,
   },
+  selectedItemPath: null,
 };
 
-function mapStateToProps({ editor: { modes: { guided } } }) {
-  return { guided };
+function mapStateToProps({ editor: { selectedItemPath, modes: { guided } } }) {
+  return { guided, selectedItemPath };
 }
 
 export default connect(mapStateToProps, { hoverItem, selectItem })(Container);

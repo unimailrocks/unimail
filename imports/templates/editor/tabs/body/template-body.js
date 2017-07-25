@@ -12,12 +12,10 @@ import {
   enterUnguidedMode,
   enterLockedMode,
   enterUnlockedMode,
-  hoverItem,
   selectItem,
 } from '../../duck';
 
 import DrawingCanvas from './components/drawing-canvas';
-import Item from './items';
 import Container from './items/container';
 
 class TemplateBody extends Component {
@@ -28,8 +26,8 @@ class TemplateBody extends Component {
     enterUnguidedMode: PropTypes.func.isRequired,
     enterLockedMode: PropTypes.func.isRequired,
     enterUnlockedMode: PropTypes.func.isRequired,
-    hoverItem: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
+    selectItem: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
@@ -49,27 +47,15 @@ class TemplateBody extends Component {
     }
   };
 
-  generateDOM() {
-    const { items } = this.props.template;
-    return items.map(item => (
-      <Tacked
-        key={item._id}
-        {...item.placement}
-        onMouseEnter={() => this.props.hoverItem([item._id])}
-        onMouseLeave={() => this.props.hoverItem(null)}
-        onInteract={() => this.props.selectItem([item._id])}
-      >
-        <Item item={item} />
-      </Tacked>
-    ));
-  }
-
   addElement = async (item) => {
+    const { selectItem } = this.props;
     try {
-      await Templates.Items.placeItem.callPromise({
+      const { item: newItem, path } = await Templates.Items.placeItem.callPromise({
         templateID: this.props.template._id,
         item,
       });
+
+      selectItem([...path, newItem._id]);
     } catch (e) {
       console.error(e.error);
     }
@@ -130,6 +116,5 @@ export default connect(mapStateToProps, {
   enterUnguidedMode,
   enterUnlockedMode,
   enterLockedMode,
-  hoverItem,
   selectItem,
 })(TemplateBody);
