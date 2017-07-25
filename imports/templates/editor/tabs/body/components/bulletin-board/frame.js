@@ -35,11 +35,29 @@ export default class Frame extends Component {
     onResizeBegin: PropTypes.func.isRequired,
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
+
+    className: PropTypes.string,
+    resizeDotClassName: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string,
+    ]),
+
+    style: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    resizeDotStyle: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    ]),
+
+    show: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
     onMouseEnter: null,
     onMouseLeave: null,
+    className: null,
+    resizeDotClassName: null,
+    frameStyle: null,
+    resizeDotStyle: null,
   };
 
   resizeDotMouseDown = direction => event => {
@@ -47,33 +65,74 @@ export default class Frame extends Component {
   }
 
   render() {
-    const circles = config.map(options => (
-      <Circle
-        style={{
-          position: 'absolute',
-          width: 7,
-          transform: 'translate(-50%, -50%)',
-          height: 7,
-          ...options,
-        }}
-        onMouseDown={this.resizeDotMouseDown(options.direction)}
-        key={options.direction}
-      />
-    ));
+    const {
+      resizeDotStyle,
+      style,
+      resizeDotClassName,
+      className,
+      show,
+      onMouseEnter,
+      onMouseLeave,
+    } = this.props;
+
+    const circles = show ? config.map(options => {
+      let style = {
+        position: 'absolute',
+        width: 7,
+        transform: 'translate(-50%, -50%)',
+        height: 7,
+        ...options,
+      };
+
+      if (typeof resizeDotStyle === 'function') {
+        style = resizeDotStyle(style);
+      } else if (resizeDotStyle != null && typeof resizeDotStyle === 'object') {
+        style = resizeDotStyle;
+      }
+
+      let className = '';
+      if (typeof resizeDotClassName === 'function') {
+        className = resizeDotClassName(options);
+      } else if (typeof resizeDotClassName === 'string') {
+        className = resizeDotClassName;
+      }
+
+      return (
+        <Circle
+          style={style}
+          onMouseDown={this.resizeDotMouseDown(options.direction)}
+          key={options.direction}
+          className={className}
+        />
+      );
+    }) : null;
+
+    const defaultStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      boxSizing: 'border-box',
+    };
+
+    if (show) {
+      defaultStyle.border = '1px solid black';
+    }
+
+    let finalStyle = defaultStyle;
+    if (typeof style === 'function') {
+      finalStyle = style(finalStyle);
+    } else if (style != null && typeof style === 'object') {
+      finalStyle = style;
+    }
 
     return (
       <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          border: '1px solid black',
-          boxSizing: 'border-box',
-        }}
-        onMouseEnter={this.props.onMouseEnter}
-        onMouseLeave={this.props.onMouseLeave}
+        style={finalStyle}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className={className}
       >{circles}</div>
     );
   }

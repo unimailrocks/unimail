@@ -20,6 +20,20 @@ export default class Tacked extends Component {
 
     onInteract: PropTypes.func,
 
+    className: PropTypes.string,
+    resizeDotClassName: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string,
+    ]),
+
+    frameStyle: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    resizeDotStyle: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    ]),
+
+    showFrame: PropTypes.bool,
+
     // used in BulletinBoard; should not be passed in by consumers
     onBeginTransform: PropTypes.func,
     id: PropTypes.string,
@@ -33,18 +47,23 @@ export default class Tacked extends Component {
     onMouseEnter: null,
     onMouseLeave: null,
     onInteract: null,
-  };
+    className: null,
+    resizeDotClassName: null,
+    showFrame: true,
 
-  static contextTypes = {
-    __bb_options: PropTypes.func,
-  }
+    frameStyle: null,
+    resizeDotStyle: null,
 
-  static defaultProps = {
+
     onBeginTransform() {},
     id: null,
     ancestorTranslation: null,
     bounded: true,
   };
+
+  static contextTypes = {
+    __bb_options: PropTypes.func,
+  }
 
   static childContextTypes = {
     __bb_translation: PropTypes.shape({
@@ -120,7 +139,13 @@ export default class Tacked extends Component {
       children,
       onMouseEnter,
       onMouseLeave,
+      frameStyle,
+      className,
+      resizeDotClassName,
+      resizeDotStyle,
+      showFrame,
     } = this.props;
+
     return (
       <div
         style={{
@@ -137,6 +162,11 @@ export default class Tacked extends Component {
           onResizeBegin={this.beginResize}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
+          resizeDotClassName={resizeDotClassName}
+          resizeDotStyle={resizeDotStyle}
+          show={showFrame}
+          style={frameStyle}
+          className={className}
         />
         {children}
       </div>

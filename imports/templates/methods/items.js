@@ -219,6 +219,19 @@ export const placeItem = new ValidatedMethod({
         [arrayKey]: finalItem,
       },
     });
+
+    const { idPath } = path.reduce(({ idPath, items }, index) => {
+      const item = items[index];
+      return {
+        idPath: [...idPath, item._id],
+        items: get('details.items', item),
+      };
+    }, { idPath: [], items: template.items });
+
+    return {
+      item: finalItem,
+      path: idPath,
+    };
   },
 });
 
