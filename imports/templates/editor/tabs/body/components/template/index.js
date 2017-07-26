@@ -20,9 +20,14 @@ class Template extends Component {
     selectItem: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
     guided: PropTypes.bool.isRequired,
+    selectedItemPath: PropTypes.arrayOf(PropTypes.string),
 
     // from parent
     itemMoved: PropTypes.func.isRequired,
+  }
+
+  static defaultProps = {
+    selectedItemPath: null,
   }
 
   state = {
@@ -76,25 +81,37 @@ class Template extends Component {
 
   onMouseUp = async e => {
     const { moving } = this.state;
+    if (!moving) {
+      this.props.selectItem(null);
+      return;
+    }
     const newMouseCoords = this.getCanvasCoordinates(e);
     const placementOffset = {
       x: newMouseCoords.x - moving.originalCursorCoordinates.x,
       y: newMouseCoords.y - moving.originalCursorCoordinates.y,
     };
 
-    const { placement } = this.getItemFromPath(moving.path);
+    const { placement: initialPlacement } = this.getItemFromPath(moving.path);
 
-    const { path } = await this.props.itemMoved({
-      path: moving.path,
-      newPosition: {
-        ...placement,
-        x: placement.x + placementOffset.x,
-        y: placement.y + placementOffset.y,
+    const proposedPlacement = {
+      ...initialPlacement,
+      x: initialPlacement.x + placementOffset.x,
+      y: initialPlacement.y + placementOffset.y,
+    };
+    const placement = this.correctPlacement({ path: moving.path, proposedPlacement });
+    this.setState(state => merge(state, {
+      moving: {
+        precommittedPlacement: placement,
       },
-    });
+    }), async () => {
+      const { path } = await this.props.itemMoved({
+        path: moving.path,
+        newPosition: placement,
+      });
 
-    this.setState(() => ({ moving: null }));
-    this.props.selectItem(path);
+      this.setState(() => ({ moving: null }));
+      this.props.selectItem(path);
+    });
   }
 
   correctPlacement({ path, proposedPlacement }) {
@@ -174,17 +191,19 @@ class Template extends Component {
 
   renderMovingItem() {
     const { moving: movingData } = this.state;
-    const { value: placementOffset } = movingData.transform;
     const item = this.getItemFromPath(movingData.path);
-    const { placement: initialPlacement } = item;
+    const placement = movingData.precommittedPlacement || (() => {
+      const { value: placementOffset } = movingData.transform;
+      const { placement: initialPlacement } = item;
 
-    const proposedPlacement = {
-      ...initialPlacement,
-      x: initialPlacement.x + placementOffset.x,
-      y: initialPlacement.y + placementOffset.y,
-    };
+      const proposedPlacement = {
+        ...initialPlacement,
+        x: initialPlacement.x + placementOffset.x,
+        y: initialPlacement.y + placementOffset.y,
+      };
 
-    const placement = this.correctPlacement({ path: movingData.path, proposedPlacement });
+      return this.correctPlacement({ path: movingData.path, proposedPlacement });
+    })();
 
     return (
       <Frame
@@ -201,10 +220,13 @@ class Template extends Component {
       return this.renderMovingItem();
     }
 
+    const isSelected = isEqual(this.props.selectedItemPath, path);
+
     return (
       <Frame
         onMouseDown={this.onMouseDown(path)}
         key={item._id}
+        minimal={!isSelected}
         {...item.placement}
       >
         {this.renderItem({ item, path })}
@@ -222,7 +244,7 @@ class Template extends Component {
     return (
       <div>
         <div
-          ref={canvas => this.canvas = canvas}
+          ref={canvas => { this.canvas = canvas; }}
           onMouseMove={this.onMouseMove}
           onMouseUp={this.onMouseUp}
           style={{
@@ -231,11 +253,6 @@ class Template extends Component {
         >
           {this.renderItems(template)}
         </div>
-
-        <hr />
-        <pre>
-          {JSON.stringify(template, null, 2)}
-        </pre>
       </div>
     );
   }
@@ -246,6 +263,7 @@ function mapStateToProps(state) {
     template: state.editor.template,
     locked: state.editor.modes.locked,
     guided: state.editor.modes.guided,
+    selectedItemPath: state.editor.selectedItemPath,
   };
 }
 

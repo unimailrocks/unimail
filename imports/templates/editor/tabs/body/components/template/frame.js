@@ -36,9 +36,10 @@ export default function Frame({
   y,
   height,
   width,
+  minimal,
   ...divProps
 }) {
-  const circles = config.map(options => {
+  const circles = minimal ? null : config.map(options => {
     const style = {
       position: 'absolute',
       width: 7,
