@@ -364,5 +364,18 @@ export const moveItem = new ValidatedMethod({
         },
       );
     }
+
+    const { idPath } = newIndices.reduce(({ idPath, items }, index) => {
+      const item = items[index];
+      return {
+        idPath: [...idPath, item._id],
+        items: get('details.items', item),
+      };
+    }, { idPath: [], items: template.items });
+
+    return {
+      item,
+      path: [...idPath, item._id],
+    };
   },
 });

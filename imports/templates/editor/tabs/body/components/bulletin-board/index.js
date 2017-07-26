@@ -65,8 +65,10 @@ export default class BulletinBoard extends Component {
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
     }),
+    __bb_translationX: PropTypes.number,
     __bb_contextID: PropTypes.string,
     __bb_options: PropTypes.func,
+    __bb_getTranslation: PropTypes.func,
   };
 
   state = {
@@ -85,8 +87,12 @@ export default class BulletinBoard extends Component {
     }
   }
 
-  componentWillUpdate(newProps, newState) {
+  componentWillUpdate(newProps, newState, newContext) {
     this.detachedChild = this.getDetachedChild(newProps, newState.detachedChildKey);
+    console.log('%cupdating %s %O %O', 'color: green', this.props.id, newContext, newContext.__bb_translation);
+    if (newContext.__bb_getTranslation) {
+      console.log('%cokay but %O', 'color: cyan', newContext.__bb_getTranslation());
+    }
   }
 
   componentDidMount() {
@@ -597,6 +603,12 @@ export default class BulletinBoard extends Component {
     });
   }
 
+  tackElements() {
+    return this.props.elements.map(el => {
+
+    });
+  }
+
   registerContainer = container => {
     this.container = container;
   };
@@ -610,6 +622,7 @@ export default class BulletinBoard extends Component {
     const { position, diff = { x: 0, y: 0 } } = this.detachedChildPosition(mouseCoordinates);
     const { width, height, y, x } = position;
 
+    console.log('%cpassing down %O', 'color: blue', diff);
     const untacked = React.cloneElement(detachedChild, {
       x: 0,
       y: 0,

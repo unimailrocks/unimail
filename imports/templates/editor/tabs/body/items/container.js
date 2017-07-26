@@ -36,20 +36,18 @@ function Container({
   const itemElements = items.map(item => {
     const fullPath = [...path, item._id];
     const selected = isEqual(fullPath, selectedItemPath);
-    return (
-      <Tacked
-        bounded={guided}
-        {...item.placement}
-        key={item._id}
-        onMouseEnter={() => hoverItem(fullPath)}
-        onMouseLeave={() => hoverItem(null)}
-        onInteract={() => selectItem(fullPath)}
-        showFrame={selected}
-        className={css(!selected && styles.faintOutline)}
-      >
-        <Item item={item} path={path} />
-      </Tacked>
-    );
+
+    return {
+      bounded: guided,
+      ...item.placement,
+      onMouseEnter() { hoverItem(fullPath); },
+      onMouseLeave() { hoverItem(null); },
+      onInteract() { selectItem(fullPath); },
+      showFrame: selected,
+      className: css(!selected && styles.faintOutline),
+      child: <Item item={item} path={path} />,
+      key: item._id,
+    };
   });
 
   return (
@@ -57,9 +55,8 @@ function Container({
       <BulletinBoard
         id={_id}
         {...bulletinBoardProps}
-      >
-        {itemElements}
-      </BulletinBoard>
+        elements={itemElements}
+      />
     </div>
   );
 }
