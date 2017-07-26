@@ -15,6 +15,7 @@ import {
   selectItem,
 } from '../../duck';
 
+import Template from './components/template';
 import DrawingCanvas from './components/drawing-canvas';
 import Container from './items/container';
 
@@ -34,10 +35,10 @@ class TemplateBody extends Component {
     tool: null,
   }
 
-  itemMoved = async ({ path, newPosition }) => {
+  itemMoved = ({ path, newPosition }) => {
     const { _id: templateID } = this.props.template;
     try {
-      await Templates.Items.moveItem.callPromise({
+      return Templates.Items.moveItem.callPromise({
         templateID,
         placement: newPosition,
         path,
@@ -88,7 +89,10 @@ class TemplateBody extends Component {
         />
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
-          <Container
+          <Template
+            itemMoved={this.itemMoved}
+          />
+          {/* <Container
             details={{ items: this.props.template.items }}
             path={[]}
             bulletinBoardProps={{
@@ -97,7 +101,7 @@ class TemplateBody extends Component {
               onRetack: this.itemMoved,
               locked: this.props.locked,
             }}
-          />
+          />*/}
         </div>
       </Segment>
     );

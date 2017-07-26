@@ -57,7 +57,7 @@ export default class Tacked extends Component {
 
     onBeginTransform() {},
     id: null,
-    ancestorTranslation: null,
+    // ancestorTranslation: null,
     bounded: true,
   };
 
@@ -70,13 +70,18 @@ export default class Tacked extends Component {
       x: PropTypes.number.isRequired,
       y: PropTypes.number.isRequired,
     }),
+    __bb_translationX: PropTypes.number,
     __bb_contextID: PropTypes.string,
+    __bb_getTranslation: PropTypes.func,
   }
 
   getChildContext() {
     const { ancestorTranslation, id } = this.props;
+    console.log('%cchanging child context of %s %O', 'color: red', id, ancestorTranslation);
     return {
       __bb_translation: ancestorTranslation,
+      __bb_translationX: ancestorTranslation && ancestorTranslation.x,
+      __bb_getTranslation: () => this.props.ancestorTranslation,
       __bb_contextID: id,
     };
   }
