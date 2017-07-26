@@ -1,4 +1,4 @@
-import { merge, capitalize, isEqual } from 'lodash/fp';
+import { initial, merge, capitalize, isEqual } from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -6,39 +6,12 @@ import { css } from 'aphrodite';
 
 import colors from '/imports/styles/colors';
 import functionalStyles from '/imports/styles/functional';
-import { relativeClickCoordinates } from '/imports/utils/dom';
 
 import UnimailPropTypes from '/imports/prop-types';
 
 import { selectItem } from '/imports/templates/editor/duck';
 
-function Frame({
-  children,
-  x,
-  y,
-  height,
-  width,
-  style,
-  ...divProps
-}) {
-  return (
-    <div
-      style={{
-        height,
-        width,
-        left: x,
-        top: y,
-        position: 'absolute',
-        border: '1px solid black',
-        boxSizing: 'border-box',
-        ...style,
-      }}
-      {...divProps}
-    >
-      {children}
-    </div>
-  );
-}
+import Frame from './frame';
 
 class Template extends Component {
   static propTypes = {
@@ -46,6 +19,7 @@ class Template extends Component {
     template: UnimailPropTypes.template.isRequired,
     selectItem: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
+    guided: PropTypes.bool.isRequired,
 
     // from parent
     itemMoved: PropTypes.func.isRequired,
@@ -57,9 +31,7 @@ class Template extends Component {
   }
 
   onMouseDown = path => e => {
-    console.log('huh...', e.button, this.props);
     if (e.button !== 0 || this.props.locked) {
-      console.log('zoom zoom zoom');
       return;
     }
 
@@ -78,6 +50,10 @@ class Template extends Component {
         originalCursorCoordinates: this.getCanvasCoordinates(e),
       },
     });
+  }
+
+  beginResize = path => direction => e => {
+
   }
 
   onMouseMove = e => {
@@ -121,6 +97,30 @@ class Template extends Component {
     this.props.selectItem(path);
   }
 
+  correctPlacement({ path, proposedPlacement }) {
+    const parentPath = initial(path);
+    const placement = { ...proposedPlacement };
+    // bind to parent
+    if (this.props.guided && parentPath.length > 0) {
+      const parent = this.getItemFromPath(parentPath);
+      if (placement.x < 0) {
+        placement.x = 0;
+      } else if (placement.x + placement.width > parent.placement.width) {
+        const diff = (placement.x + placement.width) - parent.placement.width;
+        placement.x -= diff;
+      }
+
+      if (placement.y < 0) {
+        placement.y = 0;
+      } else if (placement.y + placement.height > parent.placement.height) {
+        const diff = (placement.y + placement.height) - parent.placement.height;
+        placement.y -= diff;
+      }
+    }
+
+    return placement;
+  }
+
   getCanvasCoordinates(event) {
     const boundingRect = this.canvas.getBoundingClientRect();
 
@@ -148,7 +148,7 @@ class Template extends Component {
     return `${minPx}px`;
   }
 
-  renderImage({ item, path }) {
+  renderImage({ path }) {
     return (
       <div
         className={css(functionalStyles.fit)}
@@ -176,14 +176,20 @@ class Template extends Component {
     const { moving: movingData } = this.state;
     const { value: placementOffset } = movingData.transform;
     const item = this.getItemFromPath(movingData.path);
-    const { placement } = item;
+    const { placement: initialPlacement } = item;
+
+    const proposedPlacement = {
+      ...initialPlacement,
+      x: initialPlacement.x + placementOffset.x,
+      y: initialPlacement.y + placementOffset.y,
+    };
+
+    const placement = this.correctPlacement({ path: movingData.path, proposedPlacement });
 
     return (
       <Frame
         key="moving"
         {...placement}
-        x={placement.x + placementOffset.x}
-        y={placement.y + placementOffset.y}
       >
         {this.renderItem({ item, path: [] })}
       </Frame>
@@ -239,6 +245,7 @@ function mapStateToProps(state) {
   return {
     template: state.editor.template,
     locked: state.editor.modes.locked,
+    guided: state.editor.modes.guided,
   };
 }
 
