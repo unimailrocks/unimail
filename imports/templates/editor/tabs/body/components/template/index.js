@@ -53,6 +53,10 @@ class Template extends Component {
     e.preventDefault();
     e.stopPropagation();
 
+    if (this.props.movingPaths.length === 1) {
+      this.props.unselectAllItems();
+    }
+
     this.props.selectItem(path);
     this.mouseDownTime = new Date();
     this.mouseDownPath = path;
