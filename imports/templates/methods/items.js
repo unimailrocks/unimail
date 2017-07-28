@@ -88,6 +88,50 @@ export function calculateItemPlacement(
   };
 }
 
+/**
+ * Returns an array of { path, entirelyContained }
+ */
+export function allOverlappingItemPaths(placement, template) {
+  const paths = [];
+  const items = template.items.map(item => ({
+    item,
+    path: [],
+    offset: { x: 0, y: 0 },
+  }));
+
+  while (items.length > 0) {
+    const { item, path, offset } = items.pop();
+    const absolutePlacement = {
+      ...item.placement,
+      x: item.placement.x + offset.x,
+      y: item.placement.y + offset.y,
+    };
+
+    if (rectanglesOverlap(placement, absolutePlacement)) {
+      const newPath = [...path, item._id];
+      paths.push({
+        path: newPath,
+        entirelyContained: rectangleContains(absolutePlacement, placement),
+      });
+
+      if (item.details.items) {
+        item.details.items.forEach(child => {
+          items.push({
+            item: child,
+            path: newPath,
+            offset: {
+              x: absolutePlacement.x,
+              y: absolutePlacement.y,
+            },
+          });
+        });
+      }
+    }
+  }
+
+  return paths;
+}
+
 function constructPrototypeItemDetails(type) {
   switch (type) {
     case 'container':

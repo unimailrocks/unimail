@@ -26,6 +26,7 @@ class DrawingCanvas extends Component {
   static activeTools = [
     'draw-image',
     'draw-container',
+    'select-box',
   ];
 
   registerCanvas = c => {
@@ -62,6 +63,10 @@ class DrawingCanvas extends Component {
     return { x: x1, y: y1, width, height };
   }
 
+  clearCanvas() {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
   // for drawing the rectangle when you're using the 'draw-image' tool
   drawImage(rectangle) {
     if (this.props.testDraw(rectangle)) {
@@ -70,7 +75,7 @@ class DrawingCanvas extends Component {
       this.context.fillStyle = colors.red.alpha(0.3).string();
     }
 
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.clearCanvas();
     this.context.beginPath();
     this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     this.context.fill();
@@ -86,11 +91,21 @@ class DrawingCanvas extends Component {
       this.context.fillStyle = colors.red.alpha(0.3).string();
     }
 
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.clearCanvas();
     this.context.beginPath();
     this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     this.context.stroke();
     this.context.fill();
+    this.context.closePath();
+  }
+
+  drawSelectBox(rectangle) {
+    this.clearCanvas();
+    this.context.beginPath();
+    this.context.setLineDash([4, 4]);
+    this.context.strokeStyle = colors.grey4.alpha(0.8).string();
+    this.context.rect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    this.context.stroke();
     this.context.closePath();
   }
 
@@ -100,13 +115,16 @@ class DrawingCanvas extends Component {
       return;
     }
 
+    this.clearCanvas();
     const { tool } = this.props;
+    const coordinates = this.absoluteToRelativeCoordinates(e);
+    const rectangle = this.calculateRectangle(coordinates, this.start);
     if (tool === 'draw-image') {
-      const coordinates = this.absoluteToRelativeCoordinates(e);
-      this.drawImage(this.calculateRectangle(coordinates, this.start));
+      this.drawImage(rectangle);
     } else if (tool === 'draw-container') {
-      const coordinates = this.absoluteToRelativeCoordinates(e);
-      this.drawContainer(this.calculateRectangle(coordinates, this.start));
+      this.drawContainer(rectangle);
+    } else if (tool === 'select-box') {
+      this.drawSelectBox(rectangle);
     }
   };
 
@@ -132,6 +150,7 @@ class DrawingCanvas extends Component {
   handleDrawFinish = e => {
     this.drawing = false;
     this.end = this.absoluteToRelativeCoordinates(e);
+    this.clearCanvas();
 
     const { tool } = this.props;
     if (tool === 'draw-image') {
@@ -144,9 +163,11 @@ class DrawingCanvas extends Component {
         placement: this.calculateRectangle(this.start, this.end),
         type: 'container',
       });
+    } else if (tool === 'select-box') {
+      this.props.onDraw({
+        placement: this.calculateRectangle(this.start, this.end),
+      });
     }
-
-    this.releaseTool();
   };
 
   releaseTool = e => {

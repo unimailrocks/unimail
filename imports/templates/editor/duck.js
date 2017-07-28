@@ -1,7 +1,11 @@
+import { isEqual, reject } from 'lodash/fp';
+
 const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
 const HOVER_ITEM = 'editor/items/hovered';
-const SELECT_ITEM = 'editor/items/selected';
+const SELECT_ITEM = 'editor/items/selected/add';
+const UNSELECT_ITEM = 'editor/items/selected/remove';
+const UNSELECT_ALL_ITEMS = 'editor/items/selected/clear';
 const ENTER_UNGUIDED_MODE = 'editor/modes/guided/off';
 const ENTER_GUIDED_MODE = 'editor/modes/guided/on';
 const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
@@ -12,6 +16,7 @@ const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
 const initialState = {
   tool: null,
   templateHeight: 300,
+  selectedItemPaths: [],
   modes: {
     guided: true,
     locked: false,
@@ -24,6 +29,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
       const validTools = [
         'draw-image',
         'draw-container',
+        'select-box',
       ];
 
       if (payload && !validTools.includes(payload)) {
@@ -52,12 +58,35 @@ export default function editorReducer(state = initialState, { type, payload }) {
     }
 
     case SELECT_ITEM: {
+      // yes, I recognize that in pretty much all cases the first condition is sufficient
+      // give me a break
+      if (!payload || !payload.length || payload.length === 0) {
+        throw new Error(`Item path must be a non-empty array. Got ${JSON.stringify(payload)}`);
+      }
+      const hasItem = state.selectedItemPaths.find(isEqual(payload));
+      if (hasItem) {
+        return state;
+      }
+
       return {
         ...state,
-        selectedItemPath: payload,
+        selectedItemPaths: [...state.selectedItemPaths, payload],
       };
     }
 
+    case UNSELECT_ITEM: {
+      return {
+        ...state,
+        selectedItemPaths: reject(isEqual(payload))(state.selectedItemPaths),
+      };
+    }
+
+    case UNSELECT_ALL_ITEMS: {
+      return {
+        ...state,
+        selectedItemPaths: [],
+      };
+    }
 
     case ENTER_UNGUIDED_MODE: {
       return {
@@ -131,13 +160,25 @@ export function hoverItem(path) {
   };
 }
 
-export function selectItem(path) {
-  return {
-    type: SELECT_ITEM,
-    payload: path,
-  };
-}
-
+export const items = {
+  select(path) {
+    return {
+      type: SELECT_ITEM,
+      payload: path,
+    };
+  },
+  unselect(path) {
+    return {
+      type: UNSELECT_ITEM,
+      payload: path,
+    };
+  },
+  unselectAll() {
+    return {
+      type: UNSELECT_ALL_ITEMS,
+    };
+  },
+};
 
 // when template is first loaded
 export function registerTemplate(template) {

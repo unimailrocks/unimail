@@ -1,3 +1,4 @@
+import { find, isEqual } from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Segment } from 'semantic-ui-react';
@@ -12,7 +13,8 @@ import {
   enterUnguidedMode,
   enterLockedMode,
   enterUnlockedMode,
-  selectItem,
+  selectTool,
+  items,
 } from '../../duck';
 
 import Template from './components/template';
@@ -27,12 +29,77 @@ class TemplateBody extends Component {
     enterUnguidedMode: PropTypes.func.isRequired,
     enterLockedMode: PropTypes.func.isRequired,
     enterUnlockedMode: PropTypes.func.isRequired,
+    selectedItemPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
     locked: PropTypes.bool.isRequired,
     selectItem: PropTypes.func.isRequired,
+    unselectItem: PropTypes.func.isRequired,
+    selectTool: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
     tool: null,
+  }
+
+  onDraw = async (item) => {
+    if (this.props.tool === 'select-box') {
+      this.groupSelect(item);
+      return;
+    }
+
+    this.addElement(item);
+    this.props.selectTool(null);
+  }
+
+  async addElement(item) {
+    console.log(this);
+    const { selectItem } = this.props;
+    try {
+      const { item: newItem, path } = await Templates.Items.placeItem.callPromise({
+        templateID: this.props.template._id,
+        item,
+      });
+
+      selectItem([...path, newItem._id]);
+    } catch (e) {
+      console.error(e.error);
+    } finally {
+      this.props.selectTool(null);
+    }
+  }
+
+  groupSelect({ placement }) {
+    const overlappingPaths = Templates.Items.allOverlappingItemPaths(
+      placement,
+      this.props.template,
+    );
+
+    if (overlappingPaths.length === 0) {
+      return;
+    }
+
+    const { selectItem, unselectItem, selectedItemPaths } = this.props;
+
+    const overlapsBorders = overlappingPaths.filter(p => !p.entirelyContained);
+      // if the selection box doesn't overlap with any borders, toggle the innermost item
+    if (overlapsBorders.length === 0) {
+      const path = overlappingPaths.reduce((innermost, { path: current }) => {
+        if (current.length > innermost.length) {
+          return current;
+        }
+
+        return innermost;
+      }, []);
+
+      const isSelected = find(isEqual(path), selectedItemPaths);
+      if (isSelected) {
+        unselectItem(path);
+      } else {
+        selectItem(path);
+      }
+    } else {
+        // otherwise, select all items we intersected with
+      overlapsBorders.forEach(({ path }) => selectItem(path));
+    }
   }
 
   itemMoved = ({ path, newPosition }) => {
@@ -48,22 +115,12 @@ class TemplateBody extends Component {
     }
   };
 
-  addElement = async (item) => {
-    const { selectItem } = this.props;
-    try {
-      const { item: newItem, path } = await Templates.Items.placeItem.callPromise({
-        templateID: this.props.template._id,
-        item,
-      });
-
-      selectItem([...path, newItem._id]);
-    } catch (e) {
-      console.error(e.error);
-    }
-  }
-
   testDraw = rect => {
     const { tool } = this.props;
+    if (tool === 'select-box') {
+      return true;
+    }
+
     const placed = Templates.Items.calculateItemPlacement(rect, this.props.template.items, {
       outerPossible: tool === 'draw-container',
     });
@@ -82,26 +139,16 @@ class TemplateBody extends Component {
         }}
       >
         <KeyListener
-          onShiftDown={this.props.enterUnguidedMode}
-          onShiftUp={this.props.enterGuidedMode}
+          onShiftDown={() => this.props.selectTool('select-box')}
+          onShiftUp={() => this.props.selectTool(null)}
           onControlDown={this.props.enterLockedMode}
           onControlUp={this.props.enterUnlockedMode}
         />
         <div style={{ position: 'relative' }}>
-          <DrawingCanvas onDraw={this.addElement} testDraw={this.testDraw} />
+          <DrawingCanvas onDraw={this.onDraw} testDraw={this.testDraw} />
           <Template
             itemMoved={this.itemMoved}
           />
-          {/* <Container
-            details={{ items: this.props.template.items }}
-            path={[]}
-            bulletinBoardProps={{
-              widthLocked: true,
-              minHeight: 300,
-              onRetack: this.itemMoved,
-              locked: this.props.locked,
-            }}
-          />*/}
         </div>
       </Segment>
     );
@@ -112,6 +159,7 @@ function mapStateToProps(state) {
   return {
     tool: state.editor.tool,
     locked: state.editor.modes.locked,
+    selectedItemPaths: state.editor.selectedItemPaths,
   };
 }
 
@@ -120,5 +168,7 @@ export default connect(mapStateToProps, {
   enterUnguidedMode,
   enterUnlockedMode,
   enterLockedMode,
-  selectItem,
+  selectItem: items.select,
+  unselectItem: items.unselect,
+  selectTool,
 })(TemplateBody);

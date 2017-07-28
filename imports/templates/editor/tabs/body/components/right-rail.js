@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Rail, Segment } from 'semantic-ui-react';
 
@@ -6,8 +7,8 @@ import UnimailPropTypes from '/imports/prop-types';
 
 import ContentForm from './content-form';
 
-function TemplateBodyRightRail({ item }) {
-  if (!item) {
+function TemplateBodyRightRail({ items }) {
+  if (items.length === 0) {
     return null;
   }
 
@@ -15,7 +16,7 @@ function TemplateBodyRightRail({ item }) {
     <Rail attached position="right">
       <Segment raised>
         <pre>
-          {JSON.stringify(item, null, 2)}
+          {JSON.stringify(items, null, 2)}
         </pre>
       </Segment>
     </Rail>
@@ -23,24 +24,17 @@ function TemplateBodyRightRail({ item }) {
 }
 
 TemplateBodyRightRail.propTypes = {
-  item: UnimailPropTypes.item,
+  items: PropTypes.arrayOf(UnimailPropTypes.item).isRequired,
 };
 
-TemplateBodyRightRail.defaultProps = {
-  item: null,
-};
+function mapStateToProps({ editor: { template, selectedItemPaths } }) {
+  const items = selectedItemPaths.map(path =>
+    path.reduce(({ details: { items } }, id) =>
+      items.find(({ _id }) => _id === id),
+      { details: template },
+    ));
 
-function mapStateToProps({ editor: { template, selectedItemPath } }) {
-  if (!selectedItemPath) {
-    return {};
-  }
-
-  const item = selectedItemPath.reduce(({ details: { items } }, id) =>
-    items.find(({ _id }) => _id === id),
-    { details: template },
-  );
-
-  return { item };
+  return { items };
 }
 
 export default connect(mapStateToProps)(TemplateBodyRightRail);

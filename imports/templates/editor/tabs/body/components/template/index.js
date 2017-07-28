@@ -1,7 +1,18 @@
-import { initial, merge, capitalize, isEqual } from 'lodash/fp';
+import {
+  get,
+  last,
+  find,
+  initial,
+  merge,
+  capitalize,
+  isEqual,
+  take,
+  reject,
+} from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
 import { css } from 'aphrodite';
 
 import colors from '/imports/styles/colors';
@@ -9,7 +20,7 @@ import functionalStyles from '/imports/styles/functional';
 
 import UnimailPropTypes from '/imports/prop-types';
 
-import { selectItem } from '/imports/templates/editor/duck';
+import { items } from '/imports/templates/editor/duck';
 
 import Frame from './frame';
 
@@ -18,16 +29,15 @@ class Template extends Component {
     // from Redux
     template: UnimailPropTypes.template.isRequired,
     selectItem: PropTypes.func.isRequired,
+    unselectItem: PropTypes.func.isRequired,
+    unselectAllItems: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
     guided: PropTypes.bool.isRequired,
-    selectedItemPath: PropTypes.arrayOf(PropTypes.string),
+    selectedItemPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
+    movingPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
 
     // from parent
     itemMoved: PropTypes.func.isRequired,
-  }
-
-  static defaultProps = {
-    selectedItemPath: null,
   }
 
   state = {
@@ -44,10 +54,11 @@ class Template extends Component {
     e.stopPropagation();
 
     this.props.selectItem(path);
+    this.mouseDownTime = new Date();
+    this.mouseDownPath = path;
 
     this.setState({
       moving: {
-        path,
         transform: {
           type: 'translate',
           value: { x: 0, y: 0 },
@@ -55,10 +66,6 @@ class Template extends Component {
         originalCursorCoordinates: this.getCanvasCoordinates(e),
       },
     });
-  }
-
-  beginResize = path => direction => e => {
-
   }
 
   onMouseMove = e => {
@@ -80,9 +87,12 @@ class Template extends Component {
   }
 
   onMouseUp = async e => {
+    // if it's just a quick click, user is probably just trying to select it
+    const timeDifference = new Date() - this.mouseDownTime;
+
     const { moving } = this.state;
     if (!moving) {
-      this.props.selectItem(null);
+      this.props.unselectAllItems();
       return;
     }
     const newMouseCoords = this.getCanvasCoordinates(e);
@@ -91,27 +101,68 @@ class Template extends Component {
       y: newMouseCoords.y - moving.originalCursorCoordinates.y,
     };
 
-    const { placement: initialPlacement } = this.getItemFromPath(moving.path);
+    const distance = (placementOffset.x ** 2) + (placementOffset.y ** 2);
 
-    const proposedPlacement = {
-      ...initialPlacement,
-      x: initialPlacement.x + placementOffset.x,
-      y: initialPlacement.y + placementOffset.y,
-    };
-    const placement = this.correctPlacement({ path: moving.path, proposedPlacement });
-    this.setState(state => merge(state, {
-      moving: {
-        precommittedPlacement: placement,
-      },
-    }), async () => {
-      const { path } = await this.props.itemMoved({
-        path: moving.path,
-        newPosition: placement,
-      });
+    // if the move was insignficant both time-wise and distance-wise,
+    // user was probably just trying to select only the item
+    if (distance < 50 && timeDifference < 500 && this.mouseDownPath) {
+      this.props.unselectAllItems();
+      this.props.selectItem(this.mouseDownPath);
+
+      this.mouseDownPath = null;
+      this.mouseDownTime = null;
 
       this.setState(() => ({ moving: null }));
-      this.props.selectItem(path);
+      return;
+    }
+
+    this.props.movingPaths.forEach(path => {
+      const { placement: initialPlacement } = this.getItemFromPath(path);
+
+      const proposedPlacement = {
+        ...initialPlacement,
+        x: initialPlacement.x + placementOffset.x,
+        y: initialPlacement.y + placementOffset.y,
+      };
+
+      const placement = this.correctPlacement({ path, proposedPlacement });
+      this.setState(state => merge(state, {
+        moving: {
+          precommittedPlacements: {
+            [last(path)]: placement,
+          },
+        },
+      }), async () => {
+        const { path: newPath } = await this.props.itemMoved({
+          path,
+          newPosition: placement,
+        });
+
+        this.setState(() => ({ moving: null }));
+        this.props.unselectItem(path);
+        this.props.selectItem(newPath);
+      });
     });
+  }
+
+  getCanvasCoordinates(event) {
+    const boundingRect = this.canvas.getBoundingClientRect();
+
+    return {
+      x: event.clientX - boundingRect.left,
+      y: event.clientY - boundingRect.top,
+    };
+  }
+
+  getItemFromPath(path) {
+    const currentPath = [...path];
+    let item = { details: this.props.template };
+    do {
+      const id = currentPath.shift();
+      item = item.details.items.find(({ _id }) => _id === id);
+    } while (currentPath.length > 0);
+
+    return item;
   }
 
   correctPlacement({ path, proposedPlacement }) {
@@ -138,25 +189,6 @@ class Template extends Component {
     return placement;
   }
 
-  getCanvasCoordinates(event) {
-    const boundingRect = this.canvas.getBoundingClientRect();
-
-    return {
-      x: event.clientX - boundingRect.left,
-      y: event.clientY - boundingRect.top,
-    };
-  }
-
-  getItemFromPath(path) {
-    const currentPath = [...path];
-    let item = { details: this.props.template };
-    do {
-      const id = currentPath.shift();
-      item = item.details.items.find(({ _id }) => _id === id);
-    } while (currentPath.length > 0);
-
-    return item;
-  }
 
   calculateMinHeight() {
     const { template } = this.props;
@@ -189,10 +221,9 @@ class Template extends Component {
     return this[renderMethodName](arg);
   }
 
-  renderMovingItem() {
+  renderMovingItem(item) {
     const { moving: movingData } = this.state;
-    const item = this.getItemFromPath(movingData.path);
-    const placement = movingData.precommittedPlacement || (() => {
+    const placement = get(item._id, movingData.precommittedPlacements) || (() => {
       const { value: placementOffset } = movingData.transform;
       const { placement: initialPlacement } = item;
 
@@ -207,7 +238,10 @@ class Template extends Component {
 
     return (
       <Frame
-        key="moving"
+        key={item._id}
+        style={{
+          cursor: this.props.locked ? 'default' : 'move',
+        }}
         {...placement}
       >
         {this.renderItem({ item, path: [] })}
@@ -216,17 +250,21 @@ class Template extends Component {
   }
 
   renderInFrame({ item, path }) {
-    if (isEqual((this.state.moving || {}).path, path)) {
-      return this.renderMovingItem();
+    const { selectedItemPaths } = this.props;
+    const { moving } = this.state;
+    const isSelected = find(isEqual(path))(selectedItemPaths);
+    if (isSelected && moving) {
+      return this.renderMovingItem(item);
     }
-
-    const isSelected = isEqual(this.props.selectedItemPath, path);
 
     return (
       <Frame
         onMouseDown={this.onMouseDown(path)}
         key={item._id}
         minimal={!isSelected}
+        style={{
+          cursor: this.props.locked ? 'default' : 'move',
+        }}
         {...item.placement}
       >
         {this.renderItem({ item, path })}
@@ -258,13 +296,36 @@ class Template extends Component {
   }
 }
 
+// a lot of stuff internal to the component should be memoized
+// I think this is better done by reselect than in the component
+// but it's just a preference, and reselect is already written
+// whereas we'd pretty much have to roll our own memoization integration
+// if we did it in the component
+const getSelectedPaths = get(['editor', 'selectedItemPaths']);
+const getMovingPaths = createSelector(
+  [getSelectedPaths],
+  paths => reject(consideredPath => find(possibleParent => {
+    if (possibleParent.length >= consideredPath.length) {
+      return false;
+    }
+
+    const precursor = take(possibleParent.length, consideredPath);
+    return isEqual(precursor, possibleParent);
+  })(paths))(paths),
+);
+
 function mapStateToProps(state) {
   return {
     template: state.editor.template,
     locked: state.editor.modes.locked,
     guided: state.editor.modes.guided,
-    selectedItemPath: state.editor.selectedItemPath,
+    selectedItemPaths: state.editor.selectedItemPaths,
+    movingPaths: getMovingPaths(state),
   };
 }
 
-export default connect(mapStateToProps, { selectItem })(Template);
+export default connect(mapStateToProps, {
+  selectItem: items.select,
+  unselectItem: items.unselect,
+  unselectAllItems: items.unselectAll,
+})(Template);
