@@ -16,6 +16,7 @@ export function rectanglesOverlap(rect1, rect2) {
   return true;
 }
 
+// Returns whether rect1 contains rect2
 export function rectangleContains(rect1, rect2) {
   return (
     (rect2.x + rect2.width) <= (rect1.x + rect1.width) &&

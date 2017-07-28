@@ -16,7 +16,7 @@ function Circle({ style, onMouseDown }) {
 
 Circle.propTypes = {
   style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-  onMouseDown: PropTypes.func.isRequired,
+  onMouseDown: PropTypes.func,
 };
 
 const config = [
@@ -37,6 +37,7 @@ export default function Frame({
   height,
   width,
   minimal,
+  style,
   ...divProps
 }) {
   const circles = minimal ? null : config.map(options => {
@@ -76,6 +77,7 @@ export default function Frame({
           right: 0,
           bottom: 0,
           position: 'absolute',
+          ...style,
         }}
         {...divProps}
       >
