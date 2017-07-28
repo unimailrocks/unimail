@@ -1,5 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { css, StyleSheet } from 'aphrodite';
+
+import UnimailPropTypes from '/imports/prop-types';
+import colors from '/imports/styles/colors';
+
+const stylesheet = StyleSheet.create({
+  frame: {
+    ':hover': {
+      boxShadow: `0 0 1em ${colors.blue.alpha(0.5).toString()}`,
+    },
+  },
+});
 
 function Circle({ style, onMouseDown }) {
   return (
@@ -80,6 +92,7 @@ export default function Frame({
           ...style,
         }}
         {...divProps}
+        className={css(stylesheet.frame)}
       >
         {circles}
       </div>
@@ -87,3 +100,18 @@ export default function Frame({
     </div>
   );
 }
+
+Frame.propTypes = {
+  children: UnimailPropTypes.children.isRequired,
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
+  minimal: PropTypes.bool,
+  style: UnimailPropTypes.style,
+};
+
+Frame.defaultProps = {
+  style: {},
+  minimal: false,
+};
