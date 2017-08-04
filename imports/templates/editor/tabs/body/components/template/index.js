@@ -225,8 +225,11 @@ class Template extends Component {
     return this[renderMethodName](arg);
   }
 
-  renderMovingItem(item) {
+  renderMovingItem({ item, path }) {
     const { moving: movingData } = this.state;
+    // precommittedPlacements is where we know
+    // the placement will change, but the change
+    // has not been reflected in the DB yet
     const placement = get(item._id, movingData.precommittedPlacements) || (() => {
       const { value: placementOffset } = movingData.transform;
       const { placement: initialPlacement } = item;
@@ -237,7 +240,7 @@ class Template extends Component {
         y: initialPlacement.y + placementOffset.y,
       };
 
-      return this.correctPlacement({ path: movingData.path, proposedPlacement });
+      return this.correctPlacement({ path, proposedPlacement });
     })();
 
     return (
@@ -247,6 +250,7 @@ class Template extends Component {
           cursor: this.props.locked ? 'default' : 'move',
         }}
         {...placement}
+        minimal
       >
         {this.renderItem({ item, path: [] })}
       </Frame>
@@ -258,7 +262,7 @@ class Template extends Component {
     const { moving } = this.state;
     const isSelected = find(isEqual(path))(selectedItemPaths);
     if (isSelected && moving) {
-      return this.renderMovingItem(item);
+      return this.renderMovingItem({ item, path });
     }
 
     return (
