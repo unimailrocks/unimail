@@ -188,6 +188,7 @@ class DrawingCanvas extends Component {
           height: '100%',
           width: '100%',
           position: 'absolute',
+          backgroundColor: 'rgba(255, 0, 0, 0.2)',
         }}
       >
         <Dimensions>
