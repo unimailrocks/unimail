@@ -19,7 +19,6 @@ import {
 
 import Template from './components/template';
 import DrawingCanvas from './components/drawing-canvas';
-import Container from './items/container';
 
 class TemplateBody extends Component {
   static propTypes = {
