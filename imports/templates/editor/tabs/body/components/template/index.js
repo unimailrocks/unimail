@@ -289,7 +289,7 @@ class Template extends Component {
   calculateMinHeight() {
     const { template } = this.props;
     const bottoms = template.items.map(i => i.placement.y + i.placement.height);
-    const minPx = Math.max(...bottoms) + 300;
+    const minPx = Math.max(...bottoms, 300) + 100;
     return `${minPx}px`;
   }
 
