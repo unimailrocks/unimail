@@ -60,6 +60,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
     case SELECT_ITEM: {
       // yes, I recognize that in pretty much all cases the first condition is sufficient
       // give me a break
+      console.log('selecting');
       if (!payload || !payload.length || payload.length === 0) {
         throw new Error(`Item path must be a non-empty array. Got ${JSON.stringify(payload)}`);
       }
@@ -82,6 +83,7 @@ export default function editorReducer(state = initialState, { type, payload }) {
     }
 
     case UNSELECT_ALL_ITEMS: {
+      console.log('droppem');
       return {
         ...state,
         selectedItemPaths: [],

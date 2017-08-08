@@ -4,6 +4,7 @@ import findIndex from 'lodash/fp/findIndex';
 import last from 'lodash/fp/last';
 import initial from 'lodash/fp/initial';
 import isEqual from 'lodash/fp/isEqual';
+import fromPairs from 'lodash/fp/fromPairs';
 import { Meteor } from 'meteor/meteor';
 import { CallPromiseMixin } from 'meteor/didericis:callpromise-mixin';
 import { Random } from 'meteor/random';
@@ -421,5 +422,127 @@ export const moveItem = new ValidatedMethod({
       item,
       path: [...idPath, item._id],
     };
+  },
+});
+
+export const resizeItem = new ValidatedMethod({
+  name: 'templates.body.items.resize',
+  mixins: [CallPromiseMixin],
+  validate: new SimpleSchema({
+    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+    diff: { type: Object },
+    'diff.x': { type: Number },
+    'diff.y': { type: Number },
+    'diff.width': { type: Number },
+    'diff.height': { type: Number },
+    path: { type: Array },
+    'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
+  }).validator(),
+  run({ templateID, diff, path }) {
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
+    const template = Templates.findOne(templateID);
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
+    }
+
+    const parentPath = initial(path);
+    const id = last(path);
+    let parent = { details: template };
+    while (parentPath.length > 0) {
+      const id = parentPath.shift();
+      parent = parent.details.items.find(({ _id }) => _id === id);
+    }
+
+    const item = parent.details.items.find(({ _id }) => _id === id);
+
+    const newPlacement = {
+      x: item.placement.x + diff.x,
+      y: item.placement.y + diff.y,
+      width: item.placement.width + diff.width,
+      height: item.placement.height + diff.height,
+    };
+
+    if (newPlacement.x < 0 || newPlacement.y < 0) {
+      throw new Meteor.Error('Invalid resize');
+    }
+
+    if (parent.placement) {
+      if (newPlacement.x + newPlacement.width > parent.placement.width) {
+        throw new Meteor.Error('Invalid resize (goes off right edge of parent)');
+      }
+
+      if (newPlacement.y + newPlacement.height > parent.placement.height) {
+        throw new Meteor.Error('Invalid resize (goes off bottom of parent)');
+      }
+    } else if (newPlacement.x + newPlacement.width > template.width) {
+      throw new Meteor.Error('Invalid resize (goes off right side of template)');
+    }
+
+    const queuedChanges = [
+      {
+        path,
+        newPlacement,
+      },
+    ];
+
+    if (item.details.items) {
+      item.details.items.forEach(child => {
+        const childPlacement = {
+          ...child.placement,
+          x: child.placement.x - diff.x,
+          y: child.placement.y - diff.y,
+        };
+
+        if (childPlacement.x < 0) {
+          throw new Meteor.Error('Invalid resize (squeezes child from left side)');
+        }
+
+        if (childPlacement.y < 0) {
+          throw new Meteor.Error('Invalid resize (squeezes child from top)');
+        }
+
+        if (childPlacement.x + childPlacement.width > newPlacement.width) {
+          throw new Meteor.Error('Invalid resize (squeezes child from right side)');
+        }
+
+        if (childPlacement.y + childPlacement.height > newPlacement.height) {
+          throw new Meteor.Error('Invalid resize (squeezes child from bottom)');
+        }
+
+        queuedChanges.push({
+          path: [...path, child._id],
+          newPlacement: childPlacement,
+        });
+      });
+    }
+    const pathToKey = path => path.reduce(({ key, last }, id, pathIndex) => {
+      const index = last.details.items.findIndex(({ _id }) => id === _id);
+      if (pathIndex === 0) {
+        return {
+          key: `${key}.${index}`,
+          last: last.details.items[index],
+        };
+      }
+
+      return {
+        key: `${key}.details.items.${index}`,
+        last: last.details.items[index],
+      };
+    }, { key: 'items', last: { details: template } }).key;
+
+    const setter = fromPairs(queuedChanges.map(({ path, newPlacement }) => [
+      `${pathToKey(path)}.placement`,
+      newPlacement,
+    ]));
+
+    Templates.update(templateID, { $set: setter });
   },
 });
