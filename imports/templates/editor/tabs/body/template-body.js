@@ -104,16 +104,21 @@ class TemplateBody extends Component {
 
   itemMoved = ({ path, newPosition }) => {
     const { _id: templateID } = this.props.template;
-    try {
-      return Templates.Items.moveItem.callPromise({
-        templateID,
-        placement: newPosition,
-        path,
-      });
-    } catch (err) {
-      console.error('>.< some error', err);
-    }
+    return Templates.Items.moveItem.callPromise({
+      templateID,
+      placement: newPosition,
+      path,
+    });
   };
+
+  itemResized = ({ path, diff }) => {
+    const { _id: templateID } = this.props.template;
+    return Templates.Items.resizeItem.callPromise({
+      templateID,
+      diff,
+      path,
+    });
+  }
 
   testDraw = rect => {
     const { tool } = this.props;
@@ -148,6 +153,7 @@ class TemplateBody extends Component {
           <DrawingCanvas onDraw={this.onDraw} testDraw={this.testDraw} />
           <Template
             itemMoved={this.itemMoved}
+            itemResized={this.itemResized}
           />
         </div>
       </Segment>

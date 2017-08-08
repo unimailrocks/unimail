@@ -28,7 +28,7 @@ function Circle({ style, onMouseDown }) {
 
 Circle.propTypes = {
   style: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-  onMouseDown: PropTypes.func,
+  onMouseDown: PropTypes.func.isRequired,
 };
 
 const config = [
@@ -50,6 +50,7 @@ export default function Frame({
   width,
   minimal,
   style,
+  onResizeBegin,
   ...divProps
 }) {
   const circles = minimal ? null : config.map(options => {
@@ -65,6 +66,12 @@ export default function Frame({
       <Circle
         style={style}
         key={options.direction}
+        onMouseDown={
+          e => onResizeBegin({
+            event: e,
+            direction: options.direction,
+          })
+        }
       />
     );
   });
@@ -109,6 +116,15 @@ Frame.propTypes = {
   width: PropTypes.number.isRequired,
   minimal: PropTypes.bool,
   style: UnimailPropTypes.style,
+  onResizeBegin(props, propName) { // eslint-disable-line react/require-default-props
+    if (props.minimal) {
+      return;
+    }
+
+    if (!props[propName]) {
+      throw new Error('onResizeBegin must be specified on non-minimal Frame');
+    }
+  },
 };
 
 Frame.defaultProps = {

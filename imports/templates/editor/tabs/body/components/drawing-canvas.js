@@ -148,6 +148,8 @@ class DrawingCanvas extends Component {
 
   // handles when the mouse lifts up
   handleDrawFinish = e => {
+    e.stopPropagation();
+    e.preventDefault();
     this.drawing = false;
     this.end = this.absoluteToRelativeCoordinates(e);
     this.clearCanvas();
@@ -188,7 +190,6 @@ class DrawingCanvas extends Component {
           height: '100%',
           width: '100%',
           position: 'absolute',
-          backgroundColor: 'rgba(255, 0, 0, 0.2)',
         }}
       >
         <Dimensions>

@@ -38,6 +38,7 @@ export const template = PropTypes.shape({
   sources: PropTypes.arrayOf(source),
   items: PropTypes.arrayOf(item).isRequired,
   renders: PropTypes.arrayOf(render),
+  width: PropTypes.number.isRequired,
 });
 
 

@@ -8,6 +8,7 @@ import {
   isEqual,
   take,
   reject,
+  cloneDeep,
 } from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
@@ -38,6 +39,7 @@ class Template extends Component {
 
     // from parent
     itemMoved: PropTypes.func.isRequired,
+    itemResized: PropTypes.func.isRequired,
   }
 
   state = {
@@ -45,6 +47,40 @@ class Template extends Component {
     moving: null,
   }
 
+  componentDidMount() {
+    this.mouseupEventListener = window.addEventListener('mouseup', this.onMouseUp);
+    this.mousemoveEventListener = window.addEventListener('mousemove', this.onMouseMove);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this.mouseupEventListener);
+    window.removeEventListener('mousemove', this.mousemoveEventListener);
+  }
+
+  beginResize(path) {
+    return ({ event, direction }) => {
+      if (event.button !== 0 || this.props.locked) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.setState({
+        moving: {
+          transform: {
+            type: 'resize',
+            direction,
+            value: { x: 0, y: 0 },
+          },
+          path,
+          originalCursorCoordinates: this.getCanvasCoordinates(event),
+        },
+      });
+    };
+  }
+
+  // for beginning translation
   onMouseDown = path => e => {
     if (e.button !== 0 || this.props.locked) {
       return;
@@ -74,31 +110,29 @@ class Template extends Component {
 
   onMouseMove = e => {
     if (!this.state.moving) {
-      return;
+      return Promise.resolve();
     }
 
     const newCoords = this.getCanvasCoordinates(e);
-    this.setState(state => merge(state, {
-      moving: {
-        transform: {
-          value: {
-            x: newCoords.x - state.moving.originalCursorCoordinates.x,
-            y: newCoords.y - state.moving.originalCursorCoordinates.y,
+    return new Promise(res => {
+      this.setState(state => merge(state, {
+        moving: {
+          transform: {
+            value: {
+              x: newCoords.x - state.moving.originalCursorCoordinates.x,
+              y: newCoords.y - state.moving.originalCursorCoordinates.y,
+            },
           },
         },
-      },
-    }));
+      }), res);
+    });
   }
 
-  onMouseUp = async e => {
+  commitTranslation(e) {
     // if it's just a quick click, user is probably just trying to select it
     const timeDifference = new Date() - this.mouseDownTime;
 
     const { moving } = this.state;
-    if (!moving) {
-      this.props.unselectAllItems();
-      return;
-    }
     const newMouseCoords = this.getCanvasCoordinates(e);
     const placementOffset = {
       x: newMouseCoords.x - moving.originalCursorCoordinates.x,
@@ -149,6 +183,65 @@ class Template extends Component {
     });
   }
 
+  async commitResize(e) {
+    const state = await this.onMouseMove(e);
+    const path = this.state.moving.path;
+    const item = this.getItemFromPath(path);
+    const transform = this.calculateResizingTransform({ state, item });
+
+    const precommittedPlacements = {
+      [item._id]: {
+        ...item.placement,
+        x: item.placement.x + transform.x,
+        y: item.placement.y + transform.y,
+        width: item.placement.width + transform.width,
+        height: item.placement.height + transform.height,
+      },
+    };
+
+    if (item.details.items) {
+      item.details.items.forEach(child => {
+        precommittedPlacements[child._id] = {
+          ...child.placement,
+          x: child.placement.x - transform.x,
+          y: child.placement.y - transform.y,
+        };
+      });
+    }
+
+    this.setState(state => merge(state, {
+      moving: {
+        precommittedPlacements,
+      },
+    }), async () => {
+      await this.props.itemResized({
+        path,
+        diff: transform,
+      });
+
+      this.setState(() => ({ moving: null }));
+    });
+  }
+
+  onMouseUp = async e => {
+    const { moving } = this.state;
+    if (!moving) {
+      this.props.unselectAllItems();
+      return;
+    }
+
+    e.stopPropagation();
+
+    switch (moving.transform.type) {
+      case 'translate':
+        this.commitTranslation(e);
+        break;
+      case 'resize':
+        this.commitResize(e);
+        break;
+    }
+  }
+
   getCanvasCoordinates(event) {
     const boundingRect = this.canvas.getBoundingClientRect();
 
@@ -193,12 +286,116 @@ class Template extends Component {
     return placement;
   }
 
-
   calculateMinHeight() {
     const { template } = this.props;
     const bottoms = template.items.map(i => i.placement.y + i.placement.height);
     const minPx = Math.max(...bottoms) + 300;
     return `${minPx}px`;
+  }
+
+  calculateResizingTransform({
+    state = this.state,
+    item = this.getItemFromPath(state.moving.path),
+  }) {
+    const { moving: movingData } = state;
+    const transform = (() => {
+      const t = { x: 0, y: 0, height: 0, width: 0 };
+      const { x, y } = movingData.transform.value;
+      if (movingData.transform.direction.includes('d')) {
+        t.height = y;
+      }
+
+      if (movingData.transform.direction.includes('u')) {
+        t.height = -y;
+        t.y = y;
+      }
+
+      if (movingData.transform.direction.includes('r')) {
+        t.width = x;
+      }
+
+      if (movingData.transform.direction.includes('l')) {
+        t.width = -x;
+        t.x = x;
+      }
+
+      return t;
+    })();
+
+    if (this.props.guided) {
+      const attemptedPlacement = {
+        x: item.placement.x + transform.x,
+        y: item.placement.y + transform.y,
+        width: item.placement.width + transform.width,
+        height: item.placement.height + transform.height,
+      };
+
+      if (attemptedPlacement.x < 0) {
+        attemptedPlacement.width += attemptedPlacement.x;
+        transform.width += attemptedPlacement.x;
+        transform.x -= attemptedPlacement.x;
+        attemptedPlacement.x = 0;
+      }
+
+      if (attemptedPlacement.y < 0) {
+        attemptedPlacement.height += attemptedPlacement.y;
+        transform.height += attemptedPlacement.y;
+        transform.y -= attemptedPlacement.y;
+        attemptedPlacement.y = 0;
+      }
+
+      const parent = this.getItemFromPath(initial(movingData.path));
+
+      if (parent) {
+        const rightMargin = parent.placement.width - (attemptedPlacement.x + attemptedPlacement.width);
+        if (rightMargin < 0) {
+          attemptedPlacement.width += rightMargin;
+          transform.width += rightMargin;
+        }
+
+        const bottomMargin = parent.placement.height - (attemptedPlacement.y + attemptedPlacement.height);
+
+        if (bottomMargin < 0) {
+          attemptedPlacement.height += bottomMargin;
+          transform.height += bottomMargin;
+        }
+      } else {
+        const rightMargin = this.props.template.width - (attemptedPlacement.x + attemptedPlacement.width);
+        if (rightMargin < 0) {
+          attemptedPlacement.width += rightMargin;
+          transform.width += rightMargin;
+        }
+      }
+
+      if (item.type === 'container') {
+        item.details.items.forEach(c => {
+          const newInnerPlacement = {
+            ...c.placement,
+            x: c.placement.x - transform.x,
+            y: c.placement.y - transform.y,
+          };
+
+          if (newInnerPlacement.x < 0) {
+            transform.x -= newInnerPlacement.x;
+            transform.width += newInnerPlacement.x;
+          }
+
+          const rightMargin = attemptedPlacement.width - (newInnerPlacement.x + newInnerPlacement.width);
+          if (rightMargin < 0) {
+            transform.width -= rightMargin;
+            attemptedPlacement.width -= rightMargin;
+          }
+
+          const bottomMargin = attemptedPlacement.height - (newInnerPlacement.y + newInnerPlacement.height);
+          if (bottomMargin < 0) {
+            transform.height -= bottomMargin;
+            attemptedPlacement.height -= bottomMargin;
+          }
+        });
+      }
+    }
+
+    return transform;
   }
 
   renderImage({ path }) {
@@ -225,23 +422,26 @@ class Template extends Component {
     return this[renderMethodName](arg);
   }
 
-  renderMovingItem({ item, path }) {
+  renderTranslatingItem({ item, path }) {
     const { moving: movingData } = this.state;
-    // precommittedPlacements is where we know
-    // the placement will change, but the change
-    // has not been reflected in the DB yet
-    const placement = get(item._id, movingData.precommittedPlacements) || (() => {
-      const { value: placementOffset } = movingData.transform;
-      const { placement: initialPlacement } = item;
 
-      const proposedPlacement = {
-        ...initialPlacement,
-        x: initialPlacement.x + placementOffset.x,
-        y: initialPlacement.y + placementOffset.y,
-      };
+    const placement =
+      // precommittedPlacements is where we know
+      // the placement will change, but the change
+      // has not been reflected in the DB yet
+      get(item._id, movingData.precommittedPlacements) ||
+      (() => {
+        const { value: placementOffset } = movingData.transform;
+        const { placement: initialPlacement } = item;
 
-      return this.correctPlacement({ path, proposedPlacement });
-    })();
+        const proposedPlacement = {
+          ...initialPlacement,
+          x: initialPlacement.x + placementOffset.x,
+          y: initialPlacement.y + placementOffset.y,
+        };
+
+        return this.correctPlacement({ path, proposedPlacement });
+      })();
 
     return (
       <Frame
@@ -257,19 +457,63 @@ class Template extends Component {
     );
   }
 
+  renderResizingItem(item) {
+    const { moving: movingData } = this.state;
+
+    const precommittedPlacement = get(item._id, movingData.precommittedPlacements);
+    const newItem = cloneDeep(item);
+    if (precommittedPlacement) {
+      newItem.placement = precommittedPlacement;
+    } else {
+      const transform = this.calculateResizingTransform(item);
+
+      newItem.placement.x += transform.x;
+      newItem.placement.y += transform.y;
+      newItem.placement.width += transform.width;
+      newItem.placement.height += transform.height;
+
+      if (item.type === 'container') {
+        newItem.details.items.forEach(c => {
+          c.placement.x -= transform.x;
+          c.placement.y -= transform.y;
+        });
+      }
+    }
+
+    return (
+      <Frame
+        onResizeBegin={() => {}}
+        key={item._id}
+        {...newItem.placement}
+      >
+        {this.renderItem({ item: newItem, path: movingData.path })}
+      </Frame>
+    );
+  }
+
   renderInFrame({ item, path }) {
     const { selectedItemPaths } = this.props;
     const { moving } = this.state;
     const isSelected = find(isEqual(path))(selectedItemPaths);
-    if (isSelected && moving) {
-      return this.renderMovingItem({ item, path });
+    if (isSelected && moving && moving.transform.type === 'translate') {
+      return this.renderTranslatingItem({ item, path });
     }
+
+    if (isSelected && moving && moving.transform.type === 'resize') {
+      return this.renderResizingItem(item);
+    }
+
+    const onResizeBegin = isSelected ? (
+      this.beginResize(path)
+    ) : null;
 
     return (
       <Frame
         onMouseDown={this.onMouseDown(path)}
         key={item._id}
         minimal={!isSelected}
+        onResizeBegin={onResizeBegin}
+
         style={{
           cursor: this.props.locked ? 'default' : 'move',
         }}
