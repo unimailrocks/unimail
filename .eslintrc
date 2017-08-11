@@ -18,6 +18,7 @@
     "object-shorthand": ["error", "always"],
     "jsx-a11y/no-static-element-interactions": 0,
     "no-continue": 0,
-    "no-shadow": ["warn"]
+    "no-shadow": ["warn"],
+    "class-methods-use-this": ["warn"]
   }
 }

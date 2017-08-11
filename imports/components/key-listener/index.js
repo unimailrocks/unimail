@@ -25,7 +25,7 @@ export default class KeyListener extends Component {
   static startListening() {
     this.listeners = {};
     ['up', 'down'].forEach(eventType => {
-      this.listeners.keydown = window.document.addEventListener(`key${eventType}`, event => {
+      this.listeners[`key${eventType}`] = window.document.addEventListener(`key${eventType}`, event => {
         const key = event.key.toLowerCase();
         for (const id in this.handlers) {
           for (const target in this.handlers[id]) {
@@ -42,6 +42,7 @@ export default class KeyListener extends Component {
 
   static stopListening() {
     window.document.removeEventListener('keydown', this.listeners.keydown);
+    window.document.removeEventListener('keyup', this.listeners.keydown);
     this.listeners = null;
   }
 
