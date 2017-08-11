@@ -198,6 +198,7 @@ class DrawingCanvas extends Component {
               <canvas
                 style={{
                   position: 'absolute',
+                  zIndex: 100,
                 }}
                 height={height}
                 width={width}
@@ -215,7 +216,7 @@ class DrawingCanvas extends Component {
             right: 0,
             bottom: 0,
             cursor: 'crosshair',
-            zIndex: 10,
+            zIndex: 101,
           }}
           onMouseDown={this.handleDrawStart}
           onMouseUp={this.handleDrawFinish}

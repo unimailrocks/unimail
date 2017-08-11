@@ -19,7 +19,7 @@ shell-server@0.2.4            # Server-side component of the `meteor shell` comm
 accounts-password@1.4.0
 semantic:ui
 juliancwirko:postcss
-less@2.7.9
+less
 alanning:roles
 react-meteor-data
 audit-argument-checks@1.0.7
@@ -36,3 +36,4 @@ mdg:validated-method
 didericis:callpromise-mixin
 promise@0.8.9
 dynamic-import@0.1.1
+jquery

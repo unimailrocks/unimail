@@ -12,11 +12,14 @@ const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
 const ENTER_UNLOCKED_MODE = 'editor/modes/locked/off';
 const OPEN_RENDER_PREVIEW = 'editor/renders/preview/open';
 const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
+const TRY_DELETE = 'editor/items/selected/tryDelete';
+const CANCEL_DELETE = 'editor/items/selected/cancelDelete';
 
 const initialState = {
   tool: null,
   templateHeight: 300,
   selectedItemPaths: [],
+  deleting: false,
   modes: {
     guided: true,
     locked: false,
@@ -78,6 +81,24 @@ export default function editorReducer(state = initialState, { type, payload }) {
       return {
         ...state,
         selectedItemPaths: reject(isEqual(payload))(state.selectedItemPaths),
+      };
+    }
+
+    case TRY_DELETE: {
+      if (state.selectedItemPaths.length === 0) {
+        return state;
+      }
+
+      return {
+        ...state,
+        deleting: true,
+      };
+    }
+
+    case CANCEL_DELETE: {
+      return {
+        ...state,
+        deleting: false,
       };
     }
 
@@ -225,4 +246,12 @@ export function closeRenderPreview() {
   return {
     type: CLOSE_RENDER_PREVIEW,
   };
+}
+
+export function tryDelete() {
+  return { type: TRY_DELETE };
+}
+
+export function cancelDelete() {
+  return { type: CANCEL_DELETE };
 }

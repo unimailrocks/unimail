@@ -14,10 +14,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { css } from 'aphrodite';
 
 import colors from '/imports/styles/colors';
-import functionalStyles from '/imports/styles/functional';
 
 import UnimailPropTypes from '/imports/prop-types';
 
@@ -34,6 +32,7 @@ class Template extends Component {
     unselectAllItems: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
     guided: PropTypes.bool.isRequired,
+    deleting: PropTypes.bool.isRequired,
     selectedItemPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
     movingPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
 
@@ -41,6 +40,8 @@ class Template extends Component {
     itemMoved: PropTypes.func.isRequired,
     itemResized: PropTypes.func.isRequired,
   }
+
+  maxLayer = 1;
 
   state = {
     // a description of the item that is currently being moved or resized
@@ -398,21 +399,30 @@ class Template extends Component {
     return transform;
   }
 
-  renderImage({ path }) {
+  renderImage({ path, item }) {
+    const pathString = path.map(([c]) => c).toString();
     return (
-      <div
-        className={css(functionalStyles.fit)}
-        style={{ backgroundColor: colors.grey4.string() }}
-      >
-        {path.map(([c]) => c).toString()}
-      </div>
+      <img
+        src={`http://via.placeholder.com/${item.placement.width}x${item.placement.height}?text=${pathString}`}
+        alt="placeholder"
+      />
     );
   }
 
-  renderContainer({ item, path }) {
+  renderContainer({ item, path, layer }) {
     return (
-      <div>
-        {this.renderItems({ items: item.details.items, path })}
+      <div
+        style={{
+          backgroundColor: colors.white.string(),
+          position: 'relative',
+          height: item.placement.height,
+        }}
+      >
+        {this.renderItems({
+          items: item.details.items,
+          path,
+          layer: layer + 1,
+        })}
       </div>
     );
   }
@@ -451,8 +461,9 @@ class Template extends Component {
         }}
         {...placement}
         minimal
+        layer={this.maxLayer}
       >
-        {this.renderItem({ item, path: [] })}
+        {this.renderItem({ item, path: [], layer: this.maxLayer })}
       </Frame>
     );
   }
@@ -485,16 +496,21 @@ class Template extends Component {
         onResizeBegin={() => {}}
         key={item._id}
         {...newItem.placement}
+        layer={this.maxLayer}
       >
-        {this.renderItem({ item: newItem, path: movingData.path })}
+        {this.renderItem({
+          item: newItem,
+          path: movingData.path,
+          layer: this.maxLayer,
+        })}
       </Frame>
     );
   }
 
-  renderInFrame({ item, path }) {
+  renderInFrame({ item, path, layer }) {
     const { selectedItemPaths } = this.props;
     const { moving } = this.state;
-    const isSelected = find(isEqual(path))(selectedItemPaths);
+    const isSelected = !!find(isEqual(path))(selectedItemPaths);
     if (isSelected && moving && moving.transform.type === 'translate') {
       return this.renderTranslatingItem({ item, path });
     }
@@ -513,19 +529,26 @@ class Template extends Component {
         key={item._id}
         minimal={!isSelected}
         onResizeBegin={onResizeBegin}
-
+        spotlit={this.props.deleting && isSelected}
         style={{
           cursor: this.props.locked ? 'default' : 'move',
         }}
+        layer={layer}
         {...item.placement}
       >
-        {this.renderItem({ item, path })}
+        {this.renderItem({ item, path, layer })}
       </Frame>
     );
   }
 
-  renderItems({ items, path = [] }) {
-    return items.map(item => this.renderInFrame({ item, path: [...path, item._id] }));
+  renderItems({ items, path = [], layer = 1 }) {
+    this.maxLayer = Math.max(layer, this.maxLayer);
+    return items.map(item =>
+      this.renderInFrame({
+        item,
+        path: [...path, item._id],
+        layer,
+      }));
   }
 
   render() {
@@ -571,6 +594,7 @@ function mapStateToProps(state) {
     template: state.editor.template,
     locked: state.editor.modes.locked,
     guided: state.editor.modes.guided,
+    deleting: state.editor.deleting,
     selectedItemPaths: state.editor.selectedItemPaths,
     movingPaths: getMovingPaths(state),
   };

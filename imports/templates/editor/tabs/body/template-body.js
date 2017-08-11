@@ -15,8 +15,10 @@ import {
   enterUnlockedMode,
   selectTool,
   items,
+  tryDelete,
 } from '../../duck';
 
+import DeletingShroud from './components/deleting-shroud';
 import Template from './components/template';
 import DrawingCanvas from './components/drawing-canvas';
 
@@ -29,7 +31,9 @@ class TemplateBody extends Component {
     enterLockedMode: PropTypes.func.isRequired,
     enterUnlockedMode: PropTypes.func.isRequired,
     selectedItemPaths: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
+    tryDelete: PropTypes.func.isRequired,
     locked: PropTypes.bool.isRequired,
+    deleting: PropTypes.bool.isRequired,
     selectItem: PropTypes.func.isRequired,
     unselectItem: PropTypes.func.isRequired,
     selectTool: PropTypes.func.isRequired,
@@ -50,7 +54,6 @@ class TemplateBody extends Component {
   }
 
   async addElement(item) {
-    console.log(this);
     const { selectItem } = this.props;
     try {
       const { item: newItem, path } = await Templates.Items.placeItem.callPromise({
@@ -142,7 +145,13 @@ class TemplateBody extends Component {
           padding: 0,
         }}
       >
+        {
+          this.props.deleting ?
+            <DeletingShroud onDelete={this.props.tryDelete} /> : null
+        }
         <KeyListener
+          onDeleteDown={this.props.tryDelete}
+          onBackspaceDown={this.props.tryDelete}
           onShiftDown={() => this.props.selectTool('select-box')}
           onShiftUp={() => this.props.selectTool(null)}
           onControlDown={this.props.enterLockedMode}
@@ -164,6 +173,7 @@ function mapStateToProps(state) {
   return {
     tool: state.editor.tool,
     locked: state.editor.modes.locked,
+    deleting: state.editor.deleting,
     selectedItemPaths: state.editor.selectedItemPaths,
   };
 }
@@ -176,4 +186,5 @@ export default connect(mapStateToProps, {
   selectItem: items.select,
   unselectItem: items.unselect,
   selectTool,
+  tryDelete,
 })(TemplateBody);

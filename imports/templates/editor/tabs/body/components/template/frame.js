@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Portal } from 'semantic-ui-react';
 import { css, StyleSheet } from 'aphrodite';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';
+import { zIndex as shroudZ } from '../deleting-shroud';
 
 const stylesheet = StyleSheet.create({
   frame: {
@@ -42,92 +44,142 @@ const config = [
   { top: '50%', left: 0, cursor: 'ew-resize', direction: 'l' },
 ];
 
-export default function Frame({
-  children,
-  x,
-  y,
-  height,
-  width,
-  minimal,
-  style,
-  onResizeBegin,
-  ...divProps
-}) {
-  const circles = minimal ? null : config.map(options => {
-    const style = {
-      position: 'absolute',
-      width: 7,
-      transform: 'translate(-50%, -50%)',
-      height: 7,
-      ...options,
-    };
+export default class Frame extends Component {
+  static propTypes = {
+    children: UnimailPropTypes.children.isRequired,
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    minimal: PropTypes.bool,
+    spotlit: PropTypes.bool,
+    style: UnimailPropTypes.style,
+    onResizeBegin(props, propName) { // eslint-disable-line react/require-default-props
+      if (props.minimal) {
+        return;
+      }
 
-    return (
-      <Circle
-        style={style}
-        key={options.direction}
-        onMouseDown={
+      if (!props[propName]) {
+        throw new Error('onResizeBegin must be specified on non-minimal Frame');
+      }
+    },
+    layer: PropTypes.number,
+  };
+
+  static defaultProps = {
+    style: {},
+    minimal: false,
+    spotlit: false,
+    layer: 0,
+  };
+
+  state = {
+    frame: null,
+  }
+
+  getFixedCSS() {
+    if (!this.state.frame) {
+      return null;
+    }
+
+    return {
+      ...this.state.frame.getBoundingClientRect(),
+      position: 'fixed',
+      zIndex: shroudZ + 1,
+    };
+  }
+
+  render() {
+    const {
+      children,
+      x,
+      y,
+      height,
+      width,
+      minimal,
+      spotlit,
+      style,
+      onResizeBegin,
+      layer,
+      ...divProps
+    } = this.props;
+
+    const circles = (minimal || spotlit) ? null : config.map(options => {
+      const style = {
+        position: 'absolute',
+        width: 7,
+        transform: 'translate(-50%, -50%)',
+        height: 7,
+        ...options,
+      };
+
+      return (
+        <Circle
+          style={style}
+          key={options.direction}
+          onMouseDown={
           e => onResizeBegin({
             event: e,
             direction: options.direction,
           })
         }
-      />
+        />
+      );
+    });
+
+    const content = (
+      <div>
+        {children}
+        <div
+          style={{
+            border: '1px solid black',
+            boxSizing: 'border-box',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            position: 'absolute',
+            ...style,
+          }}
+          {...divProps}
+          className={css(
+            stylesheet.frame,
+          )}
+        >
+          {circles}
+        </div>
+      </div>
     );
-  });
 
+    if (spotlit && this.frame) {
+      console.log('hue?');
+      return (
+        <Portal open>
+          <div
+            style={this.getFixedCSS()}
+          >
+            {content}
+          </div>
+        </Portal>
+      );
+    }
 
-  return (
-    <div
-      style={{
-        height,
-        width,
-        left: x,
-        top: y,
-        position: 'absolute',
-      }}
-    >
+    return (
       <div
         style={{
-          border: '1px solid black',
-          boxSizing: 'border-box',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          height,
+          width,
+          left: x,
+          top: y,
           position: 'absolute',
-          ...style,
+          zIndex: layer,
         }}
-        {...divProps}
-        className={css(stylesheet.frame)}
+        ref={
+          frame => { this.frame = frame; }
+        }
       >
-        {circles}
+        {content}
       </div>
-      {children}
-    </div>
-  );
+    );
+  }
 }
-
-Frame.propTypes = {
-  children: UnimailPropTypes.children.isRequired,
-  x: PropTypes.number.isRequired,
-  y: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
-  minimal: PropTypes.bool,
-  style: UnimailPropTypes.style,
-  onResizeBegin(props, propName) { // eslint-disable-line react/require-default-props
-    if (props.minimal) {
-      return;
-    }
-
-    if (!props[propName]) {
-      throw new Error('onResizeBegin must be specified on non-minimal Frame');
-    }
-  },
-};
-
-Frame.defaultProps = {
-  style: {},
-  minimal: false,
-};
