@@ -133,10 +133,12 @@ class DrawingCanvas extends Component {
     if (e.buttons === 2 || e.buttons === 3) {
       return;
     }
+
     this.drawing = true;
     this.start = this.absoluteToRelativeCoordinates(e);
     if (this.start.x < 0 || this.start.x > this.canvas.width || this.start.y < 0) {
       this.releaseTool();
+      this.drawing = false;
     }
     const { tool } = this.props;
     if (tool === 'draw-image') {
