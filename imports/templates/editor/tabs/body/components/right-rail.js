@@ -1,3 +1,4 @@
+import { compact } from 'lodash/fp';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -18,7 +19,7 @@ function TemplateBodyRightRail({ items }) {
       <Segment raised>
         <Segment.Group>
           {
-            items.map(i => (
+            compact(items).map(i => (
               <Segment key={i._id}>
                 <Inspector data={i} />
               </Segment>
