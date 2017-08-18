@@ -45,7 +45,7 @@ class Template extends Component {
   }
 
   componentDidMount() {
-    this.mouseupEventListener = window.addEventListener('mouseup', this.onMouseUp);
+    this.mouseupEventListener = window.addEventListener('mouseup', e => this.onMouseUp(e, { listener: 'window' }));
     this.mousemoveEventListener = window.addEventListener('mousemove', this.onMouseMove);
   }
 
@@ -197,10 +197,13 @@ class Template extends Component {
     });
   }
 
-  onMouseUp = async e => {
+  onMouseUp = async (e, { listener }) => {
     const { moving } = this.state;
     if (!moving) {
-      this.props.unselectAllItems();
+      if (listener !== 'window') {
+        this.props.unselectAllItems();
+      }
+
       return;
     }
 

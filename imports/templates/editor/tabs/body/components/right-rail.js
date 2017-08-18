@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Rail, Segment } from 'semantic-ui-react';
+import Inspector from 'react-inspector';
 
 import UnimailPropTypes from '/imports/prop-types';
 
@@ -13,11 +14,17 @@ function TemplateBodyRightRail({ items }) {
   }
 
   return (
-    <Rail attached position="right">
+    <Rail attached position="right" onClick={e => e.stopPropagation()}>
       <Segment raised>
-        <pre>
-          {JSON.stringify(items, null, 2)}
-        </pre>
+        <Segment.Group>
+          {
+            items.map(i => (
+              <Segment key={i._id}>
+                <Inspector data={i} />
+              </Segment>
+            ))
+          }
+        </Segment.Group>
       </Segment>
     </Rail>
   );
