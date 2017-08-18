@@ -15,6 +15,21 @@ import { rectanglesOverlap, rectangleContains } from '/imports/utils/geometry';
 
 import { userCanSee, userCanDesign } from './permissions';
 
+const pathToKey = template => path => path.reduce(({ key, last }, id, pathIndex) => {
+  const index = last.details.items.findIndex(({ _id }) => id === _id);
+  if (pathIndex === 0) {
+    return {
+      key: `${key}.${index}`,
+      last: last.details.items[index],
+    };
+  }
+
+  return {
+    key: `${key}.details.items.${index}`,
+    last: last.details.items[index],
+  };
+}, { key: 'items', last: { details: template } }).key;
+
 /**
  * Takes a placement and an array of items
  * returns a path and a new placement
@@ -523,26 +538,44 @@ export const resizeItem = new ValidatedMethod({
         });
       });
     }
-    const pathToKey = path => path.reduce(({ key, last }, id, pathIndex) => {
-      const index = last.details.items.findIndex(({ _id }) => id === _id);
-      if (pathIndex === 0) {
-        return {
-          key: `${key}.${index}`,
-          last: last.details.items[index],
-        };
-      }
-
-      return {
-        key: `${key}.details.items.${index}`,
-        last: last.details.items[index],
-      };
-    }, { key: 'items', last: { details: template } }).key;
 
     const setter = fromPairs(queuedChanges.map(({ path, newPlacement }) => [
-      `${pathToKey(path)}.placement`,
+      `${pathToKey(template)(path)}.placement`,
       newPlacement,
     ]));
 
     Templates.update(templateID, { $set: setter });
   },
 });
+
+export const destroyItem = new ValidatedMethod({
+  name: 'templates.body.items.destroy',
+  mixins: [CallPromiseMixin],
+  validate: new SimpleSchema({
+    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+    path: { type: Array },
+    'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
+  }).validator(),
+  run({ templateID, path }) {
+    if (!this.userId) {
+      throw new Meteor.Error('Must be signed in');
+    }
+
+    const user = Meteor.users.findOne(this.userId);
+    const template = Templates.findOne(templateID);
+    if (!userCanSee(template, user)) {
+      throw new Meteor.Error('This template does not exist');
+    }
+
+    if (!userCanDesign(template, user)) {
+      throw new Meteor.Error('You don\'t have permissions to design this template');
+    }
+
+    const key = pathToKey(template)(path);
+    const arrayKey = initial(key.split('.')).join('.');
+
+    Templates.update(templateID, { $unset: { [key]: '' } });
+    Templates.update(templateID, { $pull: { [arrayKey]: null } });
+  },
+});
+

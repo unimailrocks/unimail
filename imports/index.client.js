@@ -7,13 +7,18 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Dimmer, Loader } from 'semantic-ui-react';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
+import reduxThunk from 'redux-thunk';
 import App from '/imports/app';
 import rootReducer from './reducer';
 
+const devtoolsMiddleware = window.__REDUX_DEVTOOLS_EXTENSION__;
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+const middleware = [reduxThunk];
 const reduxStore = createStore(
   rootReducer,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+  composeEnhancers(applyMiddleware(...middleware)),
 );
 
 function Root({ userLoading }) {

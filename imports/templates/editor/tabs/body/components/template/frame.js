@@ -1,3 +1,4 @@
+import { pick } from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Portal } from 'semantic-ui-react';
@@ -8,7 +9,7 @@ import colors from '/imports/styles/colors';
 import { zIndex as shroudZ } from '../deleting-shroud';
 
 const stylesheet = StyleSheet.create({
-  frame: {
+  hoverBlue: {
     ':hover': {
       boxShadow: `0 0 1em ${colors.blue.alpha(0.5).toString()}`,
     },
@@ -52,7 +53,11 @@ export default class Frame extends Component {
     height: PropTypes.number.isRequired,
     width: PropTypes.number.isRequired,
     minimal: PropTypes.bool,
-    spotlit: PropTypes.bool,
+    // the color it should be spotlit in
+    spotlit: PropTypes.oneOfType([
+      UnimailPropTypes.color,
+      PropTypes.oneOf([false]),
+    ]),
     style: UnimailPropTypes.style,
     onResizeBegin(props, propName) { // eslint-disable-line react/require-default-props
       if (props.minimal) {
@@ -73,17 +78,17 @@ export default class Frame extends Component {
     layer: 0,
   };
 
-  state = {
-    frame: null,
-  }
-
   getFixedCSS() {
-    if (!this.state.frame) {
-      return null;
-    }
-
+    const rect = this.frame.getBoundingClientRect();
     return {
-      ...this.state.frame.getBoundingClientRect(),
+      ...pick([
+        'top',
+        'left',
+        'right',
+        'bottom',
+        'height',
+        'width',
+      ], rect),
       position: 'fixed',
       zIndex: shroudZ + 1,
     };
@@ -143,7 +148,7 @@ export default class Frame extends Component {
           }}
           {...divProps}
           className={css(
-            stylesheet.frame,
+            spotlit ? null : stylesheet.hoverBlue,
           )}
         >
           {circles}
@@ -151,34 +156,37 @@ export default class Frame extends Component {
       </div>
     );
 
-    if (spotlit && this.frame) {
-      console.log('hue?');
-      return (
-        <Portal open>
-          <div
-            style={this.getFixedCSS()}
-          >
-            {content}
-          </div>
-        </Portal>
-      );
-    }
+    const maybePortal = (spotlit && this.frame) ? (
+      <Portal open>
+        <div
+          style={{
+            ...this.getFixedCSS(),
+            boxShadow: `0 0 1em ${spotlit.string()}`,
+          }}
+        >
+          {content}
+        </div>
+      </Portal>
+    ) : null;
 
     return (
-      <div
-        style={{
-          height,
-          width,
-          left: x,
-          top: y,
-          position: 'absolute',
-          zIndex: layer,
-        }}
-        ref={
-          frame => { this.frame = frame; }
-        }
-      >
-        {content}
+      <div>
+        <div
+          style={{
+            height,
+            width,
+            left: x,
+            top: y,
+            position: 'absolute',
+            zIndex: layer,
+          }}
+          ref={
+            frame => { this.frame = frame; }
+          }
+        >
+          {content}
+        </div>
+        {maybePortal}
       </div>
     );
   }
