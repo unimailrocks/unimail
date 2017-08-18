@@ -19,6 +19,8 @@
     "jsx-a11y/no-static-element-interactions": 0,
     "no-continue": 0,
     "no-shadow": ["warn"],
-    "class-methods-use-this": ["warn"]
+    "class-methods-use-this": ["warn"],
+    "react/sort-comp": 0,
+    "max-len": ["warn"]
   }
 }

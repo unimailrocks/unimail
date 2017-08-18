@@ -6,20 +6,18 @@ import {
   merge,
   capitalize,
   isEqual,
-  take,
-  reject,
   cloneDeep,
 } from 'lodash/fp';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
 
 import colors from '/imports/styles/colors';
 
 import UnimailPropTypes from '/imports/prop-types';
 
 import { items } from '/imports/templates/editor/duck';
+import { getMovingPaths } from '/imports/templates/editor/selectors';
 
 import Frame from './frame';
 
@@ -41,8 +39,6 @@ class Template extends Component {
     itemResized: PropTypes.func.isRequired,
   }
 
-  maxLayer = 1;
-
   state = {
     // a description of the item that is currently being moved or resized
     moving: null,
@@ -56,29 +52,6 @@ class Template extends Component {
   componentWillUnmount() {
     window.removeEventListener('mouseup', this.mouseupEventListener);
     window.removeEventListener('mousemove', this.mousemoveEventListener);
-  }
-
-  beginResize(path) {
-    return ({ event, direction }) => {
-      if (event.button !== 0 || this.props.locked) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      this.setState({
-        moving: {
-          transform: {
-            type: 'resize',
-            direction,
-            value: { x: 0, y: 0 },
-          },
-          path,
-          originalCursorCoordinates: this.getCanvasCoordinates(event),
-        },
-      });
-    };
   }
 
   // for beginning translation
@@ -240,6 +213,8 @@ class Template extends Component {
       case 'resize':
         this.commitResize(e);
         break;
+      default:
+        break;
     }
   }
 
@@ -261,6 +236,31 @@ class Template extends Component {
     } while (currentPath.length > 0);
 
     return item;
+  }
+
+  maxLayer = 1;
+
+  beginResize(path) {
+    return ({ event, direction }) => {
+      if (event.button !== 0 || this.props.locked) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.setState({
+        moving: {
+          transform: {
+            type: 'resize',
+            direction,
+            value: { x: 0, y: 0 },
+          },
+          path,
+          originalCursorCoordinates: this.getCanvasCoordinates(event),
+        },
+      });
+    };
   }
 
   correctPlacement({ path, proposedPlacement }) {
@@ -485,8 +485,10 @@ class Template extends Component {
 
       if (item.type === 'container') {
         newItem.details.items.forEach(c => {
+          /* eslint-disable no-param-reassign */
           c.placement.x -= transform.x;
           c.placement.y -= transform.y;
+          /* eslint-enable no-param-reassign */
         });
       }
     }
@@ -529,7 +531,9 @@ class Template extends Component {
         key={item._id}
         minimal={!isSelected}
         onResizeBegin={onResizeBegin}
-        spotlit={this.props.deleting && isSelected}
+        spotlit={
+          (this.props.deleting && isSelected) ? colors.red.alpha(0.3) : null
+        }
         style={{
           cursor: this.props.locked ? 'default' : 'move',
         }}
@@ -576,18 +580,6 @@ class Template extends Component {
 // but it's just a preference, and reselect is already written
 // whereas we'd pretty much have to roll our own memoization integration
 // if we did it in the component
-const getSelectedPaths = get(['editor', 'selectedItemPaths']);
-const getMovingPaths = createSelector(
-  [getSelectedPaths],
-  paths => reject(consideredPath => find(possibleParent => {
-    if (possibleParent.length >= consideredPath.length) {
-      return false;
-    }
-
-    const precursor = take(possibleParent.length, consideredPath);
-    return isEqual(precursor, possibleParent);
-  })(paths))(paths),
-);
 
 function mapStateToProps(state) {
   return {

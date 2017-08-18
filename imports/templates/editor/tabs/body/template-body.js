@@ -146,8 +146,11 @@ class TemplateBody extends Component {
         }}
       >
         {
-          this.props.deleting ?
-            <DeletingShroud onDelete={this.props.tryDelete} /> : null
+          this.props.deleting ? (
+            <DeletingShroud
+              onDelete={this.props.tryDelete}
+            />
+          ) : null
         }
         <KeyListener
           onDeleteDown={this.props.tryDelete}

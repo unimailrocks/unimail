@@ -1,4 +1,5 @@
 import { isEqual, reject } from 'lodash/fp';
+import * as Templates from '/imports/templates/methods';
 
 const SELECT_TOOL = 'editor/select-tool';
 const LOAD_TEMPLATE = 'editor/load-template';
@@ -12,8 +13,9 @@ const ENTER_LOCKED_MODE = 'editor/modes/locked/on';
 const ENTER_UNLOCKED_MODE = 'editor/modes/locked/off';
 const OPEN_RENDER_PREVIEW = 'editor/renders/preview/open';
 const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
-const TRY_DELETE = 'editor/items/selected/tryDelete';
-const CANCEL_DELETE = 'editor/items/selected/cancelDelete';
+const START_DELETE = 'editor/items/modes/deletion/on';
+const CANCEL_DELETE = 'editor/items/modes/deletion/off';
+const CONFIRM_DELETE = 'editor/items/selected/delete';
 
 const initialState = {
   tool: null,
@@ -24,6 +26,7 @@ const initialState = {
     guided: true,
     locked: false,
   },
+  template: null,
 };
 
 export default function editorReducer(state = initialState, { type, payload }) {
@@ -66,6 +69,11 @@ export default function editorReducer(state = initialState, { type, payload }) {
       if (!payload || !payload.length || payload.length === 0) {
         throw new Error(`Item path must be a non-empty array. Got ${JSON.stringify(payload)}`);
       }
+
+      if (state.deleting) {
+        return state;
+      }
+
       const hasItem = state.selectedItemPaths.find(isEqual(payload));
       if (hasItem) {
         return state;
@@ -78,13 +86,17 @@ export default function editorReducer(state = initialState, { type, payload }) {
     }
 
     case UNSELECT_ITEM: {
+      if (state.deleting) {
+        return state;
+      }
+
       return {
         ...state,
         selectedItemPaths: reject(isEqual(payload))(state.selectedItemPaths),
       };
     }
 
-    case TRY_DELETE: {
+    case START_DELETE: {
       if (state.selectedItemPaths.length === 0) {
         return state;
       }
@@ -102,7 +114,19 @@ export default function editorReducer(state = initialState, { type, payload }) {
       };
     }
 
+    case CONFIRM_DELETE: {
+      return {
+        ...state,
+        selectedItemPaths: [],
+        deleting: false,
+      };
+    }
+
     case UNSELECT_ALL_ITEMS: {
+      if (state.deleting) {
+        return state;
+      }
+
       return {
         ...state,
         selectedItemPaths: [],
@@ -249,7 +273,19 @@ export function closeRenderPreview() {
 }
 
 export function tryDelete() {
-  return { type: TRY_DELETE };
+  return async (dispatch, getState) => {
+    const { editor } = getState();
+    const templateID = editor.template._id;
+    if (editor.deleting) {
+      await Promise.all(editor.selectedItemPaths.map(path => (
+        Templates.Items.destroyItem.call({ path, templateID })
+      )));
+
+      dispatch({ type: CONFIRM_DELETE });
+    } else {
+      dispatch({ type: START_DELETE });
+    }
+  };
 }
 
 export function cancelDelete() {
