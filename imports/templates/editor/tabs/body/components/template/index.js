@@ -197,7 +197,7 @@ class Template extends Component {
     });
   }
 
-  onMouseUp = async (e, { listener }) => {
+  onMouseUp = async (e, { listener } = {}) => {
     const { moving } = this.state;
     if (!moving) {
       if (listener !== 'window') {
