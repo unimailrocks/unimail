@@ -123,11 +123,11 @@ export default class Frame extends Component {
           style={style}
           key={options.direction}
           onMouseDown={
-          e => onResizeBegin({
-            event: e,
-            direction: options.direction,
-          })
-        }
+            e => onResizeBegin({
+              event: e,
+              direction: options.direction,
+            })
+          }
         />
       );
     });

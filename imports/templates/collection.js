@@ -1,7 +1,7 @@
+import { cloneDeep } from 'lodash/fp';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
-import cloneDeep from 'lodash/fp/cloneDeep';
 import diff from 'deep-diff';
 
 const Templates = new Mongo.Collection('templates');
@@ -38,6 +38,7 @@ const ItemSchema = new SimpleSchema({
       'container',
     ],
   },
+  styles: { type: Object, blackbox: true },
 });
 
 const RenderSchema = new SimpleSchema({

@@ -1,4 +1,4 @@
-import { isEqual, reject } from 'lodash/fp';
+import { isEqual, reject, partition } from 'lodash/fp';
 import * as Templates from '/imports/templates/methods';
 
 const SELECT_TOOL = 'editor/select-tool';
@@ -16,6 +16,9 @@ const CLOSE_RENDER_PREVIEW = 'editor/renders/preview/close';
 const START_DELETE = 'editor/items/modes/deletion/on';
 const CANCEL_DELETE = 'editor/items/modes/deletion/off';
 const CONFIRM_DELETE = 'editor/items/selected/delete';
+const SHIELD_KEYS = 'editor/modes/shield-keys/on';
+const UNSHIELD_KEYS = 'editor/modes/shield-keys/off';
+const PREVIEW_STYLES = 'editor/styles/preview/change';
 
 const initialState = {
   tool: null,
@@ -25,8 +28,14 @@ const initialState = {
   modes: {
     guided: true,
     locked: false,
+    shieldKeys: false,
   },
   template: null,
+  // for things that shouldn't be committed yet but the UI
+  // should reflect an optimistic version
+  previewing: {
+    styles: [],
+  },
 };
 
 export default function editorReducer(state = initialState, { type, payload }) {
@@ -172,6 +181,26 @@ export default function editorReducer(state = initialState, { type, payload }) {
       };
     }
 
+    case SHIELD_KEYS: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          shieldKeys: true,
+        },
+      };
+    }
+
+    case UNSHIELD_KEYS: {
+      return {
+        ...state,
+        modes: {
+          ...state.modes,
+          shieldKeys: false,
+        },
+      };
+    }
+
     case OPEN_RENDER_PREVIEW: {
       return {
         ...state,
@@ -183,6 +212,34 @@ export default function editorReducer(state = initialState, { type, payload }) {
       return {
         ...state,
         previewingRender: null,
+      };
+    }
+
+    case PREVIEW_STYLES: {
+      const { style, path } = payload;
+      const newStyles = (styles => {
+        const [[currentPathStyle], withoutCurrent] = partition(
+          s => isEqual(s.path, path),
+        )(styles);
+
+        // allows you to remove styles by passing `null` as a value
+        const newStyle = reject(x => !x, {
+          ...(currentPathStyle || {}),
+          ...style,
+        });
+
+        return [
+          ...withoutCurrent,
+          newStyle,
+        ];
+      })(state.previews.styles);
+
+      return {
+        ...state,
+        previews: {
+          ...state.previews,
+          styles: newStyles,
+        },
       };
     }
 
@@ -288,6 +345,28 @@ export function tryDelete() {
   };
 }
 
+export function shieldKeys() {
+  return {
+    type: SHIELD_KEYS,
+  };
+}
+
+export function unshieldKeys() {
+  return {
+    type: UNSHIELD_KEYS,
+  };
+}
+
 export function cancelDelete() {
   return { type: CANCEL_DELETE };
+}
+
+export function previewStyles({ path, styles }) {
+  return {
+    type: PREVIEW_STYLES,
+    payload: {
+      path,
+      styles,
+    },
+  };
 }

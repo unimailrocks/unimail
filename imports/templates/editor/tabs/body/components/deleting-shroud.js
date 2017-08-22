@@ -36,6 +36,9 @@ function DeletingShroud({ onDelete, cancelDelete, countToDelete }) {
           {message}
           <em> (press &lt;delete&gt; to confirm more quickly)</em>
           <br />
+          <br />
+          <hr />
+          <br />
           <Button size="mini" basic color="red" onClick={onDelete}>Confirm</Button>
           <Button size="mini" basic color="grey" onClick={cancelDelete}>Cancel</Button>
         </Message.Content>

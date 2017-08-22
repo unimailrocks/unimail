@@ -12,12 +12,15 @@ export const placement = PropTypes.shape({
   height: PropTypes.number.isRequired,
 });
 
-
+// in an ideal world, we would make this a oneOf type with each type of item
+// its own type, but recursive prop types aren't easy and it has little impact
+// in the context of this application
 export const item = PropTypes.shape({
   _id: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['image', 'container']).isRequired,
   placement: placement.isRequired,
   details: PropTypes.object,
+  styles: PropTypes.object,
 });
 
 export const render = PropTypes.shape({
@@ -40,6 +43,5 @@ export const template = PropTypes.shape({
   renders: PropTypes.arrayOf(render),
   width: PropTypes.number.isRequired,
 });
-
 
 export * from './editor/prop-types';

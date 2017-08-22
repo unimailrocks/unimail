@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Dimensions from 'react-container-dimensions';
-import color from 'color';
 
 import UnimailPropTypes from '/imports/prop-types';
 import colors from '/imports/styles/colors';

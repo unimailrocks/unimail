@@ -31,7 +31,7 @@ export default class KeyListener extends Component {
           for (const target in this.handlers[id]) {
             if (target.toLowerCase() === key) {
               if (this.handlers[id][target][eventType]) {
-                this.handlers[id][target][eventType]();
+                this.handlers[id][target][eventType](event);
               }
             }
           }
@@ -60,6 +60,8 @@ export default class KeyListener extends Component {
     if (this.constructor.numMounted === 0) {
       this.constructor.stopListening();
     }
+
+    this.constructor.handlers[this.id] = {};
   }
 
   registerHandlers() {

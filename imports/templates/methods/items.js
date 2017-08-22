@@ -161,11 +161,45 @@ function constructPrototypeItemDetails(type) {
   }
 }
 
-export const placeItem = new ValidatedMethod({
+function createDesignFunction({
+  name,
+  properties,
+  run,
+}) {
+  return new ValidatedMethod({
+    name,
+    mixins: [CallPromiseMixin],
+    validate: new SimpleSchema({
+      templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+      ...properties,
+    }).validator(),
+    run(input) {
+      if (!this.userId) {
+        throw new Meteor.Error('Must be signed in');
+      }
+
+      const user = Meteor.users.findOne(this.userId);
+      const template = Templates.findOne(input.templateID);
+      if (!userCanSee(template, user)) {
+        throw new Meteor.Error('This template does not exist');
+      }
+
+      if (!userCanDesign(template, user)) {
+        throw new Meteor.Error('You don\'t have permissions to design this template');
+      }
+
+      return run.bind(this)({
+        user,
+        template,
+        ...input,
+      });
+    },
+  });
+}
+
+export const placeItem = createDesignFunction({
   name: 'templates.body.items.create',
-  mixins: [CallPromiseMixin],
-  validate: new SimpleSchema({
-    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+  properties: {
     item: {
       type: 'Object',
     },
@@ -176,22 +210,8 @@ export const placeItem = new ValidatedMethod({
     'item.placement.height': { type: Number },
     'item.details': { type: Object, blackbox: true, optional: true },
     'item.type': { type: String },
-  }).validator(),
-  run({ templateID, item }) {
-    if (!this.userId) {
-      throw new Meteor.Error('Must be signed in');
-    }
-
-    const user = Meteor.users.findOne(this.userId);
-    const template = Templates.findOne(templateID);
-    if (!userCanSee(template, user)) {
-      throw new Meteor.Error('This template does not exist');
-    }
-
-    if (!userCanDesign(template, user)) {
-      throw new Meteor.Error('You don\'t have permissions to design this template');
-    }
-
+  },
+  run({ template, item }) {
     if (item.placement.x + item.placement.width > template.width) {
       throw new Meteor.Error('Item is hanging off the right edge of the template');
     }
@@ -266,15 +286,15 @@ export const placeItem = new ValidatedMethod({
     }), {});
 
     // set all to-be-deleted children to null
-    Templates.update(templateID, {
+    Templates.update(template._id, {
       $unset: unsetObject,
     });
 
     // cull the nulls
-    Templates.update(templateID, { $pull: { [arrayKey]: null } });
+    Templates.update(template._id, { $pull: { [arrayKey]: null } });
 
     // add the new item
-    Templates.update(templateID, {
+    Templates.update(template._id, {
       $push: {
         [arrayKey]: finalItem,
       },
@@ -295,11 +315,9 @@ export const placeItem = new ValidatedMethod({
   },
 });
 
-export const moveItem = new ValidatedMethod({
+export const moveItem = createDesignFunction({
   name: 'templates.body.items.move',
-  mixins: [CallPromiseMixin],
-  validate: new SimpleSchema({
-    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+  properties: {
     placement: { type: Object },
     'placement.x': { type: Number },
     'placement.y': { type: Number },
@@ -307,22 +325,8 @@ export const moveItem = new ValidatedMethod({
     'placement.height': { type: Number },
     path: { type: Array },
     'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
-  }).validator(),
-  run({ templateID, placement, path }) {
-    if (!this.userId) {
-      throw new Meteor.Error('Must be signed in');
-    }
-
-    const user = Meteor.users.findOne(this.userId);
-    const template = Templates.findOne(templateID);
-    if (!userCanSee(template, user)) {
-      throw new Meteor.Error('This template does not exist');
-    }
-
-    if (!userCanDesign(template, user)) {
-      throw new Meteor.Error('You don\'t have permissions to design this template');
-    }
-
+  },
+  run({ template, placement, path }) {
     // translate path (_id array) to indices (like [0, 2, 1])
     // also get absolute placement of item
     // (complicated so we can do both in one pass)
@@ -390,7 +394,7 @@ export const moveItem = new ValidatedMethod({
     const { placement: relativePlacement, path: newIndices } = placed;
     if (isEqual(newIndices, initial(indices))) {
       const placementKey = `items.${modelKeyPart}.placement`;
-      Templates.update(templateID, { $set: { [placementKey]: relativePlacement } });
+      Templates.update(template._id, { $set: { [placementKey]: relativePlacement } });
     } else {
       const newModelParentKeyPart = newIndices.join('.details.items.');
       const newModelParentKey = newModelParentKeyPart.length > 0 ?
@@ -399,7 +403,7 @@ export const moveItem = new ValidatedMethod({
 
 
       Templates.update(
-        templateID,
+        template._id,
         {
           $push: {
             [newModelParentKey]: {
@@ -416,7 +420,7 @@ export const moveItem = new ValidatedMethod({
         'items';
 
       Templates.update(
-        templateID,
+        template._id,
         {
           $pull: {
             [modelParentKey]: item,
@@ -440,11 +444,9 @@ export const moveItem = new ValidatedMethod({
   },
 });
 
-export const resizeItem = new ValidatedMethod({
+export const resizeItem = createDesignFunction({
   name: 'templates.body.items.resize',
-  mixins: [CallPromiseMixin],
-  validate: new SimpleSchema({
-    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+  properties: {
     diff: { type: Object },
     'diff.x': { type: Number },
     'diff.y': { type: Number },
@@ -452,22 +454,8 @@ export const resizeItem = new ValidatedMethod({
     'diff.height': { type: Number },
     path: { type: Array },
     'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
-  }).validator(),
-  run({ templateID, diff, path }) {
-    if (!this.userId) {
-      throw new Meteor.Error('Must be signed in');
-    }
-
-    const user = Meteor.users.findOne(this.userId);
-    const template = Templates.findOne(templateID);
-    if (!userCanSee(template, user)) {
-      throw new Meteor.Error('This template does not exist');
-    }
-
-    if (!userCanDesign(template, user)) {
-      throw new Meteor.Error('You don\'t have permissions to design this template');
-    }
-
+  },
+  run({ template, diff, path }) {
     const parentPath = initial(path);
     const id = last(path);
     let parent = { details: template };
@@ -544,38 +532,47 @@ export const resizeItem = new ValidatedMethod({
       newPlacement,
     ]));
 
-    Templates.update(templateID, { $set: setter });
+    Templates.update(template._id, { $set: setter });
   },
 });
 
-export const destroyItem = new ValidatedMethod({
+export const destroyItem = createDesignFunction({
   name: 'templates.body.items.destroy',
-  mixins: [CallPromiseMixin],
-  validate: new SimpleSchema({
-    templateID: { type: String, regEx: SimpleSchema.RegEx.Id },
+  properties: {
     path: { type: Array },
     'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
-  }).validator(),
-  run({ templateID, path }) {
-    if (!this.userId) {
-      throw new Meteor.Error('Must be signed in');
-    }
-
-    const user = Meteor.users.findOne(this.userId);
-    const template = Templates.findOne(templateID);
-    if (!userCanSee(template, user)) {
-      throw new Meteor.Error('This template does not exist');
-    }
-
-    if (!userCanDesign(template, user)) {
-      throw new Meteor.Error('You don\'t have permissions to design this template');
-    }
-
+  },
+  run({ template, path }) {
     const key = pathToKey(template)(path);
     const arrayKey = initial(key.split('.')).join('.');
 
-    Templates.update(templateID, { $unset: { [key]: '' } });
-    Templates.update(templateID, { $pull: { [arrayKey]: null } });
+    Templates.update(template._id, { $unset: { [key]: '' } });
+    Templates.update(template._id, { $pull: { [arrayKey]: null } });
   },
 });
 
+export const changeStyle = createDesignFunction({
+  name: 'templates.body.items.styles.change',
+  properties: {
+    path: { type: Array },
+    'path.$': { type: String, regEx: SimpleSchema.RegEx.Id },
+    style: { type: Object },
+    'style.property': { type: String },
+    'style.value': { type: String },
+  },
+  run({ template, path, style }) {
+    const itemKey = pathToKey(template)(path);
+    const stylesKey = `${itemKey}.styles`;
+    if (!get(stylesKey, template)) {
+      if (style.value !== null) {
+        Templates.update(template._id, { $set: { [stylesKey]: {
+          [style.property]: style.value,
+        } } });
+      }
+    } else {
+      const styleKey = `${stylesKey}.${style.property}`;
+      const modifier = style.value === null ? '$unset' : '$set';
+      Templates.update(template._id, { [modifier]: { [styleKey]: style.value || '' } });
+    }
+  },
+});

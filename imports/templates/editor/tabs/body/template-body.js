@@ -37,6 +37,7 @@ class TemplateBody extends Component {
     selectItem: PropTypes.func.isRequired,
     unselectItem: PropTypes.func.isRequired,
     selectTool: PropTypes.func.isRequired,
+    shieldKeys: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
@@ -63,7 +64,7 @@ class TemplateBody extends Component {
 
       selectItem([...path, newItem._id]);
     } catch (e) {
-      console.error(e.error);
+      console.error(e.error || e);
     } finally {
       this.props.selectTool(null);
     }
@@ -136,6 +137,7 @@ class TemplateBody extends Component {
   }
 
   render() {
+    const asPrevented = f => e => { console.log('prevented'); e.preventDefault(); f(); };
     return (
       <Segment
         raised
@@ -152,14 +154,17 @@ class TemplateBody extends Component {
             />
           ) : null
         }
-        <KeyListener
-          onDeleteDown={this.props.tryDelete}
-          onBackspaceDown={this.props.tryDelete}
-          onShiftDown={() => this.props.selectTool('select-box')}
-          onShiftUp={() => this.props.selectTool(null)}
-          onControlDown={this.props.enterLockedMode}
-          onControlUp={this.props.enterUnlockedMode}
-        />
+        {
+          this.props.shieldKeys ? null :
+          <KeyListener
+            onDeleteDown={asPrevented(this.props.tryDelete)}
+            onBackspaceDown={asPrevented(this.props.tryDelete)}
+            onShiftDown={() => this.props.selectTool('select-box')}
+            onShiftUp={() => this.props.selectTool(null)}
+            onControlDown={this.props.enterLockedMode}
+            onControlUp={this.props.enterUnlockedMode}
+          />
+        }
         <div style={{ position: 'relative' }}>
           <DrawingCanvas onDraw={this.onDraw} testDraw={this.testDraw} />
           <Template
@@ -178,6 +183,7 @@ function mapStateToProps(state) {
     locked: state.editor.modes.locked,
     deleting: state.editor.deleting,
     selectedItemPaths: state.editor.selectedItemPaths,
+    shieldKeys: state.editor.modes.shieldKeys,
   };
 }
 

@@ -21,6 +21,7 @@
     "no-shadow": ["warn"],
     "class-methods-use-this": ["warn"],
     "react/sort-comp": 0,
-    "max-len": ["warn"]
+    "max-len": ["warn"],
+    "react/forbid-prop-types": ["warn"]
   }
 }
